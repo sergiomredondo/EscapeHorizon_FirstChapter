@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -38,6 +39,7 @@ public class SH_CharacterController : MonoBehaviour
         UpdateAnimations(); // Update animations to reflect the character's idle state when input is disabled
     }
 
+    // This method is called once per frame. It applies movement based on the current input and updates animations accordingly.
     void Update()
     {
         ApplyMovement(); // Apply movement based on the current input
@@ -62,7 +64,9 @@ public class SH_CharacterController : MonoBehaviour
     {
         if (_animator != null) // Check if the Animator component is assigned before trying to update animations
         {
-            _animator.SetFloat("Speed", _currentMoveDirection.magnitude * moveSpeed); // Set the "Speed" parameter in the Animator to control animations based on movement speed
+            float speed = _currentMoveDirection.magnitude * moveSpeed;
+            _animator.SetFloat("Speed", speed); // Set the "Speed" parameter in the Animator to control animations based on movement speed
+            Debug.Log($"Current Move Direction: {_currentMoveDirection}, Speed: {speed}"); // |||||||||||||||||||||||||||DEBUGGING PURPOSES ONLY||||||||||||||||||||||||||
         }
     }
 }
