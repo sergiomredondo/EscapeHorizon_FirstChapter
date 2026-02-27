@@ -32,11 +32,26 @@ namespace PlayerMovement
         [Tooltip("Static friction coefficient (unused for now, reserved for transitions).")]
         public float muS = 0.6f;
 
+        [Header("Camera Relative")]
+        [Tooltip("When true, movement input is interpreted relative to the camera orientation.")]
+        public bool useCameraRelative = true;
+
+        [Tooltip("Optional reference to camera transform to use for camera-relative movement. If null, Camera.main is used.")]
+        public Transform cameraTransform;
+
+        [Header("Smoothing")]
+        [Tooltip("Time in seconds to smooth horizontal velocity towards target. Higher = heavier feeling.")]
+        public float velocitySmoothTime = 0.25f;
+
+        // SmoothDamp velocity reference for horizontal smoothing
+        private Vector3 _velocitySmoothRef;
+
         private CharacterController _controller;
         private Animator _animator;
         private Vector2 _moveInput;
         private Vector3 _currentMoveDirection;
-        private IA_PlayerControls _inputActions;
+        // Reference to centralized input handler (should be provided by SH_InputHandler)
+        public Core.SH_InputHandler inputHandler;
 
         // Vertical velocity used to apply gravity to the CharacterController.
         private float _verticalVelocity;
@@ -100,54 +115,63 @@ namespace PlayerMovement
             if (_animator == null)
                 Debug.LogWarning("SH_CharacterController: Animator not found. Animations will be disabled.");
 
-            _inputActions = new IA_PlayerControls();
+            // inputHandler should be assigned in the Inspector or discovered at runtime
         }
 
-        // Enable input actions and register movement callbacks.
+        // Enable subscriptions to the centralized input handler.
         void OnEnable()
         {
-            if (_inputActions == null)
-                _inputActions = new IA_PlayerControls();
-
-            // Register named handlers for clean unsubscribe.
-            _inputActions.Player.Move.performed += OnMovePerformed;
-            _inputActions.Player.Move.canceled += OnMoveCanceled;
-            _inputActions.Player.Enable();
+            if (inputHandler == null)
+                inputHandler = FindObjectOfType<Core.SH_InputHandler>();
+            if (inputHandler != null)
+            {
+                inputHandler.OnMove += HandleMove;
+                inputHandler.OnDash += HandleDashInput;
+                inputHandler.OnBoost += HandleBoostInput;
+            }
         }
 
-        // Callback invoked when move input is performed. Stores the 2D input vector.
-        private void OnMovePerformed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
-        {
-            _moveInput = ctx.ReadValue<Vector2>();
-        }
-
-        // Callback invoked when move input is canceled. Resets the input vector.
-        private void OnMoveCanceled(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
-        {
-            _moveInput = Vector2.zero;
-        }
-
-        // Disable input actions and unregister movement callbacks.
+        // Unsubscribe from the input handler.
         void OnDisable()
         {
-            if (_inputActions != null)
+            if (inputHandler != null)
             {
-                _inputActions.Player.Move.performed -= OnMovePerformed;
-                _inputActions.Player.Move.canceled -= OnMoveCanceled;
-                _inputActions.Player.Disable();
+                inputHandler.OnMove -= HandleMove;
+                inputHandler.OnDash -= HandleDashInput;
+                inputHandler.OnBoost -= HandleBoostInput;
             }
-
-            // Ensure animations reflect idle state when disabled.
-            UpdateAnimations();
         }
 
-        // Cleanup created resources when the object is destroyed.
-        void OnDestroy()
+        // Receive move input from SH_InputHandler.
+        private void HandleMove(Vector2 v)
         {
-            if (_inputActions != null)
+            _moveInput = v;
+        }
+
+        // Called when dash input received from SH_InputHandler.
+        private void HandleDashInput()
+        {
+            TriggerDash(Vector3.zero);
+        }
+
+        // Called when boost input received from SH_InputHandler.
+        private void HandleBoostInput()
+        {
+            TriggerBoost();
+        }
+
+        // Try to find supporting managers (Input / Perspective) at start if not assigned.
+        void Start()
+        {
+            if (inputHandler == null)
+                inputHandler = FindObjectOfType<Core.SH_InputHandler>();
+
+            // If no explicit cameraTransform, try to get it from the PerspectiveController
+            if (cameraTransform == null)
             {
-                try { _inputActions.Dispose(); } catch { }
-                _inputActions = null;
+                var p = FindObjectOfType<Systems.SH_PerspectiveController>();
+                if (p != null && p.ActiveCameraTransform != null)
+                    cameraTransform = p.ActiveCameraTransform;
             }
         }
 
@@ -176,8 +200,23 @@ namespace PlayerMovement
         // Physics integration step. Uses simple Newtonian integration with friction and dash/boost states.
         private void PhysicsStep(float dt)
         {
-            // build desired input direction in world space
+            // build desired input direction in world space, optionally relative to camera
             Vector3 inputDir = new Vector3(_moveInput.x, 0f, _moveInput.y);
+            if (useCameraRelative)
+            {
+                Transform cam = cameraTransform != null ? cameraTransform : Camera.main != null ? Camera.main.transform : null;
+                if (cam != null)
+                {
+                    Vector3 camForward = cam.forward;
+                    camForward.y = 0f;
+                    camForward.Normalize();
+                    Vector3 camRight = cam.right;
+                    camRight.y = 0f;
+                    camRight.Normalize();
+                    inputDir = camForward * _moveInput.y + camRight * _moveInput.x;
+                }
+            }
+
             if (inputDir.sqrMagnitude > 0.0001f)
                 inputDir = inputDir.normalized;
             else
@@ -202,22 +241,22 @@ namespace PlayerMovement
             }
             else
             {
-                // Compute acceleration from input
-                Vector3 aInput = inputDir * currentAMax;
-
-                // If there is no input, apply kinetic friction opposing velocity
+                // Compute acceleration from input. Use smoothing when there is input to simulate heavy inertia.
                 Vector3 horizontalVel = new Vector3(_velocity.x, 0f, _velocity.z);
                 if (inputDir == Vector3.zero && horizontalVel.sqrMagnitude > 0.00001f)
                 {
+                    // No input: apply kinetic friction opposing velocity
                     Vector3 vhat = horizontalVel.normalized;
                     Vector3 aFric = -vhat * (currentMuK * Mathf.Abs(gravity));
-                    // total acceleration is just friction
                     _velocity += aFric * dt;
                 }
-                else
+                else if (inputDir != Vector3.zero)
                 {
-                    // apply input acceleration
-                    _velocity += aInput * dt;
+                    // Input present: compute desired velocity and smooth towards it
+                    Vector3 desiredVel = inputDir * vMax;
+                    Vector3 newHor = Vector3.SmoothDamp(horizontalVel, desiredVel, ref _velocitySmoothRef, velocitySmoothTime, Mathf.Infinity, dt);
+                    _velocity.x = newHor.x;
+                    _velocity.z = newHor.z;
                 }
 
                 // clamp horizontal speed
@@ -254,7 +293,8 @@ namespace PlayerMovement
             if (_animator == null)
                 return;
 
-            currentSpeed = _currentMoveDirection.magnitude * moveSpeed;
+            // Use actual horizontal velocity magnitude for animator and UI.
+            currentSpeed = new Vector3(_velocity.x, 0f, _velocity.z).magnitude;
             _animator.SetFloat(SpeedHash, currentSpeed);
 
             if (debugSpeed)
