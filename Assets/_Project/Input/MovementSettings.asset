@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a079070e2bc95204babb2445986a5a5a, type: 3}
+  m_Name: MovementSettings
+  m_EditorClassIdentifier: Assembly-CSharp::Data.MovementSettings
+  gravity: -9.81
+  mass: 3000
+  aMax: 9.18
+  vMax: 8.8
+  muK: 2.11
+  muS: 6.39
+  velocitySmoothTime: 0.25
+  dashForce: 30000
+  dashDuration: 1.1
+  dashDistance: 50
+  dashCooldown: 1.5
+  dashRecovery: 0.3
+  boostAMultiplier: 1.5
+  boostDuration: 3

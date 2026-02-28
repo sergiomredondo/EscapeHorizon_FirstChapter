@@ -33,32 +33,52 @@ namespace Systems
                 return;
             }
 
-            // Try Cinemachine virtual cameras by priority (if present)
+            // Try Cinemachine virtual cameras by priority (if present).
+            // Use reflection so this code compiles even when Cinemachine package is absent.
             try
             {
-                var vcams = FindObjectsOfType<Cinemachine.CinemachineVirtualCamera>();
-                if (vcams != null && vcams.Length > 0)
+                var vcamType = Type.GetType("Cinemachine.CinemachineVirtualCamera, Cinemachine");
+                if (vcamType != null)
                 {
-                    Cinemachine.CinemachineVirtualCamera best = null;
-                    int bestPriority = int.MinValue;
-                    foreach (var v in vcams)
+                    var objs = Resources.FindObjectsOfTypeAll(vcamType);
+                    if (objs != null && objs.Length > 0)
                     {
-                        if (v.gameObject.name == "Cam_Isometric")
+                        object best = null;
+                        int bestPriority = int.MinValue;
+                        foreach (var o in objs)
                         {
-                            SetActiveCamera(v.transform);
+                            var comp = o as Component;
+                            if (comp == null) continue;
+                            if (comp.gameObject.name == "Cam_Isometric")
+                            {
+                                SetActiveCamera(comp.transform);
+                                return;
+                            }
+                            // try to read Priority via reflection
+                            try
+                            {
+                                var pr = vcamType.GetProperty("Priority");
+                                if (pr != null)
+                                {
+                                    int p = (int)pr.GetValue(o);
+                                    if (p > bestPriority)
+                                    {
+                                        bestPriority = p;
+                                        best = comp;
+                                    }
+                                }
+                                else if (best == null)
+                                {
+                                    best = comp;
+                                }
+                            }
+                            catch { if (best == null) best = comp; }
+                        }
+                        if (best is Component bc)
+                        {
+                            SetActiveCamera(bc.transform);
                             return;
                         }
-                        if (v.Priority > bestPriority)
-                        {
-                            best = v;
-                            bestPriority = v.Priority;
-                        }
-                    }
-
-                    if (best != null)
-                    {
-                        SetActiveCamera(best.transform);
-                        return;
                     }
                 }
             }

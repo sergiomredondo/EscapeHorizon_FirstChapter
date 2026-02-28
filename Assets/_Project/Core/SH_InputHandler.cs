@@ -20,6 +20,7 @@ namespace Core
 
         void Awake()
         {
+            DontDestroyOnLoad(this.gameObject);
             _inputActions = new IA_PlayerControls();
         }
 
@@ -33,29 +34,49 @@ namespace Core
             {
                 _onMovePerformedHandler = ctx => OnMove?.Invoke(ctx.ReadValue<Vector2>());
                 _onMoveCanceledHandler = ctx => OnMove?.Invoke(Vector2.zero);
-                _inputActions.Player.Move.performed += new System.Action<UnityEngine.InputSystem.InputAction.CallbackContext>(_onMovePerformedHandler);
-                _inputActions.Player.Move.canceled += new System.Action<UnityEngine.InputSystem.InputAction.CallbackContext>(_onMoveCanceledHandler);
+                _inputActions.Player.Move.performed += _onMovePerformedHandler;
+                _inputActions.Player.Move.canceled += _onMoveCanceledHandler;
+                Debug.Log("SH_InputHandler: Bound Move action from generated Player map.");
             }
             catch { }
 
             // Optional: try to bind Dash and Boost actions if they exist in the asset.
             try
             {
-                var a = _inputActions.Player.FindAction("Dash");
-                if (a != null)
+                // Try to find actions via the asset. Generated wrappers may not expose FindAction on the map.
+                var a = _inputActions.asset != null ? _inputActions.asset.FindAction("Player/Dash") ?? _inputActions.asset.FindAction("Dash") : null;
+                if (a == null)
                 {
-                    _onDashPerformedHandler = ctx => OnDash?.Invoke();
-                    a.performed += new System.Action<UnityEngine.InputSystem.InputAction.CallbackContext>(_onDashPerformedHandler);
+                    Debug.Log("SH_InputHandler: Dash action not found in InputActionAsset.");
+                }
+                else
+                {
+                    _onDashPerformedHandler = ctx =>
+                    {
+                        Debug.Log("SH_InputHandler: Dash performed.");
+                        OnDash?.Invoke();
+                    };
+                    a.performed += _onDashPerformedHandler;
+                    Debug.Log("SH_InputHandler: Bound Dash action from InputActionAsset.");
                 }
             }
             catch { }
             try
             {
-                var b = _inputActions.Player.FindAction("Boost");
-                if (b != null)
+                var b = _inputActions.asset != null ? _inputActions.asset.FindAction("Player/Boost") ?? _inputActions.asset.FindAction("Boost") : null;
+                if (b == null)
                 {
-                    _onBoostPerformedHandler = ctx => OnBoost?.Invoke();
-                    b.performed += new System.Action<UnityEngine.InputSystem.InputAction.CallbackContext>(_onBoostPerformedHandler);
+                    Debug.Log("SH_InputHandler: Boost action not found in InputActionAsset.");
+                }
+                else
+                {
+                    _onBoostPerformedHandler = ctx =>
+                    {
+                        Debug.Log("SH_InputHandler: Boost performed.");
+                        OnBoost?.Invoke();
+                    };
+                    b.performed += _onBoostPerformedHandler;
+                    Debug.Log("SH_InputHandler: Bound Boost action from InputActionAsset.");
                 }
             }
             catch { }
@@ -68,24 +89,24 @@ namespace Core
             try
             {
                 if (_onMovePerformedHandler != null)
-                    _inputActions.Player.Move.performed -= new System.Action<UnityEngine.InputSystem.InputAction.CallbackContext>(_onMovePerformedHandler);
+                    _inputActions.Player.Move.performed -= _onMovePerformedHandler;
                 if (_onMoveCanceledHandler != null)
-                    _inputActions.Player.Move.canceled -= new System.Action<UnityEngine.InputSystem.InputAction.CallbackContext>(_onMoveCanceledHandler);
+                    _inputActions.Player.Move.canceled -= _onMoveCanceledHandler;
             }
             catch { }
 
             try
             {
-                var a = _inputActions.Player.FindAction("Dash");
+                var a = _inputActions.asset != null ? _inputActions.asset.FindAction("Player/Dash") ?? _inputActions.asset.FindAction("Dash") : null;
                 if (a != null && _onDashPerformedHandler != null)
-                    a.performed -= new System.Action<UnityEngine.InputSystem.InputAction.CallbackContext>(_onDashPerformedHandler);
+                    a.performed -= _onDashPerformedHandler;
             }
             catch { }
             try
             {
-                var b = _inputActions.Player.FindAction("Boost");
+                var b = _inputActions.asset != null ? _inputActions.asset.FindAction("Player/Boost") ?? _inputActions.asset.FindAction("Boost") : null;
                 if (b != null && _onBoostPerformedHandler != null)
-                    b.performed -= new System.Action<UnityEngine.InputSystem.InputAction.CallbackContext>(_onBoostPerformedHandler);
+                    b.performed -= _onBoostPerformedHandler;
             }
             catch { }
 

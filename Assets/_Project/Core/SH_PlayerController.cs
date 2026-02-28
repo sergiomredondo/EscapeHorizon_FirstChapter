@@ -10,27 +10,27 @@ namespace PlayerMovement
     public class SH_CharacterController : MonoBehaviour
     {
         [Header("Movement settings")]
-        public float moveSpeed = 5f;
+        [Tooltip("Rotation speed used to smoothly rotate the character toward movement direction.")]
         public float rotationSpeed = 10f;
         [Header("Physics")]
-        [Tooltip("Gravity applied to the character (negative value).")]
-        public float gravity = -9.81f;
+        [SerializeField, HideInInspector]
+        private float gravity = -9.81f;
 
         [Header("Physical Parameters")]
-        [Tooltip("Mass of the mech in kg.")]
-        public float mass = 3000f;
+        [SerializeField, HideInInspector]
+        private float mass = 3000f;
 
-        [Tooltip("Maximum linear acceleration (m/s^2) applied by the motors.")]
-        public float aMax = 9.81f;
+        [SerializeField, HideInInspector]
+        private float aMax = 9.81f;
 
-        [Tooltip("Maximum horizontal speed (m/s).")]
-        public float vMax = 10f;
+        [SerializeField, HideInInspector]
+        private float vMax = 10f;
 
-        [Tooltip("Kinetic friction coefficient (used when no input is applied).")]
-        public float muK = 0.4f;
+        [SerializeField, HideInInspector]
+        private float muK = 0.4f;
 
-        [Tooltip("Static friction coefficient (unused for now, reserved for transitions).")]
-        public float muS = 0.6f;
+        [SerializeField, HideInInspector]
+        private float muS = 0.6f;
 
         [Header("Camera Relative")]
         [Tooltip("When true, movement input is interpreted relative to the camera orientation.")]
@@ -40,8 +40,15 @@ namespace PlayerMovement
         public Transform cameraTransform;
 
         [Header("Smoothing")]
-        [Tooltip("Time in seconds to smooth horizontal velocity towards target. Higher = heavier feeling.")]
-        public float velocitySmoothTime = 0.25f;
+        [SerializeField, HideInInspector]
+        private float velocitySmoothTime = 0.25f;
+
+        [Tooltip("When true uses acceleration integration (physical). When false uses legacy SmoothDamp smoothing.")]
+        public bool useAccelerationIntegration = true;
+
+        [Header("Tuning Asset")]
+        [Tooltip("Optional MovementSettings asset. If assigned, its values override the fields below.")]
+        public Data.MovementSettings movementSettings;
 
         // SmoothDamp velocity reference for horizontal smoothing
         private Vector3 _velocitySmoothRef;
@@ -62,25 +69,41 @@ namespace PlayerMovement
         // Animator parameter hash for the 'Speed' float parameter.
         private static readonly int SpeedHash = Animator.StringToHash("Speed");
 
+        // Property accessors that prefer MovementSettings if provided.
+        private float GravityValue => movementSettings != null ? movementSettings.gravity : gravity;
+        private float MassValue => movementSettings != null ? movementSettings.mass : mass;
+        private float AMaxValue => movementSettings != null ? movementSettings.aMax : aMax;
+        private float VMaxValue => movementSettings != null ? movementSettings.vMax : vMax;
+        private float MuKValue => movementSettings != null ? movementSettings.muK : muK;
+        private float MuSValue => movementSettings != null ? movementSettings.muS : muS;
+        private float VelocitySmoothTimeValue => movementSettings != null ? movementSettings.velocitySmoothTime : velocitySmoothTime;
+        private float DashForceValue => movementSettings != null ? movementSettings.dashForce : dashForce;
+        private float DashDurationValue => movementSettings != null ? movementSettings.dashDuration : dashDuration;
+        private float DashDistanceValue => movementSettings != null ? movementSettings.dashDistance : dashDistance;
+        private float DashCooldownValue => movementSettings != null ? movementSettings.dashCooldown : dashCooldown;
+        private float DashRecoveryValue => movementSettings != null ? movementSettings.dashRecovery : dashRecovery;
+        private float BoostAMultiplierValue => movementSettings != null ? movementSettings.boostAMultiplier : boostAMultiplier;
+        private float BoostDurationValue => movementSettings != null ? movementSettings.boostDuration : boostDuration;
+
         // Current computed horizontal speed (for inspector or UI binding).
         [SerializeField]
         private float currentSpeed;
 
         [Header("Dash / Boost")]
-        [Tooltip("Dash impulse force in Newtons (instantaneous impulse applied).")]
-        public float dashForce = 30000f;
+        [SerializeField, HideInInspector]
+        private float dashForce = 30000f;
 
-        [Tooltip("Dash duration in seconds (impulse window).")]
-        public float dashDuration = 0.15f;
+        [SerializeField, HideInInspector]
+        private float dashDuration = 0.15f;
 
-        [Tooltip("Dash distance in meters (informational).")]
-        public float dashDistance = 6f;
+        [SerializeField, HideInInspector]
+        private float dashDistance = 6f;
 
-        [Tooltip("Dash cooldown in seconds.")]
-        public float dashCooldown = 1.5f;
+        [SerializeField, HideInInspector]
+        private float dashCooldown = 1.5f;
 
-        [Tooltip("Post-dash recovery time in seconds where control is limited.")]
-        public float dashRecovery = 0.3f;
+        [SerializeField, HideInInspector]
+        private float dashRecovery = 0.3f;
 
         // internal dash state
         private bool _isDashing;
@@ -88,17 +111,17 @@ namespace PlayerMovement
         private float _dashCooldownTimer;
         private float _dashRecoveryTimer;
 
-        [Tooltip("Boost increases aMax by this multiplier while active.")]
-        public float boostAMultiplier = 1.5f;
+        [SerializeField, HideInInspector]
+        private float boostAMultiplier = 1.5f;
 
-        [Tooltip("Duration of temporary boost in seconds.")]
-        public float boostDuration = 8f;
+        [SerializeField, HideInInspector]
+        private float boostDuration = 8f;
 
         private bool _isBoosted;
         private float _boostTimer;
 
         [Header("Debug")]
-        [Tooltip("When enabled, logs speed each frame. Turn off for release builds.")]
+        [Tooltip("When enabled, logs position, move direction and speed each frame. Turn off for release builds.")]
         public bool debugSpeed = false;
 
         // Event invoked with the current speed value each update.
@@ -225,8 +248,8 @@ namespace PlayerMovement
             _currentMoveDirection = inputDir;
 
             // compute current max acceleration and friction
-            float currentAMax = _isBoosted ? aMax * boostAMultiplier : aMax;
-            float currentMuK = _isBoosted ? muK * 0.5f : muK;
+            float currentAMax = _isBoosted ? AMaxValue * BoostAMultiplierValue : AMaxValue;
+            float currentMuK = _isBoosted ? MuKValue * 0.5f : MuKValue;
 
             // DASH handling: during dash we set a target dash velocity and ignore friction/input
             if (_isDashing)
@@ -241,28 +264,39 @@ namespace PlayerMovement
             }
             else
             {
-                // Compute acceleration from input. Use smoothing when there is input to simulate heavy inertia.
+                // Compute acceleration from input. Two modes:
+                // - Acceleration integration (physical): use aMax to change velocity.
+                // - Legacy smoothing: SmoothDamp towards desired velocity.
                 Vector3 horizontalVel = new Vector3(_velocity.x, 0f, _velocity.z);
                 if (inputDir == Vector3.zero && horizontalVel.sqrMagnitude > 0.00001f)
                 {
                     // No input: apply kinetic friction opposing velocity
                     Vector3 vhat = horizontalVel.normalized;
-                    Vector3 aFric = -vhat * (currentMuK * Mathf.Abs(gravity));
+                    Vector3 aFric = -vhat * (currentMuK * Mathf.Abs(GravityValue));
                     _velocity += aFric * dt;
                 }
                 else if (inputDir != Vector3.zero)
                 {
-                    // Input present: compute desired velocity and smooth towards it
-                    Vector3 desiredVel = inputDir * vMax;
-                    Vector3 newHor = Vector3.SmoothDamp(horizontalVel, desiredVel, ref _velocitySmoothRef, velocitySmoothTime, Mathf.Infinity, dt);
-                    _velocity.x = newHor.x;
-                    _velocity.z = newHor.z;
+                    if (useAccelerationIntegration)
+                    {
+                        // Physical acceleration integration: a = inputDir * aMax
+                        Vector3 aInput = inputDir * currentAMax;
+                        _velocity += aInput * dt;
+                    }
+                    else
+                    {
+                        // Legacy smoothing: move towards desired velocity using SmoothDamp
+                        Vector3 desiredVel = inputDir * VMaxValue;
+                        Vector3 newHor = Vector3.SmoothDamp(horizontalVel, desiredVel, ref _velocitySmoothRef, VelocitySmoothTimeValue, Mathf.Infinity, dt);
+                        _velocity.x = newHor.x;
+                        _velocity.z = newHor.z;
+                    }
                 }
 
                 // clamp horizontal speed
                 Vector3 hv = new Vector3(_velocity.x, 0f, _velocity.z);
                 float hvMag = hv.magnitude;
-                float vmaxCurrent = vMax; // could be modified by stats
+                float vmaxCurrent = VMaxValue; // could be modified by stats
                 if (hvMag > vmaxCurrent)
                     hv = hv.normalized * vmaxCurrent;
                 _velocity.x = hv.x; _velocity.z = hv.z;
@@ -271,7 +305,7 @@ namespace PlayerMovement
             // gravity
             if (_controller.isGrounded)
                 _verticalVelocity = -1f; // keep snapped
-            _verticalVelocity += gravity * dt;
+            _verticalVelocity += GravityValue * dt;
 
             // final move vector
             Vector3 move = new Vector3(_velocity.x, 0f, _velocity.z) + Vector3.up * _verticalVelocity;
@@ -298,7 +332,13 @@ namespace PlayerMovement
             _animator.SetFloat(SpeedHash, currentSpeed);
 
             if (debugSpeed)
-                Debug.Log($"Position: {transform.position}, MoveDir: {_currentMoveDirection}, Speed: {currentSpeed}");
+            {
+                string settingsName = movementSettings != null ? movementSettings.name : "(none)";
+                int settingsId = movementSettings != null ? movementSettings.GetInstanceID() : 0;
+                int dashActive = _isDashing ? 1 : 0;
+                int boostActive = _isBoosted ? 1 : 0;
+                Debug.Log($"Position: {transform.position}, MoveDir: {_currentMoveDirection}, Speed: {currentSpeed}, Dash:{dashActive}, Boost:{boostActive}, UsingSettings:{settingsName} (id:{settingsId}), useAccel:{useAccelerationIntegration}, aMax:{AMaxValue}, vMax:{VMaxValue}, muK:{MuKValue}");
+            }
 
             OnSpeedLogged?.Invoke(currentSpeed);
         }
@@ -320,11 +360,14 @@ namespace PlayerMovement
 
             dir = dir.normalized;
 
-            float dashSpeed = dashDistance / Mathf.Max(0.0001f, dashDuration);
-            _velocity = dir * dashSpeed;
+            // Apply dash as physical impulse: impulse J = dashForce * dashDuration (N*s)
+            // ?v = J / m
+            float impulse = DashForceValue * DashDurationValue;
+            float deltaV = impulse / Mathf.Max(0.0001f, MassValue);
+            _velocity += dir * deltaV;
             _isDashing = true;
-            _dashTimer = dashDuration;
-            _dashCooldownTimer = dashCooldown;
+            _dashTimer = DashDurationValue;
+            _dashCooldownTimer = DashCooldownValue;
             _dashRecoveryTimer = 0f;
         }
 
@@ -334,13 +377,12 @@ namespace PlayerMovement
         public void TriggerBoost()
         {
             _isBoosted = true;
-            _boostTimer = boostDuration;
+            _boostTimer = BoostDurationValue;
         }
 
         // Validate and clamp inspector values when properties are changed in the editor.
         void OnValidate()
         {
-            moveSpeed = Mathf.Max(0f, moveSpeed);
             rotationSpeed = Mathf.Max(0f, rotationSpeed);
 
             if (gravity > 0f)
