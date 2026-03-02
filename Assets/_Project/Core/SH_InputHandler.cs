@@ -1,126 +1,126 @@
-using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Core
 {
-    // Centralized input handler that exposes high-level input events.
-    // This component should be a singleton placed in the scene (e.g. on the Player or InputManager object).
+    /// <summary>
+    /// Deterministic input provider for the Player State Machine (FSM).
+    /// - Manages continuous data streams (MoveVector, BoostActive).
+    /// - Implements an automatic one-frame buffer for discrete triggers.
+    /// - Maintains total side-effect neutrality (State logic handles all outcomes).
+    /// </summary>
     [DisallowMultipleComponent]
     public class SH_InputHandler : MonoBehaviour
     {
-        public event Action<Vector2> OnMove;
-        public event Action OnDash;
-        public event Action OnBoost;
+        // -------------------------------------------------------
+        // Continuous Locomotion Inputs
+        // -------------------------------------------------------
+
+        public Vector2 MoveVector { get; private set; }
+        public bool BoostActive { get; private set; }
+
+        // -------------------------------------------------------
+        // Buffered One-Frame Triggers (Exposed for FSM)
+        // -------------------------------------------------------
+
+        public bool DashTriggered { get; private set; }
+        public bool AttackTriggered { get; private set; }
+
+        // Internal buffers to capture asynchronous Input System events
+        private bool _dashBuffered;
+        private bool _attackBuffered;
 
         private IA_PlayerControls _inputActions;
-        private Action<UnityEngine.InputSystem.InputAction.CallbackContext> _onMovePerformedHandler;
-        private Action<UnityEngine.InputSystem.InputAction.CallbackContext> _onMoveCanceledHandler;
-        private Action<UnityEngine.InputSystem.InputAction.CallbackContext> _onDashPerformedHandler;
-        private Action<UnityEngine.InputSystem.InputAction.CallbackContext> _onBoostPerformedHandler;
 
-        void Awake()
+        // -------------------------------------------------------
+        // Unity Lifecycle & Binding
+        // -------------------------------------------------------
+
+        private void Awake()
         {
-            DontDestroyOnLoad(this.gameObject);
             _inputActions = new IA_PlayerControls();
         }
 
-        void OnEnable()
+        private void OnEnable()
         {
-            if (_inputActions == null)
-                _inputActions = new IA_PlayerControls();
+            if (_inputActions == null) return;
 
-            // Bind move action if present
-            try
-            {
-                _onMovePerformedHandler = ctx => OnMove?.Invoke(ctx.ReadValue<Vector2>());
-                _onMoveCanceledHandler = ctx => OnMove?.Invoke(Vector2.zero);
-                _inputActions.Player.Move.performed += _onMovePerformedHandler;
-                _inputActions.Player.Move.canceled += _onMoveCanceledHandler;
-                Debug.Log("SH_InputHandler: Bound Move action from generated Player map.");
-            }
-            catch { }
+            _inputActions.Player.Enable();
 
-            // Optional: try to bind Dash and Boost actions if they exist in the asset.
-            try
-            {
-                // Try to find actions via the asset. Generated wrappers may not expose FindAction on the map.
-                var a = _inputActions.asset != null ? _inputActions.asset.FindAction("Player/Dash") ?? _inputActions.asset.FindAction("Dash") : null;
-                if (a == null)
-                {
-                    Debug.Log("SH_InputHandler: Dash action not found in InputActionAsset.");
-                }
-                else
-                {
-                    _onDashPerformedHandler = ctx =>
-                    {
-                        Debug.Log("SH_InputHandler: Dash performed.");
-                        OnDash?.Invoke();
-                    };
-                    a.performed += _onDashPerformedHandler;
-                    Debug.Log("SH_InputHandler: Bound Dash action from InputActionAsset.");
-                }
-            }
-            catch { }
-            try
-            {
-                var b = _inputActions.asset != null ? _inputActions.asset.FindAction("Player/Boost") ?? _inputActions.asset.FindAction("Boost") : null;
-                if (b == null)
-                {
-                    Debug.Log("SH_InputHandler: Boost action not found in InputActionAsset.");
-                }
-                else
-                {
-                    _onBoostPerformedHandler = ctx =>
-                    {
-                        Debug.Log("SH_InputHandler: Boost performed.");
-                        OnBoost?.Invoke();
-                    };
-                    b.performed += _onBoostPerformedHandler;
-                    Debug.Log("SH_InputHandler: Bound Boost action from InputActionAsset.");
-                }
-            }
-            catch { }
+            // Continuous input binding
+            _inputActions.Player.Move.performed += HandleMove;
+            _inputActions.Player.Move.canceled += HandleMove;
 
-            try { _inputActions.Player.Enable(); } catch { }
+            // Discrete trigger binding
+            _inputActions.Player.Dash.performed += HandleDash;
+            _inputActions.Player.Attack.performed += HandleAttack;
+
+            // State-based button binding
+            _inputActions.Player.Boost.performed += HandleBoost;
+            _inputActions.Player.Boost.canceled += HandleBoost;
         }
 
-        void OnDisable()
+        private void OnDisable()
         {
-            try
-            {
-                if (_onMovePerformedHandler != null)
-                    _inputActions.Player.Move.performed -= _onMovePerformedHandler;
-                if (_onMoveCanceledHandler != null)
-                    _inputActions.Player.Move.canceled -= _onMoveCanceledHandler;
-            }
-            catch { }
+            if (_inputActions == null) return;
 
-            try
-            {
-                var a = _inputActions.asset != null ? _inputActions.asset.FindAction("Player/Dash") ?? _inputActions.asset.FindAction("Dash") : null;
-                if (a != null && _onDashPerformedHandler != null)
-                    a.performed -= _onDashPerformedHandler;
-            }
-            catch { }
-            try
-            {
-                var b = _inputActions.asset != null ? _inputActions.asset.FindAction("Player/Boost") ?? _inputActions.asset.FindAction("Boost") : null;
-                if (b != null && _onBoostPerformedHandler != null)
-                    b.performed -= _onBoostPerformedHandler;
-            }
-            catch { }
+            _inputActions.Player.Move.performed -= HandleMove;
+            _inputActions.Player.Move.canceled -= HandleMove;
 
-            try { _inputActions.Player.Disable(); } catch { }
+            _inputActions.Player.Dash.performed -= HandleDash;
+            _inputActions.Player.Attack.performed -= HandleAttack;
+
+            _inputActions.Player.Boost.performed -= HandleBoost;
+            _inputActions.Player.Boost.canceled -= HandleBoost;
+
+            _inputActions.Player.Disable();
         }
 
-        void OnDestroy()
+        /// <summary>
+        /// Synchronizes internal buffers with exposed triggers and performs
+        /// automatic cleanup at the end of the frame logic.
+        /// </summary>
+        private void LateUpdate()
         {
-            try { _inputActions?.Dispose(); } catch { }
-            _inputActions = null;
+            // Expose buffered values for the duration of exactly one frame
+            DashTriggered = _dashBuffered;
+            AttackTriggered = _attackBuffered;
+
+            // Reset internal buffers to ensure input expiration
+            _dashBuffered = false;
+            _attackBuffered = false;
         }
 
-        // These public methods can be wired to UI buttons or other input systems.
-        public void TriggerDash() => OnDash?.Invoke();
-        public void TriggerBoost() => OnBoost?.Invoke();
+        private void OnDestroy()
+        {
+            _inputActions?.Dispose();
+        }
+
+        // -------------------------------------------------------
+        // Input Action Callbacks
+        // -------------------------------------------------------
+
+        private void HandleMove(InputAction.CallbackContext context)
+        {
+            MoveVector = context.ReadValue<Vector2>();
+        }
+
+        private void HandleDash(InputAction.CallbackContext context)
+        {
+            if (context.performed)
+                _dashBuffered = true;
+        }
+
+        private void HandleAttack(InputAction.CallbackContext context)
+        {
+            if (context.performed)
+                _attackBuffered = true;
+        }
+
+        private void HandleBoost(InputAction.CallbackContext context)
+        {
+            // Captures the current button state (True while held)
+            BoostActive = context.ReadValueAsButton();
+        }
     }
 }

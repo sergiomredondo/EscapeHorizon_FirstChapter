@@ -2,77 +2,125 @@ using UnityEngine;
 
 namespace Data
 {
+    /// <summary>
+    /// ScriptableObject that centralizes all Newtonian locomotion parameters.
+    /// Defines the deterministic physical profile of the Mecha unit.
+    /// All values are validated to ensure numerical stability during physics integration.
+    /// </summary>
     [CreateAssetMenu(fileName = "MovementSettings", menuName = "ScapeHorizon/MovementSettings", order = 100)]
     public class MovementSettings : ScriptableObject
     {
-        [Header("Physics")]
-        [Tooltip("Physics - affects friction: F_friction = muK * m * g. Gravity applied to the character (negative value). Units: m/s^2.")]
+        #region Global Physics
+
+        [Header("Global Physics")]
+
+        [Tooltip("Gravity acceleration (m/s^2). Standard Earth gravity is -9.81.")]
         public float gravity = -9.81f;
 
-        [Header("Physical Parameters")]
-        [Tooltip("Physical Parameters - mass used in F = m * a and impulse Δv = J / m. Units: kg.")]
+        [Tooltip("Mecha mass (kg). Critical for force-to-velocity (F=ma) calculations.")]
+        [Min(0.001f)]
         public float mass = 3000f;
 
-        [Tooltip("Maximum linear acceleration applied by the motors. Units: m/s^2.")]
-        public float aMax = 9.81f;
+        [Tooltip("Downward snap velocity applied when grounded to maintain slope adhesion.")]
+        [Min(0f)]
+        public float groundSnapVelocity = 2f;
 
-        [Tooltip("Maximum horizontal speed. Units: m/s.")]
+        #endregion
+
+        #region Locomotion (Acceleration Model)
+
+        [Header("Locomotion")]
+
+        [Tooltip("Maximum horizontal terminal velocity (m/s) allowed by the locomotion system.")]
+        [Min(0f)]
         public float vMax = 10f;
 
-        [Tooltip("Kinetic friction coefficient (dimensionless). Used in F_friction = -muK * m * g. Typical metal-ground ~0.4. Unit: dimensionless.")]
+        [Tooltip("Maximum engine-driven acceleration (m/s^2). Independent of mass due to electronic stabilization.")]
+        [Min(0f)]
+        public float aMax = 9.81f;
+
+        [Tooltip("Kinetic friction coefficient (mu_k). Active during grounded states to dissipate energy.")]
+        [Range(0.0f, 2.0f)]
         public float muK = 0.4f;
 
-        [Tooltip("Static friction coefficient (reserved for future use). Unit: dimensionless.")]
-        public float muS = 0.6f;
-
-        [Header("Smoothing")]
-        [Tooltip("Smoothing - time in seconds used by legacy SmoothDamp. Affects how quickly velocity approaches target. Units: s.")]
-        public float velocitySmoothTime = 0.25f;
-
-        [Header("Stability")]
-        [Tooltip("Stability - thresholds used to avoid jitter. stopThreshold: below this horizontal speed (m/s) velocity is snapped to zero. Rotation is only applied when speed exceeds rotationThreshold. Units: m/s (speed) and m (distance).")]
+        [Tooltip("Speed threshold (m/s) below which all kinetic energy is neutralized to prevent jitter.")]
+        [Min(0f)]
         public float stopThreshold = 0.05f;
 
-        [Tooltip("Minimum horizontal magnitude required to trigger body rotation. Units: m.")]
-        public float rotationThreshold = 0.1f;
+        #endregion
 
-        [Header("Misc")]
-        [Tooltip("Rotation speed used to smoothly rotate the character toward movement direction. Units: degrees per second.")]
+        #region Rotation & Orientation
+
+        [Header("Rotation & Orientation")]
+
+        [Tooltip("Angular speed (deg/s) for procedural body alignment with movement vector.")]
+        [Min(0f)]
         public float rotationSpeed = 10f;
 
-        [Tooltip("When true uses acceleration integration (physical). When false uses legacy SmoothDamp smoothing.")]
-        public bool useAccelerationIntegration = true;
+        [Tooltip("Minimum input magnitude required to initiate orientation changes.")]
+        [Range(0f, 1f)]
+        public float rotationThreshold = 0.1f;
 
-        void OnValidate()
-        {
-            velocitySmoothTime = Mathf.Max(0f, velocitySmoothTime);
-            mass = Mathf.Max(0.0001f, mass);
-            vMax = Mathf.Max(0f, vMax);
-            rotationSpeed = Mathf.Max(0f, rotationSpeed);
-            dashDuration = Mathf.Max(0.0001f, dashDuration);
-            dashForce = Mathf.Max(0f, dashForce);
-        }
+        #endregion
 
-        [Header("Dash / Boost")]
-        [Tooltip("Dash / Boost - dash impulse force in Newtons. Used to compute Δv = (dashForce * dashDuration) / mass. Units: N.")]
+        #region Dash System (Impulse Model)
+
+        [Header("Dash System")]
+
+        [Tooltip("Instantaneous force magnitude (N) injected into the system during a dash.")]
+        [Min(0f)]
         public float dashForce = 30000f;
 
-        [Tooltip("Dash duration (impulse window). Units: s.")]
+        [Tooltip("Temporal window (s) of the kinetic impulse application.")]
+        [Min(0.01f)]
         public float dashDuration = 0.15f;
 
-        [Tooltip("Dash distance (informational). Units: m.")]
-        public float dashDistance = 6f;
-
-        [Tooltip("Dash cooldown time. Units: s.")]
+        [Tooltip("Mandatory mechanical cooldown (s) before the system can re-inject a dash impulse.")]
+        [Min(0f)]
         public float dashCooldown = 1.5f;
 
-        [Tooltip("Post-dash recovery time where control is limited. Units: s.")]
-        public float dashRecovery = 0.3f;
+        #endregion
 
-        [Tooltip("Boost increases aMax by this multiplier while active. Unit: multiplier (dimensionless).")]
-        public float boostAMultiplier = 1.5f;
+        #region Boost System
 
-        [Tooltip("Duration of temporary boost. Units: s.")]
-        public float boostDuration = 8f;
+        [Header("Boost System")]
+
+        [Tooltip("Locomotion acceleration multiplier applied while the overcharge system is active.")]
+        [Min(1f)]
+        public float boostMultiplier = 1.5f;
+
+        #endregion
+
+        #region Validation Logic
+
+        /// <summary>
+        /// Validates parameters to maintain physical consistency and prevent runtime exceptions.
+        /// Executed automatically by the Unity Editor on value changes.
+        /// </summary>
+        private void OnValidate()
+        {
+            // Ensure mass never reaches zero to prevent infinite acceleration (a = F/0)
+            mass = Mathf.Max(0.001f, mass);
+
+            vMax = Mathf.Max(0f, vMax);
+            aMax = Mathf.Max(0f, aMax);
+
+            // Dash validation for stable impulse calculations
+            dashForce = Mathf.Max(0f, dashForce);
+            dashDuration = Mathf.Max(0.01f, dashDuration);
+            dashCooldown = Mathf.Max(0f, dashCooldown);
+
+            rotationSpeed = Mathf.Max(0f, rotationSpeed);
+            stopThreshold = Mathf.Max(0f, stopThreshold);
+
+            boostMultiplier = Mathf.Max(1f, boostMultiplier);
+
+            // Clamp friction within realistic, numerically stable bounds
+            muK = Mathf.Clamp(muK, 0f, 2f);
+
+            groundSnapVelocity = Mathf.Max(0f, groundSnapVelocity);
+        }
+
+        #endregion
     }
 }

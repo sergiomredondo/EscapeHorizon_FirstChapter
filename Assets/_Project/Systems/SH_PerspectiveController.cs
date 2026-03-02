@@ -1,103 +1,88 @@
 using System;
 using UnityEngine;
 
-namespace Systems
+namespace Core
 {
-    // Exposes the active camera transform for camera-relative systems.
-    // The scene should have one SH_PerspectiveController that manages active camera selection.
+    /// <summary>
+    /// Provides a deterministic spatial reference for camera-relative movement calculations.
+    /// Enforces explicit camera assignment to eliminate implicit scene dependencies.
+    /// Acts as the Single Source of Truth (SSOT) for world-to-perspective orientation.
+    /// </summary>
     [DisallowMultipleComponent]
     public class SH_PerspectiveController : MonoBehaviour
     {
-        // Publicly available active camera transform
+        [Header("Perspective Configuration")]
+        [Tooltip("Explicit camera transform reference. Mandatory for deterministic orientation logic.")]
+        [SerializeField] private Transform cameraTransform;
+
+        /// <summary>
+        /// Active spatial reference used by locomotion states to calculate relative vectors.
+        /// Guaranteed to be valid if the component is enabled.
+        /// </summary>
         public Transform ActiveCameraTransform { get; private set; }
 
-        // Event when active camera changes
+        /// <summary>
+        /// Event dispatched when the active perspective reference is updated at runtime.
+        /// </summary>
         public event Action<Transform> OnActiveCameraChanged;
 
-        [Tooltip("Optional explicit camera GameObject to use. If null, the controller will try to find Cam_Isometric or use Camera.main.")]
-        public Transform explicitCamera;
+        private bool _isInitialized;
 
-        void Start()
+        #region Unity Lifecycle
+
+        private void Awake()
         {
-            if (explicitCamera != null)
+            Initialize();
+        }
+
+        #endregion
+
+        #region Initialization
+
+        /// <summary>
+        /// Validates requirements and establishes the initial perspective reference.
+        /// Disables the component to prevent undefined behavior if dependencies are missing.
+        /// </summary>
+        private void Initialize()
+        {
+            if (cameraTransform == null)
             {
-                SetActiveCamera(explicitCamera);
+                Debug.LogError($"[Perspective] Critical Failure: Camera reference missing on {name}. Execution halted.");
+                enabled = false;
                 return;
             }
 
-            // Try to find GameObject named Cam_Isometric
-            var go = GameObject.Find("Cam_Isometric");
-            if (go != null)
+            ActiveCameraTransform = cameraTransform;
+            _isInitialized = true;
+
+            OnActiveCameraChanged?.Invoke(ActiveCameraTransform);
+        }
+
+        #endregion
+
+        #region Public API
+
+        /// <summary>
+        /// Updates the active camera reference during runtime.
+        /// Rejection criteria: null targets or redundant assignments.
+        /// </summary>
+        /// <param name="target">The new Transform to be used as a spatial reference.</param>
+        public void SetActiveCamera(Transform target)
+        {
+            if (!_isInitialized) return;
+
+            if (target == null)
             {
-                SetActiveCamera(go.transform);
+                Debug.LogError($"[Perspective] Runtime Error: Attempted to assign null camera to {name}.");
                 return;
             }
 
-            // Try Cinemachine virtual cameras by priority (if present).
-            // Use reflection so this code compiles even when Cinemachine package is absent.
-            try
-            {
-                var vcamType = Type.GetType("Cinemachine.CinemachineVirtualCamera, Cinemachine");
-                if (vcamType != null)
-                {
-                    var objs = Resources.FindObjectsOfTypeAll(vcamType);
-                    if (objs != null && objs.Length > 0)
-                    {
-                        object best = null;
-                        int bestPriority = int.MinValue;
-                        foreach (var o in objs)
-                        {
-                            var comp = o as Component;
-                            if (comp == null) continue;
-                            if (comp.gameObject.name == "Cam_Isometric")
-                            {
-                                SetActiveCamera(comp.transform);
-                                return;
-                            }
-                            // try to read Priority via reflection
-                            try
-                            {
-                                var pr = vcamType.GetProperty("Priority");
-                                if (pr != null)
-                                {
-                                    int p = (int)pr.GetValue(o);
-                                    if (p > bestPriority)
-                                    {
-                                        bestPriority = p;
-                                        best = comp;
-                                    }
-                                }
-                                else if (best == null)
-                                {
-                                    best = comp;
-                                }
-                            }
-                            catch { if (best == null) best = comp; }
-                        }
-                        if (best is Component bc)
-                        {
-                            // Prefer the actual runtime Camera (Camera.main) so camera-relative input
-                            // uses the rendered camera orientation and not the virtual camera GameObject.
-                            if (Camera.main != null)
-                                SetActiveCamera(Camera.main.transform);
-                            else
-                                SetActiveCamera(bc.transform);
-                            return;
-                        }
-                    }
-                }
-            }
-            catch { }
+            if (target == ActiveCameraTransform) return;
 
-            if (Camera.main != null)
-                SetActiveCamera(Camera.main.transform);
+            ActiveCameraTransform = target;
+            OnActiveCameraChanged?.Invoke(target);
         }
 
-        public void SetActiveCamera(Transform t)
-        {
-            if (t == ActiveCameraTransform) return;
-            ActiveCameraTransform = t;
-            OnActiveCameraChanged?.Invoke(t);
-        }
+        #endregion
     }
 }

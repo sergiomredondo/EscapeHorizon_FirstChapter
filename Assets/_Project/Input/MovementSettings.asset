@@ -13,20 +13,15 @@ MonoBehaviour:
   m_Name: MovementSettings
   m_EditorClassIdentifier: Assembly-CSharp::Data.MovementSettings
   gravity: -9.81
-  mass: 3000
-  aMax: 9.18
+  mass: 4000
+  groundSnapVelocity: 1
   vMax: 10
-  muK: 0.4
-  muS: 0.6
-  velocitySmoothTime: 0.25
+  aMax: 9.18
+  muK: 0.6
   stopThreshold: 0.05
+  rotationSpeed: 5.92
   rotationThreshold: 0.05
-  rotationSpeed: 4
-  useAccelerationIntegration: 1
-  dashForce: 50000
-  dashDuration: 0.15
-  dashDistance: 6
+  dashForce: 70000
+  dashDuration: 1
   dashCooldown: 1.5
-  dashRecovery: 0.3
-  boostAMultiplier: 1.5
-  boostDuration: 8
+  boostMultiplier: 1.5
