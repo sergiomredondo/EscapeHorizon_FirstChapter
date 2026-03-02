@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// Simple character controller for the player character.
+// This script provides a character controller using Unity's CharacterController component.
 namespace PlayerMovement
 {
     // Ensure the GameObject has a CharacterController component.
@@ -10,13 +10,15 @@ namespace PlayerMovement
     public class SH_CharacterController : MonoBehaviour
     {
         [Header("Movement settings")]
-        [Tooltip("Rotation speed used to smoothly rotate the character toward movement direction.")]
-        public float rotationSpeed = 10f;
+        [SerializeField, HideInInspector]
+        private float rotationSpeed = 10f;
         [Header("Physics")]
+        // Physics: gravity affects acceleration and friction computations (F_friction = muK * m * g).
         [SerializeField, HideInInspector]
         private float gravity = -9.81f;
 
         [Header("Physical Parameters")]
+        // Physical Parameters: mass used in F = m * a and impulse calculations Δv = J / m.
         [SerializeField, HideInInspector]
         private float mass = 3000f;
 
@@ -40,11 +42,27 @@ namespace PlayerMovement
         public Transform cameraTransform;
 
         [Header("Smoothing")]
+        // Smoothing: affects how quickly velocity converges to target when using legacy smoothing (SmoothDamp).
         [SerializeField, HideInInspector]
         private float velocitySmoothTime = 0.25f;
 
-        [Tooltip("When true uses acceleration integration (physical). When false uses legacy SmoothDamp smoothing.")]
-        public bool useAccelerationIntegration = true;
+        [SerializeField, HideInInspector]
+        private bool useAccelerationIntegration = true;
+
+        // Accessors prefer MovementSettings when present
+        private float RotationSpeedValue => movementSettings != null ? movementSettings.rotationSpeed : rotationSpeed;
+        private bool UseAccelerationIntegrationValue => movementSettings != null ? movementSettings.useAccelerationIntegration : useAccelerationIntegration;
+
+        [Header("Stability")]
+        [SerializeField, HideInInspector]
+        private float stopThreshold = 0.05f;
+
+        [SerializeField, HideInInspector]
+        private float rotationThreshold = 0.1f;
+
+        // Stability values prefer MovementSettings if present.
+        private float StopThresholdValue => movementSettings != null ? movementSettings.stopThreshold : stopThreshold;
+        private float RotationThresholdValue => movementSettings != null ? movementSettings.rotationThreshold : rotationThreshold;
 
         [Header("Tuning Asset")]
         [Tooltip("Optional MovementSettings asset. If assigned, its values override the fields below.")]
@@ -90,6 +108,7 @@ namespace PlayerMovement
         private float currentSpeed;
 
         [Header("Dash / Boost")]
+        // Dash/Boost: dash impulse J = dashForce * dashDuration, Δv = J / mass. boost modifies aMax and muK.
         [SerializeField, HideInInspector]
         private float dashForce = 30000f;
 
@@ -127,7 +146,9 @@ namespace PlayerMovement
         // Event invoked with the current speed value each update.
         public Action<float> OnSpeedLogged;
 
-        // Called when the script instance is loaded. Cache components and prepare input actions.
+        // -----------------
+        // Unity lifecycle
+        // -----------------
         void Awake()
         {
             _controller = GetComponent<CharacterController>();
@@ -138,14 +159,15 @@ namespace PlayerMovement
             if (_animator == null)
                 Debug.LogWarning("SH_CharacterController: Animator not found. Animations will be disabled.");
 
-            // inputHandler should be assigned in the Inspector or discovered at runtime
+            if (movementSettings == null)
+                Debug.LogWarning("SH_CharacterController: MovementSettings asset not assigned. Using component fallbacks. Assign a MovementSettings asset to centralize tuning.");
         }
 
-        // Enable subscriptions to the centralized input handler.
+        // Subscribe to input events on enable. We look for a SH_InputHandler in the scene to subscribe to high-level input events.
         void OnEnable()
         {
             if (inputHandler == null)
-                inputHandler = FindObjectOfType<Core.SH_InputHandler>();
+                inputHandler = UnityEngine.Object.FindFirstObjectByType<Core.SH_InputHandler>();
             if (inputHandler != null)
             {
                 inputHandler.OnMove += HandleMove;
@@ -154,51 +176,22 @@ namespace PlayerMovement
             }
         }
 
-        // Unsubscribe from the input handler.
-        void OnDisable()
-        {
-            if (inputHandler != null)
-            {
-                inputHandler.OnMove -= HandleMove;
-                inputHandler.OnDash -= HandleDashInput;
-                inputHandler.OnBoost -= HandleBoostInput;
-            }
-        }
-
-        // Receive move input from SH_InputHandler.
-        private void HandleMove(Vector2 v)
-        {
-            _moveInput = v;
-        }
-
-        // Called when dash input received from SH_InputHandler.
-        private void HandleDashInput()
-        {
-            TriggerDash(Vector3.zero);
-        }
-
-        // Called when boost input received from SH_InputHandler.
-        private void HandleBoostInput()
-        {
-            TriggerBoost();
-        }
-
-        // Try to find supporting managers (Input / Perspective) at start if not assigned.
+        // Try to find a camera transform for camera-relative movement if not explicitly assigned.
         void Start()
         {
             if (inputHandler == null)
-                inputHandler = FindObjectOfType<Core.SH_InputHandler>();
+                inputHandler = UnityEngine.Object.FindFirstObjectByType<Core.SH_InputHandler>();
 
             // If no explicit cameraTransform, try to get it from the PerspectiveController
             if (cameraTransform == null)
             {
-                var p = FindObjectOfType<Systems.SH_PerspectiveController>();
+                var p = UnityEngine.Object.FindFirstObjectByType<Systems.SH_PerspectiveController>();
                 if (p != null && p.ActiveCameraTransform != null)
                     cameraTransform = p.ActiveCameraTransform;
             }
         }
 
-        // Called each frame. Apply movement and update animations.
+        // Update is used for input and animation updates, while physics and movement are handled in FixedUpdate.
         void Update()
         {
             // Keep input and animation updates on Update
@@ -213,12 +206,110 @@ namespace PlayerMovement
             }
         }
 
-        // FixedUpdate used for physics integration (stable timestep)
+        // FixedUpdate is used for physics updates to ensure consistent timing. We call a custom PhysicsStep method to handle movement and physics integration.
         void FixedUpdate()
         {
             PhysicsStep(Time.fixedDeltaTime);
         }
 
+        // Unsubscribe from input events on disable to avoid memory leaks or unintended behavior.
+        void OnDisable()
+        {
+            if (inputHandler != null)
+            {
+                inputHandler.OnMove -= HandleMove;
+                inputHandler.OnDash -= HandleDashInput;
+                inputHandler.OnBoost -= HandleBoostInput;
+            }
+        }
+
+        // Ensure we clean up subscriptions on destroy as well, in case the object is destroyed without being disabled first.
+        void OnDestroy()
+        {
+            // Ensure we clean up subscriptions
+            if (inputHandler != null)
+            {
+                try
+                {
+                    inputHandler.OnMove -= HandleMove;
+                    inputHandler.OnDash -= HandleDashInput;
+                    inputHandler.OnBoost -= HandleBoostInput;
+                }
+                catch { }
+            }
+        }
+
+        // Validate tuning parameters to ensure they are within reasonable ranges. This is called when values are changed in the inspector.
+        void OnValidate()
+        {
+            rotationSpeed = Mathf.Max(0f, rotationSpeed);
+
+            if (gravity > 0f)
+                gravity = -gravity;
+        }
+
+        // -----------------
+        // Input callbacks
+        // -----------------
+        // Handle movement input by storing the current input vector. The actual movement is applied in the PhysicsStep method.
+        private void HandleMove(Vector2 v)
+        {
+            _moveInput = v;
+        }
+
+        // Handle dash input by triggering a dash in the current movement direction. The actual dash impulse is applied in the TriggerDash method.
+        private void HandleDashInput()
+        {
+            TriggerDash(Vector3.zero);
+        }
+
+        // Handle boost input by triggering a temporary boost state that modifies acceleration and friction. The actual boost effect is applied in the PhysicsStep method.
+        private void HandleBoostInput()
+        {
+            TriggerBoost();
+        }
+
+        // -----------------
+        // Public API
+        // -----------------
+        /// <summary>
+        /// Trigger a dash in the given direction. Applies impulse according to tuning.
+        /// </summary>
+        public void TriggerDash(Vector3 direction)
+        {
+            if (_dashCooldownTimer > 0f || _isDashing)
+                return; // still cooling down
+
+            Vector3 dir = direction;
+            if (dir.sqrMagnitude < 0.0001f)
+                dir = _currentMoveDirection;
+            if (dir.sqrMagnitude < 0.0001f)
+                return; // no direction available
+
+            dir = dir.normalized;
+
+            // Apply dash as physical impulse: impulse J = dashForce * dashDuration (N*s)
+            float impulse = DashForceValue * DashDurationValue;
+            float deltaV = impulse / Mathf.Max(0.0001f, MassValue);
+            _velocity += dir * deltaV;
+            _isDashing = true;
+            _dashTimer = DashDurationValue;
+            _dashCooldownTimer = DashCooldownValue;
+            _dashRecoveryTimer = 0f;
+        }
+
+        /// <summary>
+        /// Trigger a temporary boost that increases acceleration and reduces friction.
+        /// </summary>
+        public void TriggerBoost()
+        {
+            _isBoosted = true;
+            _boostTimer = BoostDurationValue;
+        }
+
+        // -----------------
+        // Private helpers
+        // -----------------
         // Apply horizontal movement, gravity and handle rotation toward movement direction.
         // Physics integration step. Uses simple Newtonian integration with friction and dash/boost states.
         private void PhysicsStep(float dt)
@@ -299,7 +390,15 @@ namespace PlayerMovement
                 float vmaxCurrent = VMaxValue; // could be modified by stats
                 if (hvMag > vmaxCurrent)
                     hv = hv.normalized * vmaxCurrent;
-                _velocity.x = hv.x; _velocity.z = hv.z;
+                // Snap to zero below threshold to avoid numerical jitter
+                if (hv.magnitude < StopThresholdValue)
+                {
+                    _velocity.x = 0f; _velocity.z = 0f;
+                }
+                else
+                {
+                    _velocity.x = hv.x; _velocity.z = hv.z;
+                }
             }
 
             // gravity
@@ -312,12 +411,12 @@ namespace PlayerMovement
 
             _controller.Move(move * dt);
 
-            // rotation toward movement direction if moving
+            // rotation toward movement direction if moving (only when above rotation threshold)
             Vector3 horizontalDir = new Vector3(_velocity.x, 0f, _velocity.z);
-            if (horizontalDir.sqrMagnitude > 0.0001f)
+            if (horizontalDir.sqrMagnitude > RotationThresholdValue * RotationThresholdValue)
             {
                 Quaternion targetRotation = Quaternion.LookRotation(horizontalDir.normalized);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * dt);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, RotationSpeedValue * dt);
             }
         }
 
@@ -337,56 +436,25 @@ namespace PlayerMovement
                 int settingsId = movementSettings != null ? movementSettings.GetInstanceID() : 0;
                 int dashActive = _isDashing ? 1 : 0;
                 int boostActive = _isBoosted ? 1 : 0;
-                Debug.Log($"Position: {transform.position}, MoveDir: {_currentMoveDirection}, Speed: {currentSpeed}, Dash:{dashActive}, Boost:{boostActive}, UsingSettings:{settingsName} (id:{settingsId}), useAccel:{useAccelerationIntegration}, aMax:{AMaxValue}, vMax:{VMaxValue}, muK:{MuKValue}");
+                if (movementSettings != null)
+                {
+                    Debug.Log($"Position: {transform.position}, MoveDir: {_currentMoveDirection}, Speed: {currentSpeed}, Dash:{dashActive}, Boost:{boostActive}, UsingSettings:{settingsName} (id:{settingsId}), useAccel:{movementSettings.useAccelerationIntegration}\n" +
+                              $"gravity:{movementSettings.gravity} m/s^2, mass:{movementSettings.mass} kg, aMax:{movementSettings.aMax} m/s^2, vMax:{movementSettings.vMax} m/s, muK:{movementSettings.muK}, muS:{movementSettings.muS}\n" +
+                              $"velocitySmoothTime:{movementSettings.velocitySmoothTime} s, stopThreshold:{movementSettings.stopThreshold} m/s, rotationThreshold:{movementSettings.rotationThreshold} m\n" +
+                              $"dashForce:{movementSettings.dashForce} N, dashDuration:{movementSettings.dashDuration} s, dashDistance:{movementSettings.dashDistance} m, dashCooldown:{movementSettings.dashCooldown} s, dashRecovery:{movementSettings.dashRecovery} s\n" +
+                              $"boostAMultiplier:{movementSettings.boostAMultiplier}, boostDuration:{movementSettings.boostDuration} s, rotationSpeed:{movementSettings.rotationSpeed} deg/s");
+                }
+                else
+                {
+                    Debug.Log($"Position: {transform.position}, MoveDir: {_currentMoveDirection}, Speed: {currentSpeed}, Dash:{dashActive}, Boost:{boostActive}, UsingSettings:(none) -- fallbacks used\n" +
+                              $"gravity:{gravity} m/s^2, mass:{mass} kg, aMax:{aMax} m/s^2, vMax:{vMax} m/s, muK:{muK}, muS:{muS}\n" +
+                              $"velocitySmoothTime:{velocitySmoothTime} s, stopThreshold:{stopThreshold} m/s, rotationThreshold:{rotationThreshold} m\n" +
+                              $"dashForce:{dashForce} N, dashDuration:{dashDuration} s, dashDistance:{dashDistance} m, dashCooldown:{dashCooldown} s, dashRecovery:{dashRecovery} s\n" +
+                              $"boostAMultiplier:{boostAMultiplier}, boostDuration:{boostDuration} s, rotationSpeed:{rotationSpeed} deg/s, useAccelerationIntegration:{useAccelerationIntegration}");
+                }
             }
 
             OnSpeedLogged?.Invoke(currentSpeed);
-        }
-
-        /// <summary>
-        /// Trigger a dash in the given direction. Sets velocity to dash speed and starts timers.
-        /// </summary>
-        /// <param name="direction">World-space direction of the dash. If zero, uses current move direction.</param>
-        public void TriggerDash(Vector3 direction)
-        {
-            if (_dashCooldownTimer > 0f || _isDashing)
-                return; // still cooling down
-
-            Vector3 dir = direction;
-            if (dir.sqrMagnitude < 0.0001f)
-                dir = _currentMoveDirection;
-            if (dir.sqrMagnitude < 0.0001f)
-                return; // no direction available
-
-            dir = dir.normalized;
-
-            // Apply dash as physical impulse: impulse J = dashForce * dashDuration (N*s)
-            // ?v = J / m
-            float impulse = DashForceValue * DashDurationValue;
-            float deltaV = impulse / Mathf.Max(0.0001f, MassValue);
-            _velocity += dir * deltaV;
-            _isDashing = true;
-            _dashTimer = DashDurationValue;
-            _dashCooldownTimer = DashCooldownValue;
-            _dashRecoveryTimer = 0f;
-        }
-
-        /// <summary>
-        /// Trigger a temporary boost that increases acceleration and reduces friction.
-        /// </summary>
-        public void TriggerBoost()
-        {
-            _isBoosted = true;
-            _boostTimer = BoostDurationValue;
-        }
-
-        // Validate and clamp inspector values when properties are changed in the editor.
-        void OnValidate()
-        {
-            rotationSpeed = Mathf.Max(0f, rotationSpeed);
-
-            if (gravity > 0f)
-                gravity = -gravity;
         }
     }
 }

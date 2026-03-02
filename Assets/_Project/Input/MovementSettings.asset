@@ -15,14 +15,18 @@ MonoBehaviour:
   gravity: -9.81
   mass: 3000
   aMax: 9.18
-  vMax: 8.8
-  muK: 2.11
-  muS: 6.39
+  vMax: 10
+  muK: 0.4
+  muS: 0.6
   velocitySmoothTime: 0.25
-  dashForce: 30000
-  dashDuration: 1.1
-  dashDistance: 50
+  stopThreshold: 0.05
+  rotationThreshold: 0.05
+  rotationSpeed: 4
+  useAccelerationIntegration: 1
+  dashForce: 50000
+  dashDuration: 0.15
+  dashDistance: 6
   dashCooldown: 1.5
   dashRecovery: 0.3
   boostAMultiplier: 1.5
-  boostDuration: 3
+  boostDuration: 8

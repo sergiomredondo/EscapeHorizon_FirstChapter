@@ -76,7 +76,12 @@ namespace Systems
                         }
                         if (best is Component bc)
                         {
-                            SetActiveCamera(bc.transform);
+                            // Prefer the actual runtime Camera (Camera.main) so camera-relative input
+                            // uses the rendered camera orientation and not the virtual camera GameObject.
+                            if (Camera.main != null)
+                                SetActiveCamera(Camera.main.transform);
+                            else
+                                SetActiveCamera(bc.transform);
                             return;
                         }
                     }
