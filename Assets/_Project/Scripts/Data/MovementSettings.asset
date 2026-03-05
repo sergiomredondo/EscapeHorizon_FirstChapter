@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4a22944baf96b5419733a169257b132, type: 3}
+  m_Name: MovementSettings
+  m_EditorClassIdentifier: Assembly-CSharp::Data.SH_MovementSettings
+  mass: 4000
+  gravity: -9.81
+  maxSpeed: 15
+  walkSpeed: 8
+  boostSpeed: 13
+  accelerationTime: 0.3
+  decelerationTime: 0.3
+  muK: 0.832
+  stopThreshold: 0.3
+  rotationSpeed: 5
