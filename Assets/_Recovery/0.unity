@@ -235,10 +235,10 @@ PrefabInstance:
       addedObject: {fileID: 243769123}
     - targetCorrespondingSourceObject: {fileID: 7962199819078159310, guid: f5b41ba4c79702547a89de7544b80656, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 243769133}
+      addedObject: {fileID: 243769141}
     - targetCorrespondingSourceObject: {fileID: 7962199819078159310, guid: f5b41ba4c79702547a89de7544b80656, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 243769139}
+      addedObject: {fileID: 243769133}
     - targetCorrespondingSourceObject: {fileID: 7962199819078159310, guid: f5b41ba4c79702547a89de7544b80656, type: 3}
       insertIndex: -1
       addedObject: {fileID: 243769130}
@@ -247,7 +247,7 @@ PrefabInstance:
       addedObject: {fileID: 243769129}
     - targetCorrespondingSourceObject: {fileID: 7962199819078159310, guid: f5b41ba4c79702547a89de7544b80656, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 243769141}
+      addedObject: {fileID: 243769139}
     - targetCorrespondingSourceObject: {fileID: 7962199819078159310, guid: f5b41ba4c79702547a89de7544b80656, type: 3}
       insertIndex: -1
       addedObject: {fileID: 243769140}
@@ -444,7 +444,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Core.SH_PerspectiveController
   _cameraTransform: {fileID: 588078960}
-  _lockTarget: {fileID: 0}
+  _lockTarget: {fileID: 243769126}
   _settings: {fileID: 11400000, guid: 6801dc563bc34f64a91aa9b8abbd0141, type: 2}
 --- !u!114 &243769133
 MonoBehaviour:
@@ -458,7 +458,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5bbccf04e1f55fa4f99c68ef89f092df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Core.Physics.SH_PhysicsMotor
-  _settings: {fileID: 11400000, guid: 6801dc563bc34f64a91aa9b8abbd0141, type: 2}
+  settings: {fileID: 11400000, guid: 6801dc563bc34f64a91aa9b8abbd0141, type: 2}
 --- !u!114 &243769134
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -472,7 +472,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DebugTools.SH_PhysicsDebugger
   physicsMotor: {fileID: 243769133}
-  stateMachine: {fileID: 243769140}
+  stateMachine: {fileID: 0}
   settings: {fileID: 11400000, guid: 6801dc563bc34f64a91aa9b8abbd0141, type: 2}
   showOnScreenStats: 1
   showVectors: 1

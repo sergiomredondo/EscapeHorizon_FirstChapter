@@ -3,6 +3,10 @@ using Core.Physics;      // Namespace definido en SH_PhysicsMotor
 using Core.StateMachine; // Namespace definido en SH_PlayerStateMachine
 using Data;              // Namespace definido en SH_MovementSettings
 
+/// <summary>
+/// Debug component that visualizes real-time physics telemetry for the Mecha unit.
+/// Displays current velocity, kinetic energy, and applied forces on-screen, and draws vector gizmos in the scene view.
+/// </summary>
 namespace DebugTools
 {
     [DisallowMultipleComponent]
@@ -67,9 +71,11 @@ namespace DebugTools
             GUILayout.Label("NEWTONIAN TELEMETRY", _headerStyle);
             GUILayout.Space(8);
 
+            DrawStat("State", stateMachine.GetCurrentStateName(), Color.white);
+            DrawStat("Gounded", GetComponent<CharacterController>().isGrounded.ToString(), true ? Color.green: Color.yellow);
             DrawStat("Current Velocity", currentVel.ToString("F2"), Color.white);
             DrawStat("Horizontal Speed", $"{horizontalSpeed:F2} m/s", isOvershooting ? Color.red : Color.green);
-
+            
             GUILayout.Space(8);
             GUILayout.Label("--- Dynamics & Forces ---", _style);
 

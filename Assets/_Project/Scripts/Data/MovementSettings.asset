@@ -12,13 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4a22944baf96b5419733a169257b132, type: 3}
   m_Name: MovementSettings
   m_EditorClassIdentifier: Assembly-CSharp::Data.SH_MovementSettings
-  mass: 4000
+  mass: 3000
   gravity: -9.81
-  maxSpeed: 15
-  walkSpeed: 8
-  boostSpeed: 13
-  accelerationTime: 0.3
+  maxSpeed: 20
+  walkSpeed: 6
+  runSpeed: 8
+  boostSpeed: 10
+  accelerationTime: 0.2
   decelerationTime: 0.3
-  muK: 0.832
-  stopThreshold: 0.3
-  rotationSpeed: 5
+  muK: 0.5
+  muS: 0.8
+  stopThreshold: 0.25
+  rotationSpeed: 6
+  dashAction: {fileID: 11400000, guid: 60d9b0273ed099647901c77850e67c0f, type: 2}

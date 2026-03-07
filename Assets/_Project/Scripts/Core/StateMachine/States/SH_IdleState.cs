@@ -1,5 +1,4 @@
 using UnityEngine;
-using Core.StateMachine;
 
 namespace Core.StateMachine.States
 {
@@ -26,7 +25,11 @@ namespace Core.StateMachine.States
         /// Initializes the Idle state with the global player context.
         /// </summary>
         public SH_IdleState(SH_PlayerContext context, SH_PlayerStateMachine stateMachine)
-            : base(context, stateMachine) { }
+            : base(context, stateMachine) 
+        {
+            if (context == null) { Debug.LogError($"[SH_IdleState] Construction failed: SH_PlayerContext reference is null. Ensure that a valid context is passed when instantiating states."); return; }
+            if (stateMachine == null) { Debug.LogError($"[SH_IdleState] Construction failed: SH_PlayerStateMachine reference is null. Ensure that a valid state machine is passed when instantiating states."); return; }
+        }
 
         #endregion
 
@@ -38,6 +41,9 @@ namespace Core.StateMachine.States
         /// </summary>
         public override void Enter()
         {
+            // Sets a high friction multiplier to ensure the Mecha comes to a stop quickly when idle, preventing unwanted sliding.
+            _context.Physics.SetFrictionMultiplier(5f);
+
             // Unlocks locomotion processing to allow the Mecha to respond to future input intent.
             _context.Locomotion.SetMovementLock(false);
 
@@ -54,13 +60,26 @@ namespace Core.StateMachine.States
         /// </summary>
         public override void Update()
         {
+            // High-Priority Transition Check: If the player initiates a dash input, we immediately request the dash action.
+            // This allows the Mecha to respond to burst movement commands without delay, even from an idle state.
+            if (_context.Input.DashInput)
+            {
+                _stateMachine.RequestAction(_context.Settings.dashAction);
+                return;
+            }
+
             // Transition Logic: If the player provides movement intent via the Input Handler, switch to MoveState.
             // We use sqrMagnitude for performance optimization during threshold checks.
             if (_context.Input.MoveInput.sqrMagnitude > 0.01f)
             {
                 // Transition to MoveState (to be implemented in the next architectural step).
                 _stateMachine.ChangeState(new SH_MoveState(_context, _stateMachine));
+                return;
             }
+            // Synchronization of the visual layer: 
+            // We sample the actual world velocity from the Physics Motor to drive the animation blend tree.
+            // This ensures foot-sliding is minimized by matching animation to physical displacement.
+            SyncAnimationWithPhysics();
         }
 
         /// <summary>
@@ -70,9 +89,11 @@ namespace Core.StateMachine.States
         /// <param name="dt">Fixed delta time injected by the StateMachine.</param>
         public override void PhysicsUpdate(float dt)
         {
+            if (dt <= 0) { Debug.LogError($"[SH_IdleState] PhysicsUpdate failed: Invalid delta time value ({dt}). Ensure that a positive, non-zero value is passed when calling PhysicsUpdate."); return; }
+
             // Ticks the Physics Motor to integrate gravity and friction based on the MovementSettings asset.
             // This ensures the Mecha remains grounded and stops naturally if it had residual velocity.
-            _context.Physics.Tick(dt);
+            _context.Physics.Tick(_context.Settings, dt);
         }
 
         /// <summary>
@@ -80,7 +101,27 @@ namespace Core.StateMachine.States
         /// </summary>
         public override void Exit()
         {
-            // No specific cleanup required for Idle, but kept for architectural consistency.
+            // Restores the default friction multiplier to allow normal movement responsiveness in the next state.
+            _context.Physics.SetFrictionMultiplier(1f);
+        }
+
+        #endregion
+
+        #region Internal Logic
+
+        /// <summary>
+        /// Maps the current physical horizontal velocity to the Animator's speed parameters.
+        /// </summary>
+        private void SyncAnimationWithPhysics()
+        {
+            if (_context.Animator == null) return;
+
+            // Extract the horizontal components of the current velocity to calculate movement magnitude.
+            Vector3 velocity = _context.Physics.CurrentVelocity;
+            float horizontalSpeed = new Vector2(velocity.x, velocity.z).magnitude;
+
+            // Update the animator based on real physical speed rather than raw input magnitude.
+            _context.Animator.SetFloat("MovementSpeed", horizontalSpeed);
         }
 
         #endregion

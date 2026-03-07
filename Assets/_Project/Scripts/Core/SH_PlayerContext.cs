@@ -92,7 +92,7 @@ namespace Core
             Perspective.Initialize(Settings);
 
             // Initialize the locomotion controller with input and movement settings to prepare it for processing movement intentions.
-            Locomotion.Initialize(Input, Settings);
+            Locomotion.Initialize(Input, Settings, Physics, Perspective);
         }
 
         #endregion

@@ -14,18 +14,17 @@ namespace Core.Locomotion
     public class SH_LocomotionController : MonoBehaviour
     {
         #region Dependencies
+        /// <summary> InpuHandler provides normalized movement vectors and action states. </summary>
+        private SH_InputHandler _input;
 
-        [Header("References")]
-        [Tooltip("Input handler is responsible for processing raw input and providing normalized movement vectors and action states. Use SH_InputHandler component.")]
-        [SerializeField] private SH_InputHandler _inputHandler;
+        /// <summary> MovementSettings defines mass, speed limits, acceleration times, and friction coefficients. </summary>
+        private SH_MovementSettings _settings;
 
-        [Tooltip("Movement settings is responsible for defining mass, speed limits, acceleration times, and friction coefficients. Use SH_MovementSettings asset.")]
-        [SerializeField] private SH_MovementSettings _settings;
-
-        [Tooltip("Perspective controller is responsible for converting input vectors into world space directions based on camera orientation. Use SH_PerspectiveController component.")]
-        [SerializeField] private SH_PerspectiveController _perspectiveController;
-
+        /// <summary> PhysicsMotor is responsible for velocity integration, gravity, and friction. </summary>
         private SH_PhysicsMotor _physicsMotor;
+
+        /// <summary> PerspectiveController provides world-space directions relative to camera or lock-on targets. </summary>
+        private SH_PerspectiveController _perspective;
 
         /// <summary> Deterministic lock to suspend locomotion during high-commitment actions. </summary>
         private bool _movementLocked;
@@ -33,29 +32,26 @@ namespace Core.Locomotion
         #endregion
         #region Initialization
 
-        /// Explicit initialization method called by the State Machine to inject dependencies.
-        private void Awake()
-        {
-            _physicsMotor = GetComponent<SH_PhysicsMotor>();
-
-            if (_inputHandler == null) Debug.LogError($"[SH_LocomotionController] Falta referencia a SH_InputHandler en {gameObject.name}");
-            if (_settings == null) Debug.LogError($"[SH_LocomotionController] Falta referencia a SH_MovementSettings en {gameObject.name}");
-            if (_perspectiveController == null) Debug.LogError($"[SH_LocomotionController] Falta referencia a SH_PerspectiveController en {gameObject.name}");
-        }
-
         /// <summary>
         /// Links the controller with external dependencies, decoupling it from a specific context instance.
         /// </summary>
         /// <param name="input">Input provider for movement intentions.</param>
         /// <param name="data">Data asset containing mass and acceleration parameters.</param>
-        public void Initialize(SH_InputHandler input, SH_MovementSettings data)
+        /// <param name="physic">Reference to the PhysicsMotor for applying forces.</param>
+        public void Initialize(SH_InputHandler input, SH_MovementSettings settings, SH_PhysicsMotor physics, SH_PerspectiveController perspective)
         {
-            _physicsMotor = GetComponent<SH_PhysicsMotor>();
-            _inputHandler = input;
-            _settings = data;
+            if (input == null) { Debug.LogError($"[SH_LocomotionController] Initialization failed: InputHandler reference is null. Ensure that a valid SH_InputHandler component is assigned during initialization."); return; }
+            if (settings == null) { Debug.LogError($"[SH_LocomotionController] Initialization failed: MovementSettings reference is null. Ensure that a valid SH_MovementSettings asset is assigned during initialization."); return; }
+            if (physics == null) { Debug.LogError($"[SH_LocomotionController] Initialization failed: PhysicsMotor reference is null. Ensure that a valid SH_PhysicsMotor component is assigned during initialization."); return; }
+            if (perspective == null) { Debug.LogError($"[SH_LocomotionController] Initialization failed: PerspectiveController reference is null. Ensure that a valid SH_PerspectiveController component is assigned during initialization."); return; }
+
+            _input = input;
+            _settings = settings;
+            _physicsMotor = physics;
+            _perspective = perspective;
         }
 
-        /// <summary> Allows the FSM to lock locomotion to prioritize other movement modes (Dashes/Attacks). </summary>
+        /// <summary> Allows the FSM to lock locomotion to prioritize other movement modes. </summary>
         public void SetMovementLock(bool locked) => _movementLocked = locked;
 
         #endregion
@@ -69,17 +65,16 @@ namespace Core.Locomotion
         /// <param name="dt">Delta time for kinematic calculations.</param>
         public void Tick(float dt)
         {
-            if (_movementLocked || _inputHandler == null || _settings == null)
-                return;
+            if (dt <= 0) { Debug.LogError($"[SH_LocomotionController] Tick failed: Invalid delta time value ({dt}). Ensure that a positive, non-zero value is passed when calling Tick."); return; }
 
             // 1. Process Input and determine intended movement direction in world space
-            Vector2 input = _inputHandler.MoveInput;
-            Vector3 direction = _perspectiveController.GetWorldSpaceDirection(input);
-
+            Vector2 input = _input.MoveInput;
+            Vector3 direction = _perspective.GetWorldSpaceDirection(input);
+            
             // 2. If no significant input, apply deceleration to come to a smooth stop
             if (input.sqrMagnitude < 0.01f)
             {
-                ApplyDeceleration(direction, dt);
+                //ApplyDeceleration(dt); // Optional: Uncomment to enable smooth stopping when input ceases
                 return;
             }
 
@@ -97,35 +92,37 @@ namespace Core.Locomotion
         /// </summary>
         private void ApplyAcceleration(Vector3 direction, float dt)
         {
+            if (direction == null) { Debug.LogError($"[SH_LocomotionController] ApplyAcceleration failed: Direction vector is null. Ensure that the input processing correctly maps to a valid world-space direction."); return; }
+            if (dt <= 0) { Debug.LogError($"[SH_LocomotionController] ApplyAcceleration failed: Invalid delta time value ({dt}). Ensure that a positive, non-zero value is passed when calling ApplyAcceleration."); return; }
+
             // Extract horizontal velocity (ignoring vertical component for grounded movement)
             Vector3 currentVelocity = _physicsMotor.CurrentVelocity;
             Vector3 horizontalVelocity = new Vector3(currentVelocity.x, 0f, currentVelocity.z);
 
-            // Determine target speed based on input (boost vs walk)
-            float targetSpeed = _inputHandler.BoostInput ? _settings.boostSpeed : _settings.walkSpeed;
-            Vector3 moveInput = new Vector3(_inputHandler.MoveInput.x, 0f, _inputHandler.MoveInput.y);
+            // Determine target speed based on input (boost vs run) to allow for dynamic speed changes without needing separate states or complex logic.
+            float targetSpeed = _input.BoostInput ? _settings.boostSpeed : _settings.runSpeed;
 
-            // Normalize input to prevent faster diagonal movement
-            if (moveInput.sqrMagnitude > 1f)
-                moveInput.Normalize();
-
-            // Scale input by target speed to get desired velocity vector
-            Vector3 targetVelocity = moveInput * targetSpeed;
-
-            // Calculate maximum acceleration based on settings to ensure smooth transitions
-            float maxAcceleration = targetSpeed / Mathf.Max(0.01f, _settings.accelerationTime);
+            // Calculate the desired target velocity vector based on input direction and target speed.
+            Vector3 targetVelocity = direction * targetSpeed;
 
             // Compute the velocity delta needed to reach the target velocity
             Vector3 velocityDelta = targetVelocity - horizontalVelocity;
 
-            // Clamp the acceleration to prevent overshooting and ensure smooth movement
-            Vector3 accelerationForce = Vector3.ClampMagnitude(velocityDelta, maxAcceleration * dt);
+            // Calculate maximum acceleration based on the time to reach max speed, ensuring we don't exceed physical limits.
+            float accelTime = Mathf.Max(0.01f, _settings.accelerationTime);
+
+            // Compute the required acceleration to reach the target velocity within the specified time frame.
+            Vector3 requiredAcceleration = velocityDelta / accelTime;
+
+            // Convert the required acceleration into a force using Newton's second law (F = m * a), where mass is defined in the settings.
+            Vector3 force = requiredAcceleration * _settings.mass;
 
             // Apply the calculated acceleration to the PhysicsMotor, which will handle the actual velocity change
-            _physicsMotor.AddHorizontalVelocity(accelerationForce);
+            _physicsMotor.ApplyForce(_settings, force, dt);
         }
 
-        private void ApplyDeceleration(Vector3 direction, float dt)
+        /* Optional Deceleration Logic: Uncomment to enable smooth stopping when input ceases. This will apply a counter-force to bring the Mecha to a stop rather than allowing it to coast indefinitely.
+        private void ApplyDeceleration(float dt)
         {
             // Extract horizontal velocity only (grounded deceleration)
             Vector3 currentVelocity = _physicsMotor.CurrentVelocity;
@@ -153,17 +150,22 @@ namespace Core.Locomotion
             // Apply deceleration through physics motor
             _physicsMotor.AddHorizontalVelocity(decelerationForce);
         }
+        */
 
         /// <summary>
         /// Aligns the Mecha's transform with the current movement direction using smooth interpolation.
         /// </summary>
         private void ApplyRotation(Vector3 direction, float dt)
         {
+            if (direction == null) { Debug.LogError($"[SH_LocomotionController] ApplyRotation failed: Direction vector is null. Ensure that the input processing correctly maps to a valid world-space direction."); return; }
+            if (dt <= 0) { Debug.LogError($"[SH_LocomotionController] ApplyRotation failed: Invalid delta time value ({dt}). Ensure that a positive, non-zero value is passed when calling ApplyRotation."); return; }
+
             // Only rotate if there is significant movement input to avoid jitter when idle
-            if (_inputHandler.MoveInput.sqrMagnitude > 0.01f)
+            if (direction.sqrMagnitude < 0.0001f)
+                return;
             {
-                Vector3 targetDirection = new Vector3(_inputHandler.MoveInput.x, 0f, _inputHandler.MoveInput.y);
-                Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
+                // Calculate the target rotation based on the movement direction. We use LookRotation to create a quaternion that faces the direction of movement.
+                Quaternion targetRotation = Quaternion.LookRotation(direction);
 
                 // Smoothly interpolate the current rotation towards the target rotation based on settings
                 transform.rotation = Quaternion.Slerp(

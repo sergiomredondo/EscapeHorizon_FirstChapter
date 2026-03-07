@@ -56,12 +56,12 @@ namespace Core.StateMachine
         /// </summary>
         private void Awake()
         {
-            if (_input == null) Debug.LogError($"[SH_PlayerStateMachine] Falta referencia a SH_InputHandler en {gameObject.name}");
-            if (_perspective == null) Debug.LogError($"[SH_PlayerStateMachine] Falta referencia a SH_PerspectiveController en {gameObject.name}");
-            if (_locomotion == null) Debug.LogError($"[SH_PlayerStateMachine] Falta referencia a SH_LocomotionController en {gameObject.name}");
-            if (_physics == null) Debug.LogError($"[SH_PlayerStateMachine] Falta referencia a SH_PhysicsMotor en {gameObject.name}");
-            if (_settings == null) Debug.LogError($"[SH_PlayerStateMachine] Falta referencia a SH_MovementSettings en {gameObject.name}");
-            if (_animator == null) Debug.LogError($"[SH_PlayerStateMachine] Falta referencia a Animator en {gameObject.name}");
+            if (_input == null) Debug.LogError($"[SH_PlayerStateMachine] SH_InputHandler is not assigned in {gameObject.name}. Please add a SH_InputHandler component.");
+            if (_perspective == null) Debug.LogError($"[SH_PlayerStateMachine] SH_PerspectiveController is not assigned in {gameObject.name}. Please add a SH_PerspectiveController component.");
+            if (_locomotion == null) Debug.LogError($"[SH_PlayerStateMachine] SH_LocomotionController is not assigned in {gameObject.name}. Please add a SH_LocomotionController component.");
+            if (_physics == null) Debug.LogError($"[SH_PlayerStateMachine] SH_PhysicsMotor is not assigned in {gameObject.name}. Please add a SH_PhysicsMotor component.");
+            if (_settings == null) Debug.LogError($"[SH_PlayerStateMachine] SH_MovementSettings is not assigned in {gameObject.name}. Please assign a SH_MovementSettings asset.");
+            if (_animator == null) Debug.LogError($"[SH_PlayerStateMachine] Animator is not assigned in {gameObject.name}. Please add an Animator component to the Mecha model.");
 
             // Initialization of the Player Context with all necessary dependencies.
             _context = new SH_PlayerContext(
@@ -119,12 +119,8 @@ namespace Core.StateMachine
         /// <param name="newState">The instance of the target state.</param>
         public void ChangeState(SH_BaseState newState)
         {
-            if (newState == null)
-            {
-                Debug.LogError($"[SH_PlayerStateMachine] Intento de transición a un estado nulo. Objeto: {gameObject.name}, Estado actual: {_currentState?.GetType().Name ?? "None"}");
-                return;
-            }
-
+            if (newState == null) { Debug.LogError($"[SH_PlayerStateMachine] Attempted to change to a null state. Transition aborted. Current state: {_currentState?.GetType().Name ?? "None"}"); return; }
+            
             // Checks if the new state can be entered based on its internal conditions (e.g., cooldowns, resource availability).
             _currentState?.Exit();
             _currentState = newState;
@@ -138,9 +134,9 @@ namespace Core.StateMachine
         /// <returns>True if the action priority allowed the transition.</returns>
         public bool RequestAction(SH_ActionData actionData)
         {
-            if (actionData == null) return false;
-
-            // Arbitraje basado en prioridad: permite que acciones críticas interrumpan el flujo normal.
+            if (actionData == null) { Debug.LogError($"[SH_PlayerStateMachine] Attempted to request an action with null data. Request aborted. Current state: {_currentState?.GetType().Name ?? "None"}"); return false; }
+            
+            // Priority check ensures that only actions of equal or higher priority can interrupt the current state, allowing for a dynamic and responsive combat system while preventing lower-priority actions from disrupting critical maneuvers.
             if (_currentState == null || actionData.priority >= _currentState.Priority)
             {
                 ChangeState(new SH_ActionState(_context, this, actionData));

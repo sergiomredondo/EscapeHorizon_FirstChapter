@@ -20,9 +20,6 @@ namespace Core.Camera
         [Tooltip("Transform of the current lock-on target. When assigned, it takes priority for orientation over the camera's forward direction.")]
         [SerializeField] private Transform _lockTarget;
 
-        [Tooltip("Movement settings is responsible for defining mass, speed limits, acceleration times, and friction coefficients. Use SH_MovementSettings asset.")]
-        [SerializeField] private SH_MovementSettings _settings;
-
         #endregion
 
         #region Initialization
@@ -31,7 +28,6 @@ namespace Core.Camera
         private void Awake()
         {
             if (_cameraTransform == null) Debug.LogError($"[SH_PerspectiveController] Falta referencia a la cámara en {gameObject.name}");
-            if (_settings == null) Debug.LogError($"[SH_PerspectiveController] Falta referencia a SH_MovementSettings en {gameObject.name}");
         }
 
         /// <summary> Returns true if the system has an active target for orientation. </summary>
@@ -44,9 +40,8 @@ namespace Core.Camera
         /// <param name="camTransform">The camera transform to use as basis.</param>
         public void Initialize(SH_MovementSettings data, Transform camTransform = null)
         {
-            //if (data != null && _settings.GetEntityId().ToString() == data.GetEntityId().ToString()) Debug.LogWarning($"[SH_PerspectiveController] Se inicializa el Perspective Controller con SH_MovementSettings: {data.GetEntityId()}, SH_MovementSettings: {_settings.GetEntityId()}");
-            _settings = data;
-
+            if (data == null) { Debug.LogError($"[SH_PerspectiveController] Initialization failed: MovementSettings data is null. Ensure that a valid SH_MovementSettings asset is assigned during initialization."); return; }
+            
             // Fallback to main camera if no specific transform is provided, ensuring the system always has a reference for orientation.
             if (camTransform != null)
             {
@@ -123,7 +118,7 @@ namespace Core.Camera
         public Vector3 GetRight(Vector3 calculatedForward)
         {
             // Cross product with the world up vector to ensure the right vector is always horizontal and orthogonal to the forward direction. The negative sign ensures a right-handed coordinate system, which is standard in Unity.
-            return Vector3.Cross(Vector3.up, calculatedForward).normalized * -1f;
+            return Vector3.Cross(Vector3.up, calculatedForward);
         }
 
         #endregion

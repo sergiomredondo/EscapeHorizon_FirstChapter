@@ -1,5 +1,4 @@
 using UnityEngine;
-using Core.StateMachine;
 
 namespace Core.StateMachine.States
 {
@@ -26,7 +25,11 @@ namespace Core.StateMachine.States
         /// Initializes the Move state with the architectural context.
         /// </summary>
         public SH_MoveState(SH_PlayerContext context, SH_PlayerStateMachine stateMachine)
-            : base(context, stateMachine) { }
+            : base(context, stateMachine) 
+        {
+            if (context == null) { Debug.LogError($"[SH_MoveState] Construction failed: SH_PlayerContext reference is null. Ensure that a valid context is passed when instantiating states."); return; }
+            if (stateMachine == null) { Debug.LogError($"[SH_MoveState] Construction failed: SH_PlayerStateMachine reference is null. Ensure that a valid state machine is passed when instantiating states."); return; }
+        }
 
         #endregion
 
@@ -47,6 +50,13 @@ namespace Core.StateMachine.States
         /// </summary>
         public override void Update()
         {
+            // Transition Logic: If the dash input is detected, request the dash action and exit early to allow the state machine to handle the transition.
+            if (_context.Input.DashInput)
+            {
+                _stateMachine.RequestAction(_context.Settings.dashAction);
+                return;
+            }
+
             // Transition Logic: If the movement input ceases (below the deadzone), return to Idle.
             if (_context.Input.MoveInput.sqrMagnitude < 0.01f)
             {
@@ -67,11 +77,13 @@ namespace Core.StateMachine.States
         /// <param name="dt">Fixed delta time for consistent acceleration calculations.</param>
         public override void PhysicsUpdate(float dt)
         {
+            if (dt <= 0) { Debug.LogError($"[SH_MoveState] PhysicsUpdate failed: Invalid delta time (dt={dt}). Ensure that a positive fixed delta time is passed when calling PhysicsUpdate."); return; }
+
             // Calculates the necessary acceleration and target rotation based on the resolved direction.
             _context.Locomotion.Tick(dt);
 
             // Finalizes the movement by integrating gravity, friction, and the forces accumulated in the Tick.
-            _context.Physics.Tick(dt);
+            _context.Physics.Tick(_context.Settings, dt);
         }
 
         /// <summary>

@@ -1,3 +1,4 @@
+using Actions.Data;
 using UnityEngine;
 
 namespace Data
@@ -14,7 +15,7 @@ namespace Data
         [Header("Global Physics")]
         [Tooltip("Mass of the Mecha in kg. Must be greater than 0 to avoid division by zero errors.")]
         [Min(0.1f)]
-        public float mass = 4000f;
+        public float mass = 3000f;
 
         [Tooltip("Custom gravity multiplier (usually -9.81).")]
         public float gravity = -9.81f;
@@ -26,19 +27,23 @@ namespace Data
         [Header("Locomotion (Ground)")]
         [Tooltip("Maximum horizontal speed (m/s).")]
         [Min(0f)]
-        public float maxSpeed = 12f;
+        public float maxSpeed = 10f;
 
         [Tooltip("Base walking speed (m/s). Used for animation blending and as a reference for acceleration curves.")]
         [Min(0f)]
-        public float walkSpeed = 4f;
+        public float walkSpeed = 5f;
+
+        [Tooltip("Base running speed (m/s). Used for animation blending and as a reference for acceleration curves.")]
+        [Min(0f)]
+        public float runSpeed = 7.5f;
 
         [Tooltip("Additional speed added when boosting (m/s).")]
         [Min(0f)]
-        public float boostSpeed = 6f;
+        public float boostSpeed = 9f;
 
         [Tooltip("Time to reach max speed (seconds). Minimum 0.01s to prevent infinite acceleration.")]
         [Min(0.01f)]
-        public float accelerationTime = 0.5f;
+        public float accelerationTime = 0.2f;
 
         [Tooltip("Time to stop when no input is provided (seconds).")]
         [Min(0f)]
@@ -51,11 +56,15 @@ namespace Data
         [Header("Forces & Friction")]
         [Tooltip("Kinetic friction coefficient (muK). Controls sliding on ground.")]
         [Range(0f, 1.5f)]
-        public float muK = 0.6f;
+        public float muK = 0.5f;
+
+        [Tooltip("Static friction coefficient (muS). Must be greater than or equal to muK to prevent perpetual sliding.")]
+        [Range(0f, 1.5f)]
+        public float muS = 0.8f;
 
         [Tooltip("Velocity threshold to consider the Mecha stopped.")]
         [Min(0.001f)]
-        public float stopThreshold = 0.1f;
+        public float stopThreshold = 0.25f;
 
         #endregion
 
@@ -64,7 +73,15 @@ namespace Data
         [Header("Steering")]
         [Tooltip("Speed at which the Mecha rotates towards movement direction.")]
         [Min(0f)]
-        public float rotationSpeed = 10f;
+        public float rotationSpeed = 5f;
+
+        #endregion
+
+        #region Actions Objects
+
+        [Header("Actions Objects")]
+        [Tooltip("Dash action data defines the impulse, timing, and hitbox for the dash maneuver. Use SH_ActionData asset.")]
+        public SH_ActionData dashAction;
 
         #endregion
 
