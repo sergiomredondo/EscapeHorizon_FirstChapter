@@ -36,11 +36,11 @@ namespace Core.Camera
         /// <summary>
         /// Context-driven initialization to link movement data and camera authority.
         /// </summary>
-        /// <param name="data">Movement settings for spatial constraints.</param>
+        /// <param name="settings">Movement settings for spatial constraints.</param>
         /// <param name="camTransform">The camera transform to use as basis.</param>
-        public void Initialize(SH_MovementSettings data, Transform camTransform = null)
+        public void Initialize(SH_MovementSettings settings, Transform camTransform = null)
         {
-            if (data == null) { Debug.LogError($"[SH_PerspectiveController] Initialization failed: MovementSettings data is null. Ensure that a valid SH_MovementSettings asset is assigned during initialization."); return; }
+            if (settings == null) { Debug.LogError($"[SH_PerspectiveController] Initialization failed: MovementSettings data is null. Ensure that a valid SH_MovementSettings asset is assigned during initialization."); return; }
             
             // Fallback to main camera if no specific transform is provided, ensuring the system always has a reference for orientation.
             if (camTransform != null)

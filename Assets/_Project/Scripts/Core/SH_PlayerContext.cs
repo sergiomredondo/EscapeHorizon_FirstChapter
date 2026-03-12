@@ -4,6 +4,7 @@ using Core.Camera;
 using Core.Physics;
 using Core.Input;
 using Data;
+using Animation;
 
 namespace Core
 {
@@ -37,6 +38,9 @@ namespace Core
         /// <summary> Bridge to the visual layer for feedback and skeletal state management. </summary>
         public Animator Animator { get; }
 
+        /// <summary> Abstraction layer for animator interactions, decoupling state logic from specific animation implementations. </summary>
+        public SH_AnimatorBridge AnimatorBridge { get; }
+
         #endregion
 
         #region Constructor & Orchestration
@@ -52,7 +56,8 @@ namespace Core
             SH_LocomotionController locomotion,
             SH_PhysicsMotor physics,
             SH_MovementSettings settings,
-            Animator animator)
+            Animator animator,
+            SH_AnimatorBridge animatorBridge)
         {
             // Assinment of read-only properties with serialized references from the State Machine.
             Transform = transform;
@@ -62,6 +67,7 @@ namespace Core
             Physics = physics;
             Settings = settings;
             Animator = animator;
+            AnimatorBridge = animatorBridge;
 
             // Validation of critical dependencies to ensure the integrity of the context before any state logic is executed.
             ValidateDependencies();
@@ -81,6 +87,8 @@ namespace Core
             if (Locomotion == null) Debug.LogError("[SH_PlayerContext] Locomotion Controller reference is missing.");
             if (Physics == null) Debug.LogError("[SH_PlayerContext] Physics Motor reference is missing.");
             if (Settings == null) Debug.LogError("[SH_PlayerContext] Movement Settings asset is missing.");
+            if (Animator == null) Debug.LogError("[SH_PlayerContext] Animator reference is missing.");
+            if (AnimatorBridge == null) Debug.LogError("[SH_PlayerContext] Animator Bridge reference is missing.");
         }
 
         /// <summary>
@@ -93,6 +101,9 @@ namespace Core
 
             // Initialize the locomotion controller with input and movement settings to prepare it for processing movement intentions.
             Locomotion.Initialize(Input, Settings, Physics, Perspective);
+
+            // Initialize the animator bridge with the animator reference to enable state-driven visual feedback.
+            AnimatorBridge.Initialize(Animator);
         }
 
         #endregion

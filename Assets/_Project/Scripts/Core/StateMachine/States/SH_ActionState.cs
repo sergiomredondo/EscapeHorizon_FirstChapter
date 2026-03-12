@@ -81,12 +81,6 @@ namespace Core.StateMachine.States
                 _context.Physics.SetFrictionMultiplier(0f);
                 _context.Locomotion.SetMovementLock(true);
             }
-
-            // Visual synchronization: Trigger the specific animation defined in the data.
-            if (!string.IsNullOrEmpty(_actionData.animationTrigger) && _context.Animator != null)
-            {
-                _context.Animator.SetTrigger(_actionData.animationTrigger);
-            }
         }
 
         /// <summary>
@@ -96,6 +90,11 @@ namespace Core.StateMachine.States
         {
             _elapsedTime += Time.deltaTime;
             UpdatePhase();
+
+            // Trigger the appropriate animation state. The Animator Bridge will handle the transition to the correct animation based on the current action and phase.
+            if (_context.AnimatorBridge == null) return;
+            SyncAnimationWithPhysics();
+            
         }
 
         /// <summary>
@@ -121,7 +120,7 @@ namespace Core.StateMachine.States
             // Restores locomotion control to ensure the Mecha can move again after the action completes.
             if (_actionData.locksMovement)
             {
-                _context.Physics.SetFrictionMultiplier(1f);
+                _context.Physics.SetFrictionMultiplier(5f);
                 _context.Locomotion.SetMovementLock(false);
             }
         }
@@ -151,8 +150,15 @@ namespace Core.StateMachine.States
             {
                 _phase = ActionPhase.Completed;
 
+                // Registers the action's cooldown with the state machine to prevent immediate re-use.
+                _stateMachine.RegisterActionCooldown(_actionData);
+
+                // Triggers the appropriate animation state for the transition out of the action.
+                _context.AnimatorBridge.TriggerDash(0f);
+
                 // Return to Idle upon completion. The Idle state will then evaluate if it should switch to Move.
                 _stateMachine.ChangeState(new SH_IdleState(_context, _stateMachine));
+                return;
             }
         }
 
@@ -215,6 +221,38 @@ namespace Core.StateMachine.States
                 default:
                     return _context.Transform.forward;
             }
+        }
+
+        #endregion
+
+        #region Internal Logic
+
+        /// <summary>
+        /// Maps the current physical horizontal velocity to the Animator's speed parameters.
+        /// </summary>
+        private void SyncAnimationWithPhysics()
+        {
+            if (_context.AnimatorBridge == null || _phase == ActionPhase.Completed) return;
+
+            // Extract the horizontal components of the current velocity to calculate movement magnitude.
+            Vector3 velocity = _context.Physics.CurrentVelocity;
+            float horizontalSpeed = new Vector2(velocity.x, velocity.z).magnitude;
+
+            float normalizedSpeed = 0f;
+            // Maps the horizontal speed to a normalized value for the Animator. This allows the dash animation to reflect the actual movement speed,
+            // enhancing visual feedback and reducing foot-sliding.
+            if (horizontalSpeed <= _context.Settings.runSpeed)
+            {
+                normalizedSpeed = 0.5f;
+            }
+            else
+            {
+                normalizedSpeed = 1f;
+            }
+            
+            // Updates the Animator with the normalized horizontal speed to drive the blend tree, ensuring that the visual
+            // representation matches the physical movement and reduces foot-sliding.
+            _context.AnimatorBridge.TriggerDash(normalizedSpeed);
         }
 
         #endregion

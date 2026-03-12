@@ -91,7 +91,8 @@ namespace Core.StateMachine.States
         /// </summary>
         public override void Exit()
         {
-            // Reserved for potential state-specific cleanup (e.g., stopping movement particle effects).
+            // Restores the default friction multiplier to allow normal movement responsiveness in the next state.
+            _context.Physics.SetFrictionMultiplier(1f);
         }
 
         #endregion
@@ -103,14 +104,30 @@ namespace Core.StateMachine.States
         /// </summary>
         private void SyncAnimationWithPhysics()
         {
-            if (_context.Animator == null) return;
+            if (_context.AnimatorBridge == null) return;
 
             // Extract the horizontal components of the current velocity to calculate movement magnitude.
             Vector3 velocity = _context.Physics.CurrentVelocity;
             float horizontalSpeed = new Vector2(velocity.x, velocity.z).magnitude;
 
-            // Update the animator based on real physical speed rather than raw input magnitude.
-            _context.Animator.SetFloat("MovementSpeed", horizontalSpeed);
+            float normalizedSpeed = 0f;
+            // Normalizes the horizontal speed to a 0-1 range based on walk and run thresholds defined in the MovementSettings.
+            if (horizontalSpeed > 0)
+            {
+                if (horizontalSpeed <= _context.Settings.walkSpeed)
+                {
+                    normalizedSpeed = (horizontalSpeed / _context.Settings.walkSpeed) * 0.5f;
+                }
+                else
+                {
+                    float t = Mathf.InverseLerp(_context.Settings.walkSpeed, _context.Settings.runSpeed, horizontalSpeed);
+                    normalizedSpeed = 0.5f + (t * 0.5f);
+                }
+            }
+
+            // Updates the Animator with the normalized horizontal speed to drive the blend tree, ensuring that the visual
+            // representation matches the physical movement and reduces foot-sliding.
+            _context.AnimatorBridge.UpdateMovement(normalizedSpeed);
         }
 
         #endregion

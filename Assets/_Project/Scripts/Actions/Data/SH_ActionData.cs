@@ -14,7 +14,7 @@ namespace Actions.Data
 
         [Header("Temporal Structure")]
         [Tooltip("Phase 1: Preparation time before effect activation (seconds).")]
-        [Min(0f)] public float startupTime = 0.2f;
+        [Min(0f)] public float startupTime = 0.1f;
 
         [Tooltip("Phase 2: Time window where the effect/hitbox is functional (seconds).")]
         [Min(0f)] public float activeTime = 0.15f;
@@ -24,6 +24,9 @@ namespace Actions.Data
 
         [Tooltip("Point in time (from T:0) where the action can be interrupted or cancelled.")]
         [Min(0f)] public float cancelWindowStart = 0.4f;
+
+        [Tooltip("Minimum time after activation before the action can be re-initiated (seconds).")]
+        [Min(0f)] public float coolDownTime = 1.5f;
 
         #endregion
 

@@ -213,7 +213,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7962199819078159310, guid: f5b41ba4c79702547a89de7544b80656, type: 3}
       propertyPath: m_Name
-      value: Player
+      value: Bear
       objectReference: {fileID: 0}
     - target: {fileID: 7962199819078159310, guid: f5b41ba4c79702547a89de7544b80656, type: 3}
       propertyPath: m_TagString
@@ -227,9 +227,6 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 7962199819078159310, guid: f5b41ba4c79702547a89de7544b80656, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 243769124}
     - targetCorrespondingSourceObject: {fileID: 7962199819078159310, guid: f5b41ba4c79702547a89de7544b80656, type: 3}
       insertIndex: -1
       addedObject: {fileID: 243769123}
@@ -248,6 +245,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7962199819078159310, guid: f5b41ba4c79702547a89de7544b80656, type: 3}
       insertIndex: -1
       addedObject: {fileID: 243769141}
+    - targetCorrespondingSourceObject: {fileID: 7962199819078159310, guid: f5b41ba4c79702547a89de7544b80656, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 243769142}
     - targetCorrespondingSourceObject: {fileID: 7962199819078159310, guid: f5b41ba4c79702547a89de7544b80656, type: 3}
       insertIndex: -1
       addedObject: {fileID: 243769140}
@@ -398,22 +398,6 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 1.0800049, z: 0}
---- !u!114 &243769124
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 243769119}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c2a14d0f354543444a26ffa7d8075571, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BLINK.AnimationDemo
-  entries: []
-  animators: []
-  entryIndex: 0
-  animationNameText: {fileID: 0}
 --- !u!4 &243769126 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7292658344771522932, guid: f5b41ba4c79702547a89de7544b80656, type: 3}
@@ -445,7 +429,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Core.SH_PerspectiveController
   _cameraTransform: {fileID: 588078960}
   _lockTarget: {fileID: 0}
-  _settings: {fileID: 11400000, guid: 6801dc563bc34f64a91aa9b8abbd0141, type: 2}
 --- !u!114 &243769133
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -458,7 +441,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5bbccf04e1f55fa4f99c68ef89f092df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Core.Physics.SH_PhysicsMotor
-  _settings: {fileID: 11400000, guid: 6801dc563bc34f64a91aa9b8abbd0141, type: 2}
 --- !u!114 &243769134
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -471,9 +453,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83b52f9be48506b4aadde4bb02f6f527, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DebugTools.SH_PhysicsDebugger
-  physicsMotor: {fileID: 243769133}
-  stateMachine: {fileID: 243769140}
-  settings: {fileID: 11400000, guid: 6801dc563bc34f64a91aa9b8abbd0141, type: 2}
   showOnScreenStats: 1
   showVectors: 1
   stabilityThreshold: 1.2
@@ -494,9 +473,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fc659ba845028f4fb9e2f16b4c35fbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Core.Locomotion.SH_LocomotionController
-  _inputHandler: {fileID: 243769129}
-  _settings: {fileID: 11400000, guid: 6801dc563bc34f64a91aa9b8abbd0141, type: 2}
-  _perspectiveController: {fileID: 243769130}
 --- !u!114 &243769140
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -515,6 +491,8 @@ MonoBehaviour:
   _physics: {fileID: 243769133}
   _settings: {fileID: 11400000, guid: 6801dc563bc34f64a91aa9b8abbd0141, type: 2}
   _animator: {fileID: 243769137}
+  _animatorBridge: {fileID: 243769142}
+  showOnScreenDebugging: 1
 --- !u!114 &243769141
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -601,6 +579,18 @@ MonoBehaviour:
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 330585545}
+--- !u!114 &243769142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 243769119}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 950a0f39be33d3b469bca7c29f3d68bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Animation.SH_AnimatorBridge
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -688,13 +678,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.3655178, y: 0, z: 0, w: 0.9308044}
-  m_LocalPosition: {x: 0, y: 13, z: -14}
+  m_LocalRotation: {x: 0.3043384, y: 0.08551005, z: -0.027442178, w: 0.9483212}
+  m_LocalPosition: {x: -2, y: 8, z: -11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 45, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 42.7, y: 0, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1019,13 +1009,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 588078958}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.3655178, y: -0, z: -0, w: 0.9308044}
-  m_LocalPosition: {x: 0, y: 13, z: -14}
+  m_LocalRotation: {x: 0.3043384, y: 0.08551005, z: -0.027442178, w: 0.9483212}
+  m_LocalPosition: {x: -2, y: 8, z: -11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 45, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 42.85, y: 0, z: 0}
 --- !u!114 &588078963
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1087,7 +1077,7 @@ MonoBehaviour:
     AngularDampingMode: 0
     RotationDamping: {x: 1, y: 1, z: 1}
     QuaternionDamping: 1
-  FollowOffset: {x: 0, y: 13, z: -14}
+  FollowOffset: {x: -2, y: 8, z: -11}
 --- !u!114 &588078965
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1118,8 +1108,8 @@ MonoBehaviour:
   Pan: 0
   Dutch: 0
   ZoomScale: 1
-  FollowAttachment: 1
-  LookAtAttachment: 1
+  FollowAttachment: 0.3
+  LookAtAttachment: 0.05
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0

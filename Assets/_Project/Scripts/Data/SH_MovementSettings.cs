@@ -27,7 +27,7 @@ namespace Data
         [Header("Locomotion (Ground)")]
         [Tooltip("Maximum horizontal speed (m/s).")]
         [Min(0f)]
-        public float maxSpeed = 10f;
+        public float maxSpeed = 20f;
 
         [Tooltip("Base walking speed (m/s). Used for animation blending and as a reference for acceleration curves.")]
         [Min(0f)]
@@ -39,7 +39,7 @@ namespace Data
 
         [Tooltip("Additional speed added when boosting (m/s).")]
         [Min(0f)]
-        public float boostSpeed = 9f;
+        public float boostSpeed = 10f;
 
         [Tooltip("Time to reach max speed (seconds). Minimum 0.01s to prevent infinite acceleration.")]
         [Min(0.01f)]
@@ -73,7 +73,7 @@ namespace Data
         [Header("Steering")]
         [Tooltip("Speed at which the Mecha rotates towards movement direction.")]
         [Min(0f)]
-        public float rotationSpeed = 5f;
+        public float rotationSpeed = 8f;
 
         #endregion
 

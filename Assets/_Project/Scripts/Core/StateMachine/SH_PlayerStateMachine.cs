@@ -1,10 +1,13 @@
 using Actions.Data;
+using Animation;
 using Core.Camera;
+using Core.Input;
 using Core.Locomotion;
 using Core.Physics;
-using Core.Input;
 using Core.StateMachine.States;
 using Data;
+using DebugTools;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Core.StateMachine
@@ -40,11 +43,24 @@ namespace Core.StateMachine
         [Tooltip("Animator is responsible for visual feedback and skeletal state management. Use the Animator component on the Mecha model.")]
         [SerializeField] private Animator _animator;
 
+        [Tooltip("Animator bridge is an abstraction layer for animator interactions, decoupling state logic from specific animation implementations. Use SH_AnimatorBridge component.")]
+        [SerializeField] private SH_AnimatorBridge _animatorBridge;
+
+        [Header("Visualization Settings")]
+        [Tooltip("Toggle on-screen debugging information for the current state and physics telemetry. Requires SH_PhysicsDebugger component on the same GameObject.")]
+        [SerializeField] private bool showOnScreenDebugging = true;
+
         /// <summary> The Single Source of Truth for all state-shared data. </summary>
         private SH_PlayerContext _context;
 
         /// <summary> The currently active behavior state. </summary>
         private SH_BaseState _currentState;
+
+        /// <summary> Optional reference to the physics debugger for on-screen telemetry. </summary>
+        private SH_Debugger _physicsDebugger;
+
+        /// <summary> Tracks cooldown timers for actions to prevent spamming and manage resource-based abilities. </summary>
+        private readonly Dictionary<SH_ActionData, float> _actionCooldowns = new Dictionary<SH_ActionData, float>();
 
         #endregion
 
@@ -56,13 +72,6 @@ namespace Core.StateMachine
         /// </summary>
         private void Awake()
         {
-            if (_input == null) Debug.LogError($"[SH_PlayerStateMachine] SH_InputHandler is not assigned in {gameObject.name}. Please add a SH_InputHandler component.");
-            if (_perspective == null) Debug.LogError($"[SH_PlayerStateMachine] SH_PerspectiveController is not assigned in {gameObject.name}. Please add a SH_PerspectiveController component.");
-            if (_locomotion == null) Debug.LogError($"[SH_PlayerStateMachine] SH_LocomotionController is not assigned in {gameObject.name}. Please add a SH_LocomotionController component.");
-            if (_physics == null) Debug.LogError($"[SH_PlayerStateMachine] SH_PhysicsMotor is not assigned in {gameObject.name}. Please add a SH_PhysicsMotor component.");
-            if (_settings == null) Debug.LogError($"[SH_PlayerStateMachine] SH_MovementSettings is not assigned in {gameObject.name}. Please assign a SH_MovementSettings asset.");
-            if (_animator == null) Debug.LogError($"[SH_PlayerStateMachine] Animator is not assigned in {gameObject.name}. Please add an Animator component to the Mecha model.");
-
             // Initialization of the Player Context with all necessary dependencies.
             _context = new SH_PlayerContext(
                 transform,
@@ -71,8 +80,27 @@ namespace Core.StateMachine
                 _locomotion,
                 _physics,
                 _settings,
-                _animator
+                _animator,
+                _animatorBridge
             );
+            
+            if (_input == null) Debug.LogError($"[SH_PlayerStateMachine] SH_InputHandler is not assigned in {gameObject.name}. Please add a SH_InputHandler component.");
+            if (_perspective == null) Debug.LogError($"[SH_PlayerStateMachine] SH_PerspectiveController is not assigned in {gameObject.name}. Please add a SH_PerspectiveController component.");
+            if (_locomotion == null) Debug.LogError($"[SH_PlayerStateMachine] SH_LocomotionController is not assigned in {gameObject.name}. Please add a SH_LocomotionController component.");
+            if (_physics == null) Debug.LogError($"[SH_PlayerStateMachine] SH_PhysicsMotor is not assigned in {gameObject.name}. Please add a SH_PhysicsMotor component.");
+            if (_settings == null) Debug.LogError($"[SH_PlayerStateMachine] SH_MovementSettings is not assigned in {gameObject.name}. Please assign a SH_MovementSettings asset.");
+            if (_animator == null) Debug.LogError($"[SH_PlayerStateMachine] Animator is not assigned in {gameObject.name}. Please add an Animator component to the Mecha model.");
+            if (_animatorBridge == null) Debug.LogError($"[SH_PlayerStateMachine] SH_AnimatorBridge is not assigned in {gameObject.name}. Please add a SH_AnimatorBridge component.");
+            if (showOnScreenDebugging == true)
+            {
+                // Optional initialization of the physics debugger if it exists on the same GameObject.
+                // This allows for on-screen telemetry of physics states without requiring a separate setup.
+                _physicsDebugger = GetComponent<SH_Debugger>();
+                if (_physicsDebugger != null)
+                {
+                    _physicsDebugger.Initialize(_context);
+                }
+            }
         }
 
         /// <summary>
@@ -135,15 +163,36 @@ namespace Core.StateMachine
         public bool RequestAction(SH_ActionData actionData)
         {
             if (actionData == null) { Debug.LogError($"[SH_PlayerStateMachine] Attempted to request an action with null data. Request aborted. Current state: {_currentState?.GetType().Name ?? "None"}"); return false; }
-            
+
+            // Cooldown check prevents actions from being executed if they are still within their cooldown period, enforcing strategic timing and resource management.
+            if (_actionCooldowns.TryGetValue(actionData, out float lastFinishTime))
+            {
+                if (Time.time < lastFinishTime + actionData.coolDownTime)
+                {
+                    return false;
+                }
+            }
+
             // Priority check ensures that only actions of equal or higher priority can interrupt the current state, allowing for a dynamic and responsive combat system while preventing lower-priority actions from disrupting critical maneuvers.
             if (_currentState == null || actionData.priority >= _currentState.Priority)
             {
+                _actionCooldowns[actionData] = Time.time;
                 ChangeState(new SH_ActionState(_context, this, actionData));
                 return true;
             }
 
             return false;
+        }
+        /// <summary>
+        /// Registers the usage of an action to enforce cooldowns and manage resource-based abilities, preventing spamming and encouraging strategic decision-making.
+        /// </summary>
+        /// <param name="actionData">The declarative data asset defining the action's properties.</param>
+        public void RegisterActionCooldown(SH_ActionData actionData)
+        {
+            if (actionData != null)
+            {
+                _actionCooldowns[actionData] = Time.time;
+            }
         }
 
         #endregion
