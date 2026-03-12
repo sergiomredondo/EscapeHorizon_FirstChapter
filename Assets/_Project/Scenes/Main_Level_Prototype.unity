@@ -250,6 +250,15 @@ PrefabInstance:
       addedObject: {fileID: 243769142}
     - targetCorrespondingSourceObject: {fileID: 7962199819078159310, guid: f5b41ba4c79702547a89de7544b80656, type: 3}
       insertIndex: -1
+      addedObject: {fileID: 243769145}
+    - targetCorrespondingSourceObject: {fileID: 7962199819078159310, guid: f5b41ba4c79702547a89de7544b80656, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 243769143}
+    - targetCorrespondingSourceObject: {fileID: 7962199819078159310, guid: f5b41ba4c79702547a89de7544b80656, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 243769144}
+    - targetCorrespondingSourceObject: {fileID: 7962199819078159310, guid: f5b41ba4c79702547a89de7544b80656, type: 3}
+      insertIndex: -1
       addedObject: {fileID: 243769140}
     - targetCorrespondingSourceObject: {fileID: 7962199819078159310, guid: f5b41ba4c79702547a89de7544b80656, type: 3}
       insertIndex: -1
@@ -453,7 +462,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83b52f9be48506b4aadde4bb02f6f527, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DebugTools.SH_PhysicsDebugger
-  showOnScreenStats: 1
+  showPhysicsPanel: 1
+  showAnimationPanel: 1
+  showEconomyPanel: 1
   showVectors: 1
   stabilityThreshold: 1.2
 --- !u!95 &243769137 stripped
@@ -492,6 +503,11 @@ MonoBehaviour:
   _settings: {fileID: 11400000, guid: 6801dc563bc34f64a91aa9b8abbd0141, type: 2}
   _animator: {fileID: 243769137}
   _animatorBridge: {fileID: 243769142}
+  _health: {fileID: 243769145}
+  _resources: {fileID: 243769143}
+  _economicEvents: {fileID: 243769144}
+  _economySettings: {fileID: 11400000, guid: ba41d2ca801757449974e8e014560ad8, type: 2}
+  _economicEventSettings: {fileID: 11400000, guid: 712e86fd36255b1489e700572e60a26d, type: 2}
   showOnScreenDebugging: 1
 --- !u!114 &243769141
 MonoBehaviour:
@@ -591,6 +607,42 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 950a0f39be33d3b469bca7c29f3d68bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Animation.SH_AnimatorBridge
+--- !u!114 &243769143
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 243769119}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff7cbe012e7ed604eb0e0e820253ef67, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Economy.SH_ResourceSystem
+--- !u!114 &243769144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 243769119}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa696cdba281054469f2af9a66fd1bed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Economy.SH_EconomicEventManager
+--- !u!114 &243769145
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 243769119}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11acfaa95f78d7a4583292755563b382, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Economy.SH_HealthComponent
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
