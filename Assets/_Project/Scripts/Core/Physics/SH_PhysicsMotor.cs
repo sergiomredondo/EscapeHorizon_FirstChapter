@@ -18,8 +18,8 @@ namespace Core.Physics
         // --- Internal Physical State ---
         private Vector3 _velocity;
         private Vector3 _activeForce;
-        private float _forceTimer;
         private float _frictionMultiplier = 1f;
+        private float _forceTimer;
         private float _currentFrictionMultiplier = 1f;
 
         #endregion
@@ -31,6 +31,9 @@ namespace Core.Physics
 
         /// <summary> Stores the vector of the last force or impulse processed for telemetry visualization. </summary>
         public Vector3 LastAppliedForce { get; private set; }
+
+        /// <summary> Exposes the current friction multiplier for debugging purposes. </summary>
+        public float frictionMultiplier => _frictionMultiplier;
 
         /// <summary> Indicates if there is a sustained force currently influencing acceleration. </summary>
         public bool HasActiveForce => _forceTimer > 0f;

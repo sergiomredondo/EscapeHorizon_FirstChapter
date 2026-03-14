@@ -98,6 +98,8 @@ namespace Core.StateMachine.States
             _elapsedTime = 0f;
             _impulseApplied = false;
 
+            _context.Physics.SetFrictionMultiplier(1f);
+
             // --- Economic Gate ---
             if (_actionData.staminaCost > 0f)
             {
@@ -140,7 +142,6 @@ namespace Core.StateMachine.States
             // Suspension of locomotion if the action requires tactical commitment.
             if (_actionData.locksMovement)
             {
-                _context.Physics.SetFrictionMultiplier(0f);
                 _context.Locomotion.SetMovementLock(true);
             }
         }
@@ -155,7 +156,7 @@ namespace Core.StateMachine.States
             // The return guard prevents any phase logic from executing on an uncommitted action.
             if (_abortedDueToInsufficientEnergy)
             {
-                _stateMachine.ChangeState(new SH_IdleState(_context, _stateMachine));
+                _stateMachine.ChangeState(new SH_MoveState(_context, _stateMachine));
                 return;
             }
 
@@ -223,7 +224,7 @@ namespace Core.StateMachine.States
 
                 _stateMachine.RegisterActionCooldown(_actionData);
                 _context.AnimatorBridge.TriggerDash(0f);
-                _stateMachine.ChangeState(new SH_IdleState(_context, _stateMachine));
+                _stateMachine.ChangeState(new SH_MoveState(_context, _stateMachine));
                 return;
             }
         }
@@ -238,7 +239,6 @@ namespace Core.StateMachine.States
         /// </summary>
         private void HandleImpulsePhysics()
         {
-            _context.Physics.SetFrictionMultiplier(1f);
             if (_phase != ActionPhase.Active) return;
             if (_actionData.impulseMagnitude <= 0f) return;
 

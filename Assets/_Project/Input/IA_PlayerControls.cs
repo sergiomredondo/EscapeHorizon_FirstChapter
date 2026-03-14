@@ -118,7 +118,7 @@ namespace StarterAssets
                     ""id"": ""b9c73f46-a658-4697-b2f4-59d423aba4a5"",
                     ""expectedControlType"": """",
                     ""processors"": """",
-                    ""interactions"": ""Hold"",
+                    ""interactions"": """",
                     ""initialStateCheck"": false
                 },
                 {
