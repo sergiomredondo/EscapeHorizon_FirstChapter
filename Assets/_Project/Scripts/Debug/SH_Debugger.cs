@@ -9,6 +9,8 @@ using Game.Interaction;
 using Game.Interaction.Data;
 using System.Collections.Generic;
 using UnityEngine;
+using Game.Combat.Core;
+using Game.Combat.Data;
 
 namespace DebugTools
 {
@@ -22,6 +24,7 @@ namespace DebugTools
     ///   3. ECONOMY      — durability, resources, progression, modifiers, events.
     ///   4. INTERACTION  — controller state, focused target, hold timer, input flags.
     ///   5. PERCEPTION   — all IInteractable objects in range with distance and type.
+    ///   6. COMBAT        — active target, combat stats, damage modifiers.
     ///
     /// GIZMOS (Scene View):
     ///   - Current velocity vector (cyan)
@@ -38,22 +41,31 @@ namespace DebugTools
     {
         #region Dependencies
 
-        private SH_PlayerContext _context;
-        private SH_PlayerStateMachine _stateMachine;
-
-        // Shortcuts extracted from context in Initialize() for efficient per-frame access.
         private SH_PhysicsMotor _physics;
+        private SH_PlayerStateMachine _stateMachine;
         private SH_MovementSettings _settings;
+        private SH_PlayerContext _context;
+
+        // Economic
         private SH_ResourceSystem _resources;
         private SH_HealthComponent _health;
         private SH_EconomicEventManager _economicEvents;
         private SH_EconomySettings _economySettings;
+
+        // Interaction
         private SH_InteractionController _interaction;
         private SH_InteractionSettings _interactionSettings;
 
+        // Combat
+        private SH_PlayerCombatController _combatController;
+        private SH_CombatStats _playerCombatStats;
+        private SH_CombatSettings _combatSettings;
+        private SH_EnergySurgeSystem _surgeSystem;
+        private SH_DifficultyManager _difficultyManager;
+
         #endregion
 
-        #region Panel Toggles
+        #region Serialized Visualization Settings
 
         [Header("Panel Visibility")]
 
@@ -71,6 +83,15 @@ namespace DebugTools
 
         [Tooltip("Perception panel: all IInteractable objects detected within detection radius.")]
         [SerializeField] private bool showPerceptionPanel = true;
+
+        [Tooltip("Combat telemetry: active target, combat stats, damage modifiers.")]
+        [SerializeField] private bool showCombatPanel = true;
+
+        [Tooltip("Show focused target and all in-range IInteractables in the Scene View.")]
+        [SerializeField] private bool showEnemyPanel = true;
+
+        [Tooltip("Show Energy Surge status in the Combat panel.")]
+        [SerializeField] private bool showSurgePanel = true;
 
         [Tooltip("Draw velocity, force, and interaction radius gizmos in the Scene View.")]
         [SerializeField] private bool showGizmos = true;
@@ -93,6 +114,9 @@ namespace DebugTools
 
         [Tooltip("Column 2 (right) starting X position.")]
         [SerializeField] private float col2X = 465f;
+
+        [Tooltip("Column 2 (right) starting X position.")]
+        [SerializeField] private float col3X = 905f;
 
         [Tooltip("Starting Y position for both columns.")]
         [SerializeField] private float startY = 25f;
@@ -137,6 +161,8 @@ namespace DebugTools
         private void Awake()
         {
             _stateMachine = GetComponent<SH_PlayerStateMachine>();
+            if (_stateMachine == null)
+                Debug.LogWarning($"[SH_Debugger] SH_PlayerStateMachine not found on {gameObject.name}.");
         }
 
         private void Update()
@@ -171,6 +197,11 @@ namespace DebugTools
             _economySettings = context.EconomySettings;
             _interaction = context.Interaction;
             _interactionSettings = context.InteractionSettings;
+            _combatController = context.CombatController;
+            _playerCombatStats = context.PlayerCombatStats;
+            _combatSettings = context.CombatSettings;
+            _surgeSystem = context.SurgeSystem;
+            _difficultyManager = context.DifficultyManager;
         }
 
         private void EnsureStyles()
@@ -228,7 +259,7 @@ namespace DebugTools
             if (_context == null) return;
             EnsureStyles();
 
-            // Left column: panels 1, 2, 3
+            // 1st column: panels 1, 2, 3
             float col1Y = startY;
 
             if (showPhysicsPanel)
@@ -246,7 +277,7 @@ namespace DebugTools
                 DrawEconomyPanel(col1X, col1Y);
             }
 
-            // Right column: panels 4, 5
+            // 2nd column: panels 4, 5
             float col2Y = startY;
 
             if (showInteractionPanel && _interaction != null)
@@ -258,6 +289,25 @@ namespace DebugTools
             {
                 DrawPerceptionPanel(col2X, col2Y);
             }
+
+            // 3rd column: panels 4, 5
+            float col3Y = startY;
+
+            if (showCombatPanel)
+            {
+                float h = DrawCombatPanel(col3X, col3Y);
+                col3Y += h + panelMargin;
+            }
+            if (showEnemyPanel)
+            {
+                float h = DrawEnemyPanel(col3X, col3Y);
+                col3Y += h + panelMargin;
+            }
+            if (showSurgePanel)
+            {
+                DrawSurgeAndDifficultyPanel(col3X, col3Y);
+            }
+
         }
 
         #endregion
@@ -290,7 +340,7 @@ namespace DebugTools
             bool rampActive = frictionMul > 1.01f;
             float accelTime = _settings.accelerationTime;
 
-            float panelH = 330f;
+            float panelH = 300f;
             GUILayout.BeginArea(new Rect(x, y, panelWidth, panelH), GUI.skin.box);
 
             GUILayout.Label("NEWTONIAN TELEMETRY", _headerStyle);
@@ -377,7 +427,7 @@ namespace DebugTools
             if (_context?.Animator == null) return 0f;
 
             Animator anim = _context.Animator;
-            float panelH = 180f;
+            float panelH = 150f;
 
             GUILayout.BeginArea(new Rect(x, y, panelWidth, panelH), GUI.skin.box);
 
@@ -692,6 +742,192 @@ namespace DebugTools
             // Sort by distance so the panel reads nearest-first.
             _perceivedObjects.Sort((a, b) => a.dist.CompareTo(b.dist));
             _perceivedCount = _perceivedObjects.Count;
+        }
+
+        #endregion
+
+        #region Panel 6 — Combat Panel
+
+        /// <summary>
+        /// Draws the combat system telemetry panel.
+        /// Displays player combat stats, computed damage values, surge state,
+        /// and all integration points status from GDD §5.3 Stage A.
+        /// </summary>
+        private float DrawCombatPanel(float x, float y)
+        {
+            float panelH = 380f;
+            GUILayout.BeginArea(new Rect(x, y, panelWidth, panelH),
+                GUI.skin.box);
+
+            GUILayout.Label("COMBAT TELEMETRY", _headerStyle);
+            GUILayout.Space(6);
+
+            if (_combatController == null || _playerCombatStats == null ||
+                _combatSettings == null)
+            {
+                GUILayout.Label("Combat system not initialized.", _warningStyle);
+                GUILayout.Space(6);
+                if (_combatController == null) GUILayout.Label("Combat controller not initialized.", _warningStyle);
+                GUILayout.Space(6);
+                if (_playerCombatStats == null) GUILayout.Label("Player combat stats not initialized.", _warningStyle);
+                GUILayout.Space(6);
+                if (_combatSettings == null) GUILayout.Label("Combat settings not initialized.", _warningStyle);
+                GUILayout.EndArea();
+                return 420f;
+            }
+
+            // --- Player Base Stats ---
+            GUILayout.Label("--- Player Stats (Base) ---", _style);
+            DrawStat("Strength (F)", $"{_playerCombatStats.Strength:F1}", Color.white);
+            DrawStat("Defense (D)", $"{_playerCombatStats.Defense:F1}", Color.white);
+            DrawStat("Agility (A)", $"{_playerCombatStats.Agility:F1}", Color.white);
+            DrawStat("Posture Max", $"{_playerCombatStats.PostureMax:F1}", Color.white);
+
+            GUILayout.Space(6);
+            GUILayout.Label("--- Damage Formula Preview ---", _style);
+
+            bool surge = _combatController.IsSurgeActive;
+            float avLight = SH_DamageCalculator.ComputeAttackValue(
+                _playerCombatStats, _combatSettings, AttackType.Light, surge);
+            float avHeavy = SH_DamageCalculator.ComputeAttackValue(
+                _playerCombatStats, _combatSettings, AttackType.Heavy, surge);
+
+            // Simulate against zero-defense target for the raw DE preview
+            float deLight = Mathf.Max(0f,
+                avLight - (_playerCombatStats.Defense * _combatSettings.defenseEffectiveness));
+            float deHeavy = Mathf.Max(0f,
+                avHeavy - (_playerCombatStats.Defense * _combatSettings.defenseEffectiveness));
+
+            DrawStat("AV Light", $"{avLight:F1}", Color.yellow);
+            DrawStat("AV Heavy", $"{avHeavy:F1}", new Color(1f, 0.6f, 0f));
+            DrawStat("DE Light (vs 0 def)", $"{deLight:F1}", Color.yellow);
+            DrawStat("DE Heavy (vs 0 def)", $"{deHeavy:F1}", new Color(1f, 0.6f, 0f));
+            DrawStat("Posture (Light)", $"{avLight * _combatSettings.postureDamageRatio:F1}", Color.cyan);
+            DrawStat("Posture (Heavy)", $"{avHeavy * _combatSettings.postureDamageRatio:F1}", Color.cyan);
+
+            GUILayout.Space(6);
+            GUILayout.Label("--- Integration Points ---", _style);
+            DrawStat("OnHitImpact wired", "✓ CombatController", Color.green);
+            DrawStat("CaptiveCore.ForceDestroy", "✓ HitboxController", Color.green);
+            DrawStat("RollEnergyOnElite", "✓ HitboxController", Color.green);
+            DrawStat("NotifyReconfig bridge", "PENDING skill tree", Color.yellow);
+
+            GUILayout.EndArea();
+            return 380f;
+        }
+
+        #endregion
+
+        #region Panel 7 — Enemy Panel
+
+        private float DrawEnemyPanel(float x, float y)
+        {
+            var enemies = UnityEngine.Object.FindObjectsByType<Game.Enemy.SH_EnemyController>(
+                FindObjectsSortMode.None);
+
+            int aliveCount = 0;
+            foreach (var e in enemies)
+                if (!e.IsDead) aliveCount++;
+
+            float panelH = 60f + Mathf.Min(enemies.Length, 6) * 52f;
+            GUILayout.BeginArea(new Rect(x, y, panelWidth, panelH), GUI.skin.box);
+            GUILayout.Label("ENEMY TELEMETRY", _headerStyle);
+            GUILayout.Space(4);
+            DrawStat("Enemies in scene", $"{enemies.Length} total / {aliveCount} alive", Color.white);
+            GUILayout.Space(4);
+
+            int shown = 0;
+            foreach (var enemy in enemies)
+            {
+                if (shown >= 6) break;
+                DrawEnemyRow(enemy);
+                shown++;
+            }
+
+            GUILayout.EndArea();
+            return panelH;
+        }
+
+        private void DrawEnemyRow(Game.Enemy.SH_EnemyController enemy)
+        {
+            if (enemy == null) return;
+
+            string name = enemy.name;
+            string state = enemy.CurrentStateName;
+            float hp = enemy.NormalizedHP;
+            float pst = enemy.NormalizedPosture;
+            bool dead = enemy.IsDead;
+            bool stag = enemy.IsStaggered;
+            bool block = enemy.IsBlocking;
+
+            Color nameColor = dead ? Color.gray : stag ? Color.red : Color.white;
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label($"{name} [{state}]",
+                new GUIStyle(_style) { normal = { textColor = nameColor } },
+                GUILayout.Width(LabelWidth));
+            GUILayout.Label(
+                $"HP {hp:P0}  PST {pst:P0}{(stag ? " STAGGER" : "")}{(block ? " BLOCK" : "")}",
+                new GUIStyle(_style) { normal = { textColor = dead ? Color.gray : Color.white } });
+            GUILayout.EndHorizontal();
+        }
+
+        #endregion
+
+        #region Panel 7 — Surge & Difficulty Panel
+
+        private float DrawSurgeAndDifficultyPanel(float x, float y)
+        {
+            GUILayout.BeginArea(new Rect(x, y, panelWidth, 240f), GUI.skin.box);
+            GUILayout.Label("SURGE & DIFFICULTY", _headerStyle);
+            GUILayout.Space(6);
+
+            // --- Energy Surge ---
+            GUILayout.Label("--- Energy Surge (Sobrecarga) ---", _style);
+            if (_surgeSystem != null)
+            {
+                float bar = _surgeSystem.SurgeBar;
+                bool active = _combatController?.IsSurgeActive ?? false;
+                bool cooldown = _combatController?.IsInSurgeCooldown ?? false;
+
+                Color barColor = active ? Color.red : cooldown ? Color.yellow : Color.cyan;
+                DrawStat("Surge Bar", $"{bar:P1}", barColor);
+                DrawStat("Surge Active", active.ToString(),
+                    active ? Color.red : Color.gray);
+                DrawStat("Surge Cooldown", cooldown.ToString(),
+                    cooldown ? Color.yellow : Color.gray);
+                DrawStat("DMG Mult",
+                    active ? $"x{_combatSettings?.surgeDamageMultiplier:F2}" : "x1.00",
+                    active ? Color.red : Color.gray);
+            }
+            else
+            {
+                GUILayout.Label("SurgeSystem not initialized.", _warningStyle);
+            }
+
+            GUILayout.Space(6);
+
+            // --- Difficulty ---
+            GUILayout.Label("--- Difficulty (GDD §5.3.6) ---", _style);
+            if (_difficultyManager != null)
+            {
+                DrawStat("Difficulty", _difficultyManager.ActiveDifficulty.ToString(), Color.white);
+                DrawStat("Zone", $"Z-{_difficultyManager.CurrentZone:D2}", Color.white);
+                DrawStat("Zone Factor", $"x{_difficultyManager.CurrentZoneFactor:F2}", Color.cyan);
+                DrawStat("AI Multiplier",
+                    $"x{_difficultyManager.CurrentAIMultiplier:F2}",
+                    _difficultyManager.CurrentAIMultiplier > 1.05f ? Color.red
+                  : _difficultyManager.CurrentAIMultiplier < 0.95f ? Color.green
+                  : Color.white);
+                DrawStat("Tracked Enemies", $"{_difficultyManager.TrackedEnemyCount}", Color.white);
+            }
+            else
+            {
+                GUILayout.Label("DifficultyManager not initialized.", _warningStyle);
+            }
+
+            GUILayout.EndArea();
+            return 240f;
         }
 
         #endregion

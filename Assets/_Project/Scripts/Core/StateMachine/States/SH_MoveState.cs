@@ -1,172 +1,110 @@
-using Actions.Data;
-using Unity.Mathematics;
 using UnityEngine;
 
 namespace Core.StateMachine.States
 {
     /// <summary>
     /// Active locomotion state.
-    /// Orchestrates the projection of input into world-space and coordinates
-    /// acceleration and rotation through the locomotion and physics controllers.
+    /// Orchestrates input projection into world-space forces and drives
+    /// acceleration/rotation through the locomotion and physics controllers.
     ///
-    /// Extended to integrate the interaction system (GDD §5.2.1):
-    ///   - Ticks SH_InteractionController every frame for detection and hold timer.
-    ///   - Forwards InteractPressed / InteractReleased flags from SH_InputHandler.
-    ///
-    /// The interaction tick continues in MoveState so that:
-    ///   a) A hold started in IdleState persists through slow movement
-    ///      (the controller's range-break logic handles interruption by distance).
-    ///   b) The player can initiate an interaction while approaching a target.
-    ///
-    /// Note: SH_InteractionController.breakOnRangeExit controls whether movement
-    /// that takes the player out of detection range cancels an active hold.
-    /// If true (default), fast movement away from target interrupts extraction.
+    /// Extended for combat (GDD §5.3 Stage A):
+    ///   + Calls CombatController.Tick() first in Update() so attack input is
+    ///     processed before dash and idle-return checks. An attack committed
+    ///     while moving will request the action before the movement check fires,
+    ///     ensuring the FSM transitions to SH_ActionState without dropping the input.
     /// </summary>
     public class SH_MoveState : SH_BaseState
     {
-        #region Dependencies
-
-        private float _accelerationTimer;
-        private float _initialFriction;
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// Movement priority is 1.
-        /// Higher than Idle, but interruptible by combat actions or Dash.
-        /// </summary>
         public override int Priority => 1;
 
-        #endregion
-
-        #region Constructor
+        private float _initialFriction;
 
         public SH_MoveState(SH_PlayerContext context, SH_PlayerStateMachine stateMachine)
             : base(context, stateMachine)
         {
-            if (context == null)
-                Debug.LogError("[SH_MoveState] Construction failed: SH_PlayerContext is null.");
-            if (stateMachine == null)
-                Debug.LogError("[SH_MoveState] Construction failed: SH_PlayerStateMachine is null.");
+            if (context == null) Debug.LogError("[SH_MoveState] context is null.");
+            if (stateMachine == null) Debug.LogError("[SH_MoveState] stateMachine is null.");
         }
 
-        #endregion
-
-        #region Execution Lifecycle
-
-        /// <summary>
-        /// Ensures the locomotion system is active on state entry.
-        /// </summary>
         public override void Enter()
         {
             _context.Locomotion.SetMovementLock(false);
-            _accelerationTimer = 0f;
+
+            // Capture current friction for the smooth ramp from post-action states.
             _initialFriction = _context.Physics.frictionMultiplier;
         }
 
-        /// <summary>
-        /// Frame-by-frame logic evaluation.
-        ///
-        /// Execution order:
-        ///   1. Tick interaction controller (detection scan + hold timer continuation).
-        ///   2. Forward and consume interact input flags.
-        ///   3. Evaluate high-priority transitions (Dash, stop → Idle).
-        ///   4. Sync animator with physics.
-        /// </summary>
         public override void Update()
         {
-            // --- Friction Reduction for Smooth Acceleration ---
-            if (_initialFriction > 1f)
+            // 1. Interaction tick — detection scan + hold timer.
+            _context.Interaction?.Tick();
+            if (_context.Input.InteractPressed)
             {
-                if (_accelerationTimer < _context.Settings.accelerationTime)
-                {
-                    _accelerationTimer += Time.deltaTime;
-                    float t = Mathf.Clamp01(_accelerationTimer / _context.Settings.accelerationTime);
-                    float smoohedT = Mathf.SmoothStep(0f, 1f, t);
-                    float currentFriction = Mathf.Lerp(_initialFriction, 1f, smoohedT);
-                    _context.Physics.SetFrictionMultiplier(currentFriction);
-                }
+                _context.Input.ConsumeInteractPressed();
+                _context.Interaction?.NotifyInteractPressed();
+            }
+            if (_context.Input.InteractReleased)
+            {
+                _context.Input.ConsumeInteractReleased();
+                _context.Interaction?.NotifyInteractReleased();
             }
 
-            // --- 1. Interaction System Tick ---
-            if (_context.Interaction != null)
-            {
-                _context.Interaction.Tick();
+            // 2. Combat tick — attack input before locomotion transitions.
+            _context.CombatController?.Tick();
 
-                if (_context.Input.InteractPressed)
-                {
-                    _context.Interaction.NotifyInteractPressed();
-                    _context.Input.ConsumeInteractPressed();
-                }
-
-                if (_context.Input.InteractReleased)
-                {
-                    _context.Interaction.NotifyInteractReleased();
-                    _context.Input.ConsumeInteractReleased();
-                }
-            }
-
-            // --- 2. High-Priority Transition: Dash ---
+            // 3. Dash check.
             if (_context.Input.DashInput)
             {
                 _stateMachine.RequestAction(_context.Settings.dashAction);
                 return;
             }
 
-            // --- 3. Transition: Stop → Idle ---
+            // 4. Return to Idle when movement input ceases.
             if (_context.Input.MoveInput.sqrMagnitude < 0.01f)
             {
                 _stateMachine.ChangeState(new SH_IdleState(_context, _stateMachine));
                 return;
             }
 
-            // --- 4. Animator Sync ---
             SyncAnimationWithPhysics();
-
         }
 
-        /// <summary>
-        /// Processes input projection, locomotive acceleration, and Newtonian integration.
-        /// </summary>
         public override void PhysicsUpdate(float dt)
         {
             if (dt <= 0)
             {
-                Debug.LogError($"[SH_MoveState] PhysicsUpdate: invalid delta time ({dt}).");
+                Debug.LogError($"[SH_MoveState] PhysicsUpdate: invalid dt ({dt}).");
                 return;
             }
+
+            // Smooth friction ramp from whatever value was inherited on Enter().
+            float rampT = Mathf.SmoothStep(0f, 1f,
+                Mathf.Clamp01(Time.time / Mathf.Max(0.01f, _context.Settings.accelerationTime)));
+            _context.Physics.SetFrictionMultiplier(
+                Mathf.Lerp(_initialFriction, 1f, rampT));
+
             _context.Locomotion.Tick(dt);
             _context.Physics.Tick(_context.Settings, dt);
         }
 
-        /// <summary>
-        /// Exits the state, resetting any modified parameters to ensure a clean slate for the next state.
-        /// </summary>
         public override void Exit()
         {
-            
+            // Intentionally empty: friction restoration is handled by the
+            // destination state to avoid racing with the ramp.
         }
-
-        #endregion
-
-        #region Internal Logic
 
         private void SyncAnimationWithPhysics()
         {
             if (_context.AnimatorBridge == null) return;
 
             Vector3 velocity = _context.Physics.CurrentVelocity;
-            float horizontalSpeed = new UnityEngine.Vector2(velocity.x, velocity.z).magnitude;
-
+            float horizontalSpeed = new Vector2(velocity.x, velocity.z).magnitude;
             float normalizedSpeed = 0f;
-            if (horizontalSpeed > 0)
+
+            if (horizontalSpeed > 0f)
             {
                 if (horizontalSpeed <= _context.Settings.walkSpeed)
-                {
                     normalizedSpeed = (horizontalSpeed / _context.Settings.walkSpeed) * 0.5f;
-                }
                 else
                 {
                     float t = Mathf.InverseLerp(
@@ -179,7 +117,5 @@ namespace Core.StateMachine.States
 
             _context.AnimatorBridge.UpdateMovement(normalizedSpeed);
         }
-
-        #endregion
     }
 }

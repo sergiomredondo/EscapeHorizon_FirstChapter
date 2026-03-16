@@ -1,0 +1,848 @@
+using System;
+using UnityEngine;
+using UnityEngine.AI;
+using Core;
+using Game.Combat.Core;
+using Game.Combat.Data;
+using Game.Economy;
+using Game.Economy.Data;
+using Game.Enemy.Data;
+
+namespace Game.Enemy
+{
+    /// <summary>
+    /// Autonomous enemy agent implementing the five AI states defined in GDD §5.3.3
+    /// and the ICombatTarget contract required by SH_HitboxController (Stage A).
+    ///
+    /// State machine (GDD §5.3.3.4):
+    ///   Patrol    → passive roaming, low detection.
+    ///   Search    → lost contact, medium detection, investigates last known position.
+    ///   Attack    → player in engage range, cycles approach → combo → recover.
+    ///   Evade     → triggered by player Energy Surge (§5.3.3.2) or successful Parry.
+    ///   Retreat   → triggered at CriticalHealthThreshold (if RetreatsAtCriticalHealth).
+    ///
+    /// ICombatTarget implementation:
+    ///   ReceiveHit() applies EffectiveDamage to internal HP and PostureDamage to
+    ///   posture. Posture breaking triggers the Stagger window. HP at or below zero
+    ///   triggers OnDefeated → delivers drop rewards via SH_ResourceDropData.
+    ///
+    /// Group AI (GDD §5.3.3.6):
+    ///   SharedAlert — static per-scene flag. When any enemy spots the player or
+    ///   detects Energy Surge, all nearby enemies receive the alert immediately,
+    ///   transitioning from Patrol/Search to Attack/Evade.
+    ///
+    /// Difficulty scaling (GDD §5.3.6):
+    ///   SH_DifficultyManager calls ApplyZoneScaling(zoneFactor, difficulty)
+    ///   before the first encounter in each zone. This scales HP and AttackCooldown
+    ///   within the ±20% floor defined by the GDD.
+    ///
+    /// Responsibility boundaries:
+    ///   OWNS: Enemy FSM, posture, HP, block/parry decision, stagger timer.
+    ///   OWNS: Drop reward delivery on death.
+    ///   DOES NOT OWN: Damage formula (SH_DamageCalculator).
+    ///   DOES NOT OWN: Player state (read-only via SH_PlayerContext reference).
+    ///   DOES NOT OWN: Dynamic difficulty metrics (SH_DifficultyManager).
+    /// </summary>
+    [RequireComponent(typeof(NavMeshAgent))]
+    [RequireComponent(typeof(CharacterController))]
+    [DisallowMultipleComponent]
+    public class SH_EnemyController : MonoBehaviour, ICombatTarget
+    {
+        #region Dependencies
+
+        [Header("Data")]
+        [Tooltip("Archetype data asset (SH_EnemyData). Drives all behavioral parameters " +
+                 "and the combat stats used by SH_DamageCalculator.")]
+        [SerializeField] private SH_EnemyData _data;
+
+        [Tooltip("Reference to the player context. Assigned at runtime by the Scene " +
+                 "initializer or manually in the Inspector for prototype scenes.")]
+        [SerializeField] private SH_PlayerContext _playerContext;
+
+        private NavMeshAgent    _agent;
+        private CharacterController _cc;
+
+        #endregion
+
+        #region Runtime State — Health & Posture
+
+        private float _currentHP;
+        private float _currentPosture;
+        private bool  _isDead;
+        private bool  _isStaggered;
+        private float _staggerTimer;
+        private float _postureRegenTimer;
+
+        /// <summary>
+        /// Scaled max HP after SH_DifficultyManager.ApplyZoneScaling().
+        /// Initialized from SH_EnemyData.ResolvedMaxDurability in Awake().
+        /// </summary>
+        private float _scaledMaxHP;
+
+        /// <summary>
+        /// Scaled attack cooldown after difficulty scaling.
+        /// </summary>
+        private float _scaledAttackCooldown;
+
+        /// <summary>
+        /// True if this enemy unit is an Elite variant.
+        /// Sourced directly from SH_EnemyData.IsElite to avoid Reflection access
+        /// from SH_HitboxController in the combat hot path.
+        /// SH_HitboxController calls RollEnergyEventOnEliteEncounter() when this is true.
+        /// </summary>
+        public bool IsElite => _data != null && _data.IsElite;
+
+        #endregion
+
+        #region Runtime State — Blocking / Parrying
+
+        private bool  _isBlocking;
+        private bool  _isInParryWindow;
+        private float _blockTimer;
+        private float _perceptionTimer;
+
+        /// <summary>
+        /// Interval in seconds between perception scan ticks (1 / 10 Hz = 0.1s).
+        /// Decouples the expensive detection scan from the full Update loop.
+        /// </summary>
+        private const float PerceptionTickInterval = 0.1f;
+
+        #endregion
+
+        #region Runtime State — FSM
+
+        /// <summary>
+        /// The five AI states from GDD §5.3.3.4.
+        /// </summary>
+        private enum EnemyState
+        {
+            Patrol,
+            Search,
+            Attack,
+            Evade,
+            Retreat
+        }
+
+        private EnemyState _state = EnemyState.Patrol;
+
+        /// <summary>
+        /// Last known player world position. Updated whenever the player is in
+        /// detection range. Used by Search state as the investigation target.
+        /// </summary>
+        private Vector3 _lastKnownPlayerPosition;
+
+        /// <summary>
+        /// Elapsed time in Search state before giving up and returning to Patrol.
+        /// </summary>
+        private float _searchTimer;
+        private const float SearchTimeout = 8f;
+
+        /// <summary>
+        /// Cooldown tracker for the current attack combo.
+        /// Reset to _scaledAttackCooldown when a combo completes.
+        /// </summary>
+        private float _attackCooldownTimer;
+
+        /// <summary>
+        /// Current attack within the combo window (0 to _data.ComboLength - 1).
+        /// </summary>
+        private int   _comboHitsRemaining;
+        private bool  _comboInProgress;
+        private float _comboStepTimer;
+        private const float ComboStepInterval = 0.6f;
+
+        /// <summary>
+        /// Evasion movement target. Set when entering Evade state.
+        /// </summary>
+        private Vector3 _evadeTarget;
+        private float   _evadeTimer;
+        private const float EvadeDuration = 1.2f;
+
+        #endregion
+
+        #region Shared Alert (Group AI — GDD §5.3.3.6)
+
+        /// <summary>
+        /// Static flag. When any enemy calls BroadcastAlert(), all controllers
+        /// in the same scene check this in their next Update() frame and transition
+        /// to Attack or Evade accordingly.
+        /// Resets when all enemies are defeated or the scene is reloaded.
+        /// </summary>
+        private static bool s_sharedAlertActive = false;
+
+        /// <summary>
+        /// Static reference to the alerted player position for group convergence.
+        /// </summary>
+        private static Vector3 s_alertPlayerPosition;
+
+        /// <summary>
+        /// Broadcasts a shared alert to all enemies in the scene.
+        /// Called when an enemy spots the player or detects Energy Surge.
+        /// </summary>
+        private void BroadcastAlert(Vector3 playerPosition)
+        {
+            s_sharedAlertActive    = true;
+            s_alertPlayerPosition  = playerPosition;
+        }
+
+        /// <summary>
+        /// Resets the shared alert state. Called by the scene manager or
+        /// when the last enemy is defeated.
+        /// </summary>
+        public static void ResetSharedAlert()
+        {
+            s_sharedAlertActive   = false;
+            s_alertPlayerPosition = Vector3.zero;
+        }
+
+        #endregion
+
+        #region ICombatTarget Implementation
+
+        public bool   IsStaggered    => _isStaggered;
+        public bool   IsDead         => _isDead;
+        public bool   IsBlocking     => _isBlocking;
+        public bool   IsInParryWindow => _isInParryWindow;
+        public Vector3 WorldPosition => transform.position;
+
+        /// <summary>
+        /// Receives a combat hit from SH_HitboxController.
+        /// Applies EffectiveDamage to HP and PostureDamage to posture.
+        /// Evaluates stagger and defeat conditions.
+        /// Triggers block/parry decision if the unit has not already committed.
+        /// </summary>
+        public void ReceiveHit(SH_DamagePayload payload)
+        {
+            if (_isDead) return;
+
+            // --- Apply HP damage ---
+            _currentHP -= payload.EffectiveDamage;
+            _currentHP  = Mathf.Max(0f, _currentHP);
+
+            // --- Apply posture damage ---
+            if (!_isStaggered)
+            {
+                _currentPosture -= payload.PostureDamage;
+                _currentPosture  = Mathf.Max(0f, _currentPosture);
+            }
+
+            // --- Knockback ---
+            if (!payload.WasBlocked && !payload.WasParried && payload.KnockbackImpulse.sqrMagnitude > 0.01f)
+            {
+                if (_agent != null && _agent.isOnNavMesh)
+                    _agent.velocity += payload.KnockbackImpulse / Mathf.Max(1f, _data?.CombatStats?.Defense ?? 8f);
+            }
+
+            // --- Stagger check ---
+            if (_currentPosture <= 0f && !_isStaggered && !(_data?.CombatStats?.IsStaggerImmune ?? false))
+            {
+                EnterStagger();
+            }
+
+            // --- Death check ---
+            if (_currentHP <= 0f && !_isDead)
+            {
+                Die();
+                return;
+            }
+
+            // --- Reaction: break combo and re-evaluate ---
+            if (_comboInProgress)
+            {
+                _comboInProgress = false;
+                _comboHitsRemaining = 0;
+            }
+
+            // --- Transition toward Evade if Surge is active ---
+            if (_playerContext?.CombatController?.IsSurgeActive ?? false)
+            {
+                TryEvaluateSurgeEvasion();
+            }
+
+            // --- Log ---
+            Debug.Log($"[SH_EnemyController] {_data?.DisplayName ?? gameObject.name} " +
+                      $"hit: -{payload.EffectiveDamage:F1} HP ({_currentHP:F1} remaining), " +
+                      $"posture {_currentPosture:F1}, " +
+                      $"critical={payload.IsCritical}, blocked={payload.WasBlocked}.");
+        }
+
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Fired when this enemy is defeated.
+        /// Parameters: (SH_EnemyController defeated enemy).
+        /// Consumed by: wave manager, narrative triggers, difficulty tracker.
+        /// </summary>
+        public event Action<SH_EnemyController> OnDefeated;
+
+        /// <summary>
+        /// Fired when this enemy enters or exits the Stagger state.
+        /// Parameters: (bool isNowStaggered).
+        /// Consumed by: UI posture bar, audio system.
+        /// </summary>
+        public event Action<bool> OnStaggerChanged;
+
+        #endregion
+
+        #region Initialization
+
+        /// <summary>
+        /// Allows the scene to inject the player context at runtime.
+        /// Called by the level initializer or a scene manager component.
+        /// </summary>
+        public void Initialize(SH_PlayerContext playerContext)
+        {
+            if (playerContext == null)
+            {
+                Debug.LogError($"[SH_EnemyController] Initialize: null playerContext on {gameObject.name}.");
+                return;
+            }
+            _playerContext = playerContext;
+        }
+
+        private void Awake()
+        {
+            _agent = GetComponent<NavMeshAgent>();
+            _cc    = GetComponent<CharacterController>();
+
+            if (_data == null)
+            {
+                Debug.LogError($"[SH_EnemyController] SH_EnemyData is not assigned on {gameObject.name}.");
+                return;
+            }
+
+            _scaledMaxHP          = _data.ResolvedMaxDurability;
+            _scaledAttackCooldown = _data.AttackCooldown;
+            _currentHP            = _scaledMaxHP;
+            _currentPosture       = _data.ResolvedPostureMax;
+
+            if (_agent != null)
+            {
+                _agent.speed        = _data.PatrolSpeed;
+                _agent.angularSpeed = _data.RotationSpeed;
+                _agent.stoppingDistance = _data.MeleeAttackRange * 0.9f;
+            }
+        }
+
+        #endregion
+
+        #region Unity Lifecycle
+
+        private void Update()
+        {
+            if (_isDead || _data == null) return;
+
+            // --- Combat state ticks (full Update rate) ---
+            // Posture recovery, stagger window, and block decision run every frame
+            // to ensure responsive hit reception and state changes.
+            TickPostureRegen();
+            TickStagger();
+            TickBlock();
+
+            // --- Perception throttle (10 Hz) ---
+            // Detection scan and shared-alert check are expensive for large enemy groups.
+            // They run at PerceptionTickInterval to reduce per-frame CPU cost.
+            // Movement, attack execution, and combo logic still run at full framerate.
+            _perceptionTimer += Time.deltaTime;
+            bool runPerceptionThisTick = _perceptionTimer >= PerceptionTickInterval;
+            if (runPerceptionThisTick)
+                _perceptionTimer = 0f;
+
+            // Shared alert check — runs only on perception tick
+            if (runPerceptionThisTick && s_sharedAlertActive && _state == EnemyState.Patrol)
+            {
+                _lastKnownPlayerPosition = s_alertPlayerPosition;
+                TransitionTo(EnemyState.Attack);
+            }
+
+            // Main FSM tick — perception gating is handled inside each state tick
+            switch (_state)
+            {
+                case EnemyState.Patrol: TickPatrol(runPerceptionThisTick); break;
+                case EnemyState.Search: TickSearch(runPerceptionThisTick); break;
+                case EnemyState.Attack: TickAttack(); break;
+                case EnemyState.Evade: TickEvade(); break;
+                case EnemyState.Retreat: TickRetreat(runPerceptionThisTick); break;
+            }
+        }
+
+        #endregion
+
+        #region Difficulty Scaling API
+
+        /// <summary>
+        /// Applies zone-level difficulty scaling to this enemy's HP and attack cadence.
+        /// Called by SH_DifficultyManager before the first encounter in each zone.
+        ///
+        /// GDD §5.3.6: enemy attributes scale linearly with zone, +10% per zone.
+        /// Hard difficulty: HP ×1.2, Attack ×1.3. AI aggressiveness: ×1.5 (→ shorter cooldown).
+        /// </summary>
+        /// <param name="zoneFactor">
+        /// Cumulative zone multiplier (1.0 = zone 1, 1.1 = zone 2, etc.)
+        /// </param>
+        /// <param name="difficulty">
+        /// Active difficulty level. Drives additional multipliers per GDD §5.3.6 table.
+        /// </param>
+        public void ApplyZoneScaling(float zoneFactor, DifficultyLevel difficulty)
+        {
+            if (_data == null) return;
+
+            float hpMult      = GetHpMultiplier(difficulty) * zoneFactor;
+            float aiMult      = GetAIMult(difficulty);
+
+            _scaledMaxHP          = _data.ResolvedMaxDurability * hpMult;
+            _currentHP            = Mathf.Min(_currentHP, _scaledMaxHP);
+            _scaledAttackCooldown = _data.AttackCooldown / Mathf.Max(0.1f, aiMult);
+        }
+
+        private static float GetHpMultiplier(DifficultyLevel d) => d switch
+        {
+            DifficultyLevel.Easy      => 0.8f,
+            DifficultyLevel.Normal    => 1.0f,
+            DifficultyLevel.Hard      => 1.2f,
+            DifficultyLevel.Nightmare => 1.5f,
+            _ => 1.0f
+        };
+
+        private static float GetAIMult(DifficultyLevel d) => d switch
+        {
+            DifficultyLevel.Easy      => 0.9f,
+            DifficultyLevel.Normal    => 1.0f,
+            DifficultyLevel.Hard      => 1.5f,
+            DifficultyLevel.Nightmare => 1.3f,
+            _ => 1.0f
+        };
+
+        #endregion
+
+        #region FSM State Ticks
+
+        /// <param name="runPerception">
+        /// When true, the detection range check is evaluated this tick.
+        /// When false, the method returns early to skip the expensive sqrMagnitude check.
+        /// </param>
+        private void TickPatrol(bool runPerception)
+        {
+            if (!runPerception || _playerContext == null) return;
+
+            // sqrMagnitude vs range² avoids the sqrt inside Vector3.Distance.
+            // The comparison result is identical for range checks.
+            float sqrDist = (transform.position - _playerContext.Transform.position).sqrMagnitude;
+            float sqrDetection = _data.DetectionRange * _data.DetectionRange;
+
+            if (sqrDist <= sqrDetection)
+            {
+                _lastKnownPlayerPosition = _playerContext.Transform.position;
+                BroadcastAlert(_lastKnownPlayerPosition);
+                TransitionTo(EnemyState.Search);
+            }
+        }
+
+        /// <param name="runPerception">
+        /// When true, distance checks against detection and engage ranges are evaluated.
+        /// Navigation toward the last known position runs every frame regardless.
+        /// </param>
+        private void TickSearch(bool runPerception)
+        {
+            _searchTimer += Time.deltaTime;
+
+            if (_searchTimer >= SearchTimeout)
+            {
+                TransitionTo(EnemyState.Patrol);
+                return;
+            }
+
+            if (runPerception && _playerContext != null)
+            {
+                float sqrDist = (transform.position - _playerContext.Transform.position).sqrMagnitude;
+                float sqrEngage = _data.AttackEngageRange * _data.AttackEngageRange;
+                float sqrDetection = _data.DetectionRange * _data.DetectionRange;
+
+                if (sqrDist <= sqrEngage)
+                {
+                    TransitionTo(EnemyState.Attack);
+                    return;
+                }
+                if (sqrDist <= sqrDetection)
+                {
+                    _lastKnownPlayerPosition = _playerContext.Transform.position;
+                }
+            }
+
+            // Navigation runs every frame — only the perception check is throttled.
+            if (_agent != null && _agent.isOnNavMesh)
+                _agent.SetDestination(_lastKnownPlayerPosition);
+        }
+
+        private void TickAttack()
+        {
+            if (_playerContext == null) return;
+
+            float sqrDist = (transform.position - _playerContext.Transform.position).sqrMagnitude;
+            float sqrLostContact = (_data.DetectionRange * 1.5f) * (_data.DetectionRange * 1.5f);
+
+            // Lost contact
+            if (sqrDist > sqrLostContact)
+            {
+                TransitionTo(EnemyState.Search);
+                return;
+            }
+
+            // Critical health check
+            if (_currentHP / _scaledMaxHP <= _data.CriticalHealthThreshold)
+            {
+                TransitionTo(_data.RetreatsAtCriticalHealth ? EnemyState.Retreat : EnemyState.Attack);
+            }
+
+            // Surge detection → Evade
+            if ((_playerContext.CombatController?.IsSurgeActive ?? false) && !_comboInProgress)
+            {
+                TryEvaluateSurgeEvasion();
+                return;
+            }
+
+            // Pursue player
+            if (_agent != null && _agent.isOnNavMesh)
+                _agent.SetDestination(_playerContext.Transform.position);
+
+            // Face player
+            FaceTarget(_playerContext.Transform.position);
+
+            // Attack if in melee range and cooldown ready
+            _attackCooldownTimer -= Time.deltaTime;
+
+            float sqrMelee = _data.MeleeAttackRange * _data.MeleeAttackRange;
+            if (sqrDist <= sqrMelee && _attackCooldownTimer <= 0f && !_comboInProgress)
+            {
+                StartCombo();
+            }
+
+            // Tick combo if in progress
+            if (_comboInProgress)
+            {
+                TickCombo();
+            }
+
+            // Block decision — try to block if player is about to attack
+            EvaluateBlockDecision();
+        }
+
+        private void TickEvade()
+        {
+            _evadeTimer += Time.deltaTime;
+
+            if (_agent != null && _agent.isOnNavMesh)
+                _agent.SetDestination(_evadeTarget);
+
+            // Return to Attack when evade is complete or Surge ended
+            bool surgeEnded = !(_playerContext?.CombatController?.IsSurgeActive ?? false);
+            if (_evadeTimer >= EvadeDuration || surgeEnded)
+            {
+                TransitionTo(EnemyState.Attack);
+            }
+        }
+
+        private void TickRetreat(bool runPerception)
+        {
+            if (_playerContext == null) return;
+
+            Vector3 awayDir = (transform.position - _playerContext.Transform.position).normalized;
+            Vector3 target  = transform.position + awayDir * 6f;
+
+            if (_agent != null && _agent.isOnNavMesh)
+                _agent.SetDestination(target);
+
+            float sqrDist = (transform.position - _playerContext.Transform.position).sqrMagnitude;
+            float sqrLostContact = (_data.DetectionRange) * (_data.DetectionRange);
+
+            // Lost contact
+            if (sqrDist > sqrLostContact)
+                TransitionTo(EnemyState.Patrol);
+        }
+
+        #endregion
+
+        #region Combat Actions
+
+        private void StartCombo()
+        {
+            _comboInProgress    = true;
+            _comboHitsRemaining = _data.ComboLength;
+            _comboStepTimer     = 0f;
+
+            if (_agent != null) _agent.isStopped = true;
+        }
+
+        private void TickCombo()
+        {
+            _comboStepTimer += Time.deltaTime;
+
+            if (_comboStepTimer < ComboStepInterval) return;
+            _comboStepTimer = 0f;
+
+            if (_comboHitsRemaining > 0)
+            {
+                ExecuteSingleAttack();
+                _comboHitsRemaining--;
+            }
+
+            if (_comboHitsRemaining <= 0)
+            {
+                _comboInProgress      = false;
+                _attackCooldownTimer  = _scaledAttackCooldown;
+                if (_agent != null) _agent.isStopped = false;
+            }
+        }
+
+        /// <summary>
+        /// Delivers a single melee hit to the player's SH_HealthComponent using the
+        /// attacker's CombatStats and SH_CombatSettings.
+        /// GDD §5.3.4: enemy attacks apply EffectiveDamage to player Durability.
+        /// </summary>
+        private void ExecuteSingleAttack()
+        {
+            if (_playerContext == null || _data?.CombatStats == null) return;
+
+            // Build a simple flat damage value from the enemy's Strength.
+            // A full BuildPayload path would require an ICombatTarget on the player —
+            // that integration point is Stage C (SH_PlayerCombatReceiver).
+            // For Stage B, we apply damage directly to SH_HealthComponent.
+            float baseAttack = _data.CombatStats.Strength * 1.0f; // Normal multiplier
+            float finalDmg   = Mathf.Max(0f, baseAttack -
+                (_playerContext.PlayerCombatStats?.Defense ?? 0f) * 0.5f);
+
+            _playerContext.Health.TakeDamage(finalDmg);
+
+            // Notify damage to interrupt any active interaction hold
+            _playerContext.Interaction?.NotifyDamageReceived();
+
+            Debug.Log($"[SH_EnemyController] {_data.DisplayName} attacked player: " +
+                      $"{finalDmg:F1} damage.");
+        }
+
+        private void EvaluateBlockDecision()
+        {
+            if (_isBlocking || _isStaggered) return;
+            if (UnityEngine.Random.value < _data.BlockProbability * Time.deltaTime)
+            {
+                StartBlock();
+            }
+        }
+
+        private void StartBlock()
+        {
+            _isBlocking   = true;
+            _blockTimer   = _data.BlockDuration;
+            _isInParryWindow = UnityEngine.Random.value < _data.ParryUpgradeProbability;
+        }
+
+        private void TickBlock()
+        {
+            if (!_isBlocking) return;
+            _blockTimer -= Time.deltaTime;
+            if (_blockTimer <= 0f)
+            {
+                _isBlocking      = false;
+                _isInParryWindow = false;
+            }
+        }
+
+        private void TryEvaluateSurgeEvasion()
+        {
+            if (UnityEngine.Random.value < _data.SurgeEvadeProbability)
+            {
+                if (_playerContext != null)
+                {
+                    Vector3 awayDir = (transform.position - _playerContext.Transform.position).normalized;
+                    // Flanker evades sideways, Assailant/Tank evade backward
+                    if (_data.Archetype == EnemyArchetype.Flanker)
+                        awayDir = Vector3.Cross(awayDir, Vector3.up).normalized;
+                    _evadeTarget = transform.position + awayDir * _data.EvasionDistance;
+                }
+                TransitionTo(EnemyState.Evade);
+            }
+        }
+
+        #endregion
+
+        #region Stagger & Posture
+
+        private void EnterStagger()
+        {
+            _isStaggered    = true;
+            _isBlocking      = false;
+            _isInParryWindow = false;
+            _comboInProgress = false;
+            _comboHitsRemaining = 0;
+            _staggerTimer   = 0f;
+
+            if (_agent != null) _agent.isStopped = true;
+
+            OnStaggerChanged?.Invoke(true);
+            Debug.Log($"[SH_EnemyController] {_data.DisplayName} staggered.");
+        }
+
+        private void TickStagger()
+        {
+            if (!_isStaggered) return;
+
+            _staggerTimer += Time.deltaTime;
+            if (_playerContext?.CombatSettings == null) return;
+
+            if (_staggerTimer >= _playerContext.CombatSettings.staggerDuration)
+            {
+                _isStaggered  = false;
+                _currentPosture = _data.ResolvedPostureMax;
+                if (_agent != null) _agent.isStopped = false;
+                OnStaggerChanged?.Invoke(false);
+            }
+        }
+
+        private void TickPostureRegen()
+        {
+            if (_isStaggered || _currentPosture >= _data.ResolvedPostureMax) return;
+
+            _postureRegenTimer += Time.deltaTime;
+            if (_postureRegenTimer < 0.5f) return; // 0.5s grace period before regen starts
+            _postureRegenTimer = 0f;
+
+            float regenRate = _playerContext?.CombatSettings?.postureRegenRate ?? 8f;
+            _currentPosture = Mathf.Min(_data.ResolvedPostureMax,
+                _currentPosture + regenRate * Time.deltaTime);
+        }
+
+        #endregion
+
+        #region Death
+
+        private void Die()
+        {
+            _isDead = true;
+
+            if (_agent != null) _agent.isStopped = true;
+
+            // Deliver economic rewards to the player
+            if (_data?.DropData != null && _playerContext?.Resources != null)
+            {
+                _data.DropData.DeliverDestroyRewards(_playerContext.Resources);
+            }
+
+            // Elite encounter: roll Energy Flux event (GDD §5.3.2)
+            if (_data?.IsElite ?? false)
+            {
+                _playerContext?.EconomicEvents?.RollEnergyEventOnEliteEncounter();
+            }
+
+            OnDefeated?.Invoke(this);
+
+            Debug.Log($"[SH_EnemyController] {_data?.DisplayName ?? gameObject.name} defeated.");
+
+            // Disable after a brief delay to allow death animation to play
+            Invoke(nameof(Deactivate), 1.5f);
+        }
+
+        private void Deactivate()
+        {
+            gameObject.SetActive(false);
+        }
+
+        #endregion
+
+        #region Utility
+
+        private void TransitionTo(EnemyState newState)
+        {
+            if (_state == newState) return;
+
+            // Exit cleanup
+            switch (_state)
+            {
+                case EnemyState.Search:
+                    _searchTimer = 0f;
+                    break;
+                case EnemyState.Evade:
+                    _evadeTimer = 0f;
+                    break;
+            }
+
+            _state = newState;
+
+            // Entry setup
+            switch (_state)
+            {
+                case EnemyState.Patrol:
+                    if (_agent != null) _agent.speed = _data.PatrolSpeed;
+                    break;
+                case EnemyState.Attack:
+                    if (_agent != null) _agent.speed = _data.PursuitSpeed;
+                    break;
+                case EnemyState.Evade:
+                    if (_agent != null) _agent.speed = _data.PursuitSpeed * 1.2f;
+                    _evadeTimer = 0f;
+                    break;
+            }
+        }
+
+        private void FaceTarget(Vector3 target)
+        {
+            Vector3 dir = (target - transform.position);
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 0.001f) return;
+
+            Quaternion targetRot = Quaternion.LookRotation(dir);
+            transform.rotation = Quaternion.RotateTowards(
+                transform.rotation, targetRot,
+                _data.RotationSpeed * Time.deltaTime);
+        }
+
+        #endregion
+
+        #region Public Query API
+
+        /// <summary>
+        /// Normalized HP fraction (0–1). Consumed by SH_Debugger telemetry and UI.
+        /// </summary>
+        public float NormalizedHP => _scaledMaxHP > 0f ? _currentHP / _scaledMaxHP : 0f;
+
+        /// <summary>
+        /// Normalized posture fraction (0–1). Consumed by SH_Debugger telemetry and UI.
+        /// </summary>
+        public float NormalizedPosture =>
+            _data?.ResolvedPostureMax > 0f
+                ? _currentPosture / _data.ResolvedPostureMax
+                : 0f;
+
+        /// <summary>
+        /// Current FSM state label. Exposed for SH_Debugger.
+        /// </summary>
+        public string CurrentStateName => _state.ToString();
+
+        /// <summary>
+        /// Injects a player context reference without requiring re-initialization.
+        /// Used when the player context is rebuilt mid-scene.
+        /// </summary>
+        public void SetPlayerContext(SH_PlayerContext ctx) => _playerContext = ctx;
+
+        #endregion
+
+        #region Gizmos
+
+        private void OnDrawGizmosSelected()
+        {
+            if (_data == null) return;
+
+            Gizmos.color = new Color(1f, 0.8f, 0.2f, 0.2f);
+            Gizmos.DrawWireSphere(transform.position, _data.DetectionRange);
+
+            Gizmos.color = new Color(1f, 0.4f, 0f, 0.3f);
+            Gizmos.DrawWireSphere(transform.position, _data.AttackEngageRange);
+
+            Gizmos.color = new Color(1f, 0.1f, 0.1f, 0.4f);
+            Gizmos.DrawWireSphere(transform.position, _data.MeleeAttackRange);
+        }
+
+        #endregion
+    }
+}

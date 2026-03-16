@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30db30003535306498b92ee3976caa9c, type: 3}
+  m_Name: Flanker
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Enemy.Data.SH_EnemyData
+  DisplayName: Flanker
+  Archetype: 2
+  IsElite: 0
+  CombatStats: {fileID: 0}
+  MaxDurabilityOverride: 0
+  PostureMaxOverride: 0
+  DetectionRange: 10
+  AttackEngageRange: 6
+  MeleeAttackRange: 2.5
+  PatrolSpeed: 2
+  PursuitSpeed: 4
+  RotationSpeed: 180
+  AttackCooldown: 2
+  ComboLength: 2
+  BlockProbability: 0.2
+  BlockDuration: 0.4
+  ParryUpgradeProbability: 0.1
+  SurgeEvadeProbability: 0.7
+  EvasionDistance: 2.5
+  CriticalHealthThreshold: 0.2
+  RetreatsAtCriticalHealth: 0
+  CanBeGroupLeader: 0
+  MinGroupSpacing: 1.5
+  DropData: {fileID: 0}
