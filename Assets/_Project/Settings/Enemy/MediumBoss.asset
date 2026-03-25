@@ -10,16 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 30db30003535306498b92ee3976caa9c, type: 3}
-  m_Name: Assailant
+  m_Name: MediumBoss
   m_EditorClassIdentifier: Assembly-CSharp::Game.Enemy.Data.SH_EnemyData
-  DisplayName: Assailant
-  Archetype: 0
+  DisplayName: Enemy
+  Archetype: 3
   IsElite: 0
-  CombatStats: {fileID: 11400000, guid: f2cb48af6fe6608448718a03f07b057a, type: 2}
+  CombatStats: {fileID: 11400000, guid: 1406045d861b60944aa57078866f234a, type: 2}
   MaxDurabilityOverride: 0
   PostureMaxOverride: 0
-  DetectionRange: 50
-  AttackEngageRange: 5
+  DetectionRange: 10
+  AttackEngageRange: 6
   MeleeAttackRange: 2.5
   PatrolSpeed: 2
   PursuitSpeed: 4
@@ -35,4 +35,4 @@ MonoBehaviour:
   RetreatsAtCriticalHealth: 0
   CanBeGroupLeader: 0
   MinGroupSpacing: 1.5
-  DropData: {fileID: 11400000, guid: 5472352e0123a824f8fc85313121b55f, type: 2}
+  DropData: {fileID: 11400000, guid: defee91622bdc3241a6f46d4ebabb365, type: 2}

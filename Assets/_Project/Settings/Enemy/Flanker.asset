@@ -15,7 +15,7 @@ MonoBehaviour:
   DisplayName: Flanker
   Archetype: 2
   IsElite: 0
-  CombatStats: {fileID: 0}
+  CombatStats: {fileID: 11400000, guid: 8d934f3a4fd67274cadd2261c5cd519a, type: 2}
   MaxDurabilityOverride: 0
   PostureMaxOverride: 0
   DetectionRange: 10
@@ -35,4 +35,4 @@ MonoBehaviour:
   RetreatsAtCriticalHealth: 0
   CanBeGroupLeader: 0
   MinGroupSpacing: 1.5
-  DropData: {fileID: 0}
+  DropData: {fileID: 11400000, guid: 9df7b8e9424b3254e9e4071130dc4e3b, type: 2}

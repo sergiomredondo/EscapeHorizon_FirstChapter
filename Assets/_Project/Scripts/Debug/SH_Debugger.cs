@@ -316,6 +316,7 @@ namespace DebugTools
 
         private float DrawPhysicsPanel(float x, float y)
         {
+
             if (_physics == null || _settings == null) return 0f;
 
             Vector3 vel = _physics.CurrentVelocity;
@@ -340,7 +341,7 @@ namespace DebugTools
             bool rampActive = frictionMul > 1.01f;
             float accelTime = _settings.accelerationTime;
 
-            float panelH = 300f;
+            float panelH = 340f;
             GUILayout.BeginArea(new Rect(x, y, panelWidth, panelH), GUI.skin.box);
 
             GUILayout.Label("NEWTONIAN TELEMETRY", _headerStyle);
@@ -386,16 +387,10 @@ namespace DebugTools
             DrawStat("Kinetic energy", $"{kineticEnergy:F2} J",
                      new Color(0.4f, 0.9f, 1f));
 
-            if (hasForce)
-            {
-                DrawStat("Last force", lastForce.ToString("F2"), Color.yellow);
-                DrawStat("Force magnitude", $"{forceMag:F2} N", Color.yellow);
-                DrawStat("Est. accel.", $"{forceMag / _settings.mass:F2} m/s²", Color.yellow);
-            }
-            else
-            {
-                DrawStat("Active force", "none", Color.gray, style: _dimStyle);
-            }
+            DrawStat("Last force", lastForce.ToString("F2"), Color.yellow);
+            DrawStat("Force magnitude", $"{forceMag:F2} N", Color.yellow);
+            DrawStat("Est. accel.", $"{forceMag / _settings.mass:F2} m/s²", Color.yellow);
+            DrawStat("Active force", "none", Color.gray, style: _dimStyle);
 
             Separator();
 
@@ -427,7 +422,7 @@ namespace DebugTools
             if (_context?.Animator == null) return 0f;
 
             Animator anim = _context.Animator;
-            float panelH = 150f;
+            float panelH = 180f;
 
             GUILayout.BeginArea(new Rect(x, y, panelWidth, panelH), GUI.skin.box);
 
@@ -436,7 +431,7 @@ namespace DebugTools
 
             float movBlend = anim.GetFloat("Movement_Blend");
             float dashForce = anim.GetFloat("DashForce");
-            bool dashBool = anim.GetBool("Dash");
+            //bool dashBool = anim.GetBool("Dash");
             bool inTrans = anim.IsInTransition(0);
             var stateInfo = anim.GetCurrentAnimatorStateInfo(0);
             float normTime = stateInfo.normalizedTime % 1f;
@@ -445,8 +440,8 @@ namespace DebugTools
                      movBlend > 0.5f ? new Color(1f, 0.8f, 0.2f) : Color.white);
             DrawStat("DashForce param", $"{dashForce:F4}",
                      dashForce > 0f ? Color.yellow : Color.gray);
-            DrawStat("Dash trigger", dashBool.ToString(),
-                     dashBool ? Color.red : Color.gray);
+            //DrawStat("Dash trigger", dashBool.ToString(),
+            //         dashBool ? Color.red : Color.gray);
 
             Separator();
 

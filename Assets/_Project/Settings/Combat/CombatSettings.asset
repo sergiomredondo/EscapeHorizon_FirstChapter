@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Data.SH_CombatSettings
   lightAttackMultiplier: 1
   heavyAttackMultiplier: 1.8
-  heavyAttackHoldThreshold: 0.2
+  heavyAttackHoldThreshold: 0.4
   defenseEffectiveness: 0.5
   blockDamageReduction: 0.15
   parryDamageReduction: 0

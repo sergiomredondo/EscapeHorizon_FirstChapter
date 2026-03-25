@@ -15,7 +15,7 @@ MonoBehaviour:
   DisplayName: Tank
   Archetype: 1
   IsElite: 0
-  CombatStats: {fileID: 0}
+  CombatStats: {fileID: 11400000, guid: 4e4cfb9a10145044399cc2ff4244652c, type: 2}
   MaxDurabilityOverride: 0
   PostureMaxOverride: 0
   DetectionRange: 10
@@ -35,4 +35,4 @@ MonoBehaviour:
   RetreatsAtCriticalHealth: 0
   CanBeGroupLeader: 0
   MinGroupSpacing: 1.5
-  DropData: {fileID: 0}
+  DropData: {fileID: 11400000, guid: 9f1bba374c749684e9804c456019e1f7, type: 2}

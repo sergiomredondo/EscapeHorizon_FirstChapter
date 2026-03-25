@@ -37,11 +37,23 @@ namespace Game.Combat.Core
 
         #region Runtime State
 
+        /// <summary>
+        /// Registry of ICombatTarget instances already hit during the current activation.
+        /// Prevents multiple hits on the same target within a single activation, which could 
+        /// occur if the hitbox overlaps multiple colliders on the same target or if the target's collider
+        /// remains within the hitbox across multiple frames during the active phase. Cleared on each activation. 
+        /// </summary>
         private readonly HashSet<ICombatTarget> _hitRegistry = new HashSet<ICombatTarget>();
         private readonly Collider[] _overlapBuffer = new Collider[16];
         private SH_ActionData _currentAction;
         private AttackType _currentAttackType;
         private bool _surgeActiveAtActivation;
+
+        // Pre-allocated fallback used when a target exposes no SH_CombatStats.
+        // Static + readonly: one allocation at class load, zero per-hit.
+        // Previously ScriptableObject.CreateInstance<> was called per hit — that
+        // pushed a new managed object onto the heap on every attack frame.
+        private static SH_CombatStats _zeroDefenseStats;
 
         #endregion
 
@@ -159,19 +171,52 @@ namespace Game.Combat.Core
             }
         }
 
+        /// <summary>
+        /// Creates a static, pre-allocated SH_CombatStats instance with 
+        /// zero defense to use as a fallback when a hit target exposes no stats.
+        /// </summary>
+        private static SH_CombatStats CreateZeroDefenseFallback()
+        {
+            if (_zeroDefenseStats == null)
+            {
+                _zeroDefenseStats = ScriptableObject.CreateInstance<SH_CombatStats>();
+                _zeroDefenseStats.Defense = 0f;
+
+#if UNITY_EDITOR
+                _zeroDefenseStats.name = "[Runtime] ZeroDefenseFallback";
+#endif
+            }
+
+            return _zeroDefenseStats;
+        }
+
         private void DeliverHitToCombatTarget(ICombatTarget target, Vector3 hitPoint)
         {
             SH_CombatStats defenderStats = null;
-            if (target is MonoBehaviour mb)
-                defenderStats = mb.GetComponent<SH_CombatStats>();
 
+            // SH_EnemyController exposes CombatStats as a public property.
+            // GetComponent<SH_CombatStats> would throw ArgumentException because
+            // SH_CombatStats is a ScriptableObject, not a Component.
+            if (target is Game.Enemy.SH_EnemyController enemyCtrl)
+            {
+                defenderStats = enemyCtrl.CombatStats;
+
+                // IsElite is a public property — no Reflection, no GetComponent.
+                if (enemyCtrl.IsElite)
+                    _context.EconomicEvents?.RollEnergyEventOnEliteEncounter();
+            }
+
+            // Fallback for future ICombatTarget types that are not SH_EnemyController.
+            // Uses the static pre-allocated instance: zero heap allocation per hit.
             if (defenderStats == null)
             {
-                defenderStats = ScriptableObject.CreateInstance<SH_CombatStats>();
-                defenderStats.Defense = 0f;
+                defenderStats = CreateZeroDefenseFallback();
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
                 Debug.LogWarning(
-                    $"[SH_HitboxController] Target {((MonoBehaviour)target)?.gameObject.name} " +
-                    $"has no SH_CombatStats. Using zero defense.");
+                    $"[SH_HitboxController] '{((MonoBehaviour)target)?.gameObject.name}' " +
+                    $"has no CombatStats. Zero defense applied. " +
+                    $"Assign SH_EnemyData.CombatStats to silence this warning.");
+#endif
             }
 
             Vector3 defenderForward = target is MonoBehaviour mbTarget
@@ -194,29 +239,8 @@ namespace Game.Combat.Core
 
             target.ReceiveHit(payload);
 
-            // --- Stage B: Surge bar accumulation from damage dealt ---
             _context.SurgeSystem?.NotifyDamageDealt(payload.EffectiveDamage);
-
-            // --- Stage B: Difficulty tracker RDIR measurement ---
             _context.DifficultyManager?.NotifyDamageDealt(payload.EffectiveDamage);
-
-            // --- Stage B: Elite Energy Flux — only for IsElite enemies ---
-            // IsElite is now read via a public property on SH_EnemyController,
-            // eliminating the Reflection access that was present in the hot path.
-            // The RollEnergyEventOnEliteEncounter is a probabilistic call (15%).
-            // Called on any hit against an Elite regardless of hit outcome.
-            if (target is MonoBehaviour enemyMb)
-            {
-                var enemyCtrl = enemyMb.GetComponent<Game.Enemy.SH_EnemyController>();
-                if (enemyCtrl != null && enemyCtrl.IsElite)
-                    _context.EconomicEvents?.RollEnergyEventOnEliteEncounter();
-            }
-
-            Debug.Log(
-                $"[SH_HitboxController] Hit: {payload.EffectiveDamage:F1} kinetic, " +
-                $"{payload.PostureDamage:F1} posture. " +
-                $"Critical={payload.IsCritical}, Parried={payload.WasParried}, " +
-                $"Blocked={payload.WasBlocked}.");
         }
 
         #endregion

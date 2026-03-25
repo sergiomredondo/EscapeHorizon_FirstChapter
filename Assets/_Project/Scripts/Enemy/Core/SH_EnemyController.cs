@@ -1,12 +1,12 @@
-using System;
-using UnityEngine;
-using UnityEngine.AI;
 using Core;
 using Game.Combat.Core;
 using Game.Combat.Data;
 using Game.Economy;
 using Game.Economy.Data;
 using Game.Enemy.Data;
+using System;
+using UnityEngine;
+using UnityEngine.AI;
 
 namespace Game.Enemy
 {
@@ -59,7 +59,7 @@ namespace Game.Enemy
                  "initializer or manually in the Inspector for prototype scenes.")]
         [SerializeField] private SH_PlayerContext _playerContext;
 
-        private NavMeshAgent    _agent;
+        private NavMeshAgent _agent;
         private CharacterController _cc;
 
         #endregion
@@ -68,8 +68,8 @@ namespace Game.Enemy
 
         private float _currentHP;
         private float _currentPosture;
-        private bool  _isDead;
-        private bool  _isStaggered;
+        private bool _isDead;
+        private bool _isStaggered;
         private float _staggerTimer;
         private float _postureRegenTimer;
 
@@ -84,28 +84,13 @@ namespace Game.Enemy
         /// </summary>
         private float _scaledAttackCooldown;
 
-        /// <summary>
-        /// True if this enemy unit is an Elite variant.
-        /// Sourced directly from SH_EnemyData.IsElite to avoid Reflection access
-        /// from SH_HitboxController in the combat hot path.
-        /// SH_HitboxController calls RollEnergyEventOnEliteEncounter() when this is true.
-        /// </summary>
-        public bool IsElite => _data != null && _data.IsElite;
-
         #endregion
 
         #region Runtime State — Blocking / Parrying
 
-        private bool  _isBlocking;
-        private bool  _isInParryWindow;
+        private bool _isBlocking;
+        private bool _isInParryWindow;
         private float _blockTimer;
-        private float _perceptionTimer;
-
-        /// <summary>
-        /// Interval in seconds between perception scan ticks (1 / 10 Hz = 0.1s).
-        /// Decouples the expensive detection scan from the full Update loop.
-        /// </summary>
-        private const float PerceptionTickInterval = 0.1f;
 
         #endregion
 
@@ -146,8 +131,8 @@ namespace Game.Enemy
         /// <summary>
         /// Current attack within the combo window (0 to _data.ComboLength - 1).
         /// </summary>
-        private int   _comboHitsRemaining;
-        private bool  _comboInProgress;
+        private int _comboHitsRemaining;
+        private bool _comboInProgress;
         private float _comboStepTimer;
         private const float ComboStepInterval = 0.6f;
 
@@ -155,8 +140,27 @@ namespace Game.Enemy
         /// Evasion movement target. Set when entering Evade state.
         /// </summary>
         private Vector3 _evadeTarget;
-        private float   _evadeTimer;
+        private float _evadeTimer;
         private const float EvadeDuration = 1.2f;
+
+        // ─── SetDestination throttle ──────────────────────────────────────
+        // NavMeshAgent.SetDestination() recalculates the full NavMesh path.
+        // Calling it every frame (60–120×/s per enemy) adds significant CPU
+        // cost from the pathfinding system. We throttle to once per
+        // DestinationUpdateInterval seconds AND only when the target has moved
+        // more than DestinationMoveThreshold meters since the last submission.
+        private float _destinationTimer;
+        private Vector3 _lastSubmittedDestination;
+        private const float DestinationUpdateInterval = 0.15f;   // max 6–7 updates/s
+        private const float DestinationMoveThresholdSqr = 0.25f; // 0.5m² = retrigger if moved >0.5m
+
+        // ─── Death timer (replaces Invoke) ────────────────────────────────
+        // MonoBehaviour.Invoke() uses reflection to resolve the method name at
+        // runtime and registers a timer that's checked every frame via
+        // SendMessage overhead. A plain float timer has zero allocation.
+        private bool _pendingDeactivation;
+        private float _deactivationTimer;
+        private const float DeactivationDelay = 1.5f;
 
         #endregion
 
@@ -181,8 +185,8 @@ namespace Game.Enemy
         /// </summary>
         private void BroadcastAlert(Vector3 playerPosition)
         {
-            s_sharedAlertActive    = true;
-            s_alertPlayerPosition  = playerPosition;
+            s_sharedAlertActive = true;
+            s_alertPlayerPosition = playerPosition;
         }
 
         /// <summary>
@@ -191,7 +195,7 @@ namespace Game.Enemy
         /// </summary>
         public static void ResetSharedAlert()
         {
-            s_sharedAlertActive   = false;
+            s_sharedAlertActive = false;
             s_alertPlayerPosition = Vector3.zero;
         }
 
@@ -199,10 +203,10 @@ namespace Game.Enemy
 
         #region ICombatTarget Implementation
 
-        public bool   IsStaggered    => _isStaggered;
-        public bool   IsDead         => _isDead;
-        public bool   IsBlocking     => _isBlocking;
-        public bool   IsInParryWindow => _isInParryWindow;
+        public bool IsStaggered => _isStaggered;
+        public bool IsDead => _isDead;
+        public bool IsBlocking => _isBlocking;
+        public bool IsInParryWindow => _isInParryWindow;
         public Vector3 WorldPosition => transform.position;
 
         /// <summary>
@@ -217,13 +221,13 @@ namespace Game.Enemy
 
             // --- Apply HP damage ---
             _currentHP -= payload.EffectiveDamage;
-            _currentHP  = Mathf.Max(0f, _currentHP);
+            _currentHP = Mathf.Max(0f, _currentHP);
 
             // --- Apply posture damage ---
             if (!_isStaggered)
             {
                 _currentPosture -= payload.PostureDamage;
-                _currentPosture  = Mathf.Max(0f, _currentPosture);
+                _currentPosture = Mathf.Max(0f, _currentPosture);
             }
 
             // --- Knockback ---
@@ -259,11 +263,13 @@ namespace Game.Enemy
                 TryEvaluateSurgeEvasion();
             }
 
-            // --- Log ---
+            // --- Log (editor only — string interpolation has GC cost per call) ---
+#if UNITY_EDITOR
             Debug.Log($"[SH_EnemyController] {_data?.DisplayName ?? gameObject.name} " +
                       $"hit: -{payload.EffectiveDamage:F1} HP ({_currentHP:F1} remaining), " +
                       $"posture {_currentPosture:F1}, " +
                       $"critical={payload.IsCritical}, blocked={payload.WasBlocked}.");
+#endif
         }
 
         #endregion
@@ -305,7 +311,7 @@ namespace Game.Enemy
         private void Awake()
         {
             _agent = GetComponent<NavMeshAgent>();
-            _cc    = GetComponent<CharacterController>();
+            _cc = GetComponent<CharacterController>();
 
             if (_data == null)
             {
@@ -313,14 +319,14 @@ namespace Game.Enemy
                 return;
             }
 
-            _scaledMaxHP          = _data.ResolvedMaxDurability;
+            _scaledMaxHP = _data.ResolvedMaxDurability;
             _scaledAttackCooldown = _data.AttackCooldown;
-            _currentHP            = _scaledMaxHP;
-            _currentPosture       = _data.ResolvedPostureMax;
+            _currentHP = _scaledMaxHP;
+            _currentPosture = _data.ResolvedPostureMax;
 
             if (_agent != null)
             {
-                _agent.speed        = _data.PatrolSpeed;
+                _agent.speed = _data.PatrolSpeed;
                 _agent.angularSpeed = _data.RotationSpeed;
                 _agent.stoppingDistance = _data.MeleeAttackRange * 0.9f;
             }
@@ -332,39 +338,43 @@ namespace Game.Enemy
 
         private void Update()
         {
-            if (_isDead || _data == null) return;
+            // Deactivation timer replaces Invoke(nameof(Deactivate), delay).
+            // Invoke uses reflection per call; a float counter has zero overhead.
+            if (_pendingDeactivation)
+            {
+                _deactivationTimer -= Time.deltaTime;
+                if (_deactivationTimer <= 0f)
+                {
+                    _pendingDeactivation = false;
+                    gameObject.SetActive(false);
+                }
+                return; // dead — skip all AI ticks
+            }
 
-            // --- Combat state ticks (full Update rate) ---
-            // Posture recovery, stagger window, and block decision run every frame
-            // to ensure responsive hit reception and state changes.
+            if (_data == null) return;
+
             TickPostureRegen();
             TickStagger();
             TickBlock();
 
-            // --- Perception throttle (10 Hz) ---
-            // Detection scan and shared-alert check are expensive for large enemy groups.
-            // They run at PerceptionTickInterval to reduce per-frame CPU cost.
-            // Movement, attack execution, and combo logic still run at full framerate.
-            _perceptionTimer += Time.deltaTime;
-            bool runPerceptionThisTick = _perceptionTimer >= PerceptionTickInterval;
-            if (runPerceptionThisTick)
-                _perceptionTimer = 0f;
+            // Advance the destination throttle timer every frame.
+            // Individual ticks call TrySetDestination() instead of SetDestination() directly.
+            _destinationTimer += Time.deltaTime;
 
-            // Shared alert check — runs only on perception tick
-            if (runPerceptionThisTick && s_sharedAlertActive && _state == EnemyState.Patrol)
+            // Shared alert check
+            if (s_sharedAlertActive && _state == EnemyState.Patrol)
             {
                 _lastKnownPlayerPosition = s_alertPlayerPosition;
                 TransitionTo(EnemyState.Attack);
             }
 
-            // Main FSM tick — perception gating is handled inside each state tick
             switch (_state)
             {
-                case EnemyState.Patrol: TickPatrol(runPerceptionThisTick); break;
-                case EnemyState.Search: TickSearch(runPerceptionThisTick); break;
+                case EnemyState.Patrol: TickPatrol(); break;
+                case EnemyState.Search: TickSearch(); break;
                 case EnemyState.Attack: TickAttack(); break;
                 case EnemyState.Evade: TickEvade(); break;
-                case EnemyState.Retreat: TickRetreat(runPerceptionThisTick); break;
+                case EnemyState.Retreat: TickRetreat(); break;
             }
         }
 
@@ -389,28 +399,28 @@ namespace Game.Enemy
         {
             if (_data == null) return;
 
-            float hpMult      = GetHpMultiplier(difficulty) * zoneFactor;
-            float aiMult      = GetAIMult(difficulty);
+            float hpMult = GetHpMultiplier(difficulty) * zoneFactor;
+            float aiMult = GetAIMult(difficulty);
 
-            _scaledMaxHP          = _data.ResolvedMaxDurability * hpMult;
-            _currentHP            = Mathf.Min(_currentHP, _scaledMaxHP);
+            _scaledMaxHP = _data.ResolvedMaxDurability * hpMult;
+            _currentHP = Mathf.Min(_currentHP, _scaledMaxHP);
             _scaledAttackCooldown = _data.AttackCooldown / Mathf.Max(0.1f, aiMult);
         }
 
         private static float GetHpMultiplier(DifficultyLevel d) => d switch
         {
-            DifficultyLevel.Easy      => 0.8f,
-            DifficultyLevel.Normal    => 1.0f,
-            DifficultyLevel.Hard      => 1.2f,
+            DifficultyLevel.Easy => 0.8f,
+            DifficultyLevel.Normal => 1.0f,
+            DifficultyLevel.Hard => 1.2f,
             DifficultyLevel.Nightmare => 1.5f,
             _ => 1.0f
         };
 
         private static float GetAIMult(DifficultyLevel d) => d switch
         {
-            DifficultyLevel.Easy      => 0.9f,
-            DifficultyLevel.Normal    => 1.0f,
-            DifficultyLevel.Hard      => 1.5f,
+            DifficultyLevel.Easy => 0.9f,
+            DifficultyLevel.Normal => 1.0f,
+            DifficultyLevel.Hard => 1.5f,
             DifficultyLevel.Nightmare => 1.3f,
             _ => 1.0f
         };
@@ -419,20 +429,13 @@ namespace Game.Enemy
 
         #region FSM State Ticks
 
-        /// <param name="runPerception">
-        /// When true, the detection range check is evaluated this tick.
-        /// When false, the method returns early to skip the expensive sqrMagnitude check.
-        /// </param>
-        private void TickPatrol(bool runPerception)
+        private void TickPatrol()
         {
-            if (!runPerception || _playerContext == null) return;
+            if (_playerContext == null) return;
 
-            // sqrMagnitude vs range² avoids the sqrt inside Vector3.Distance.
-            // The comparison result is identical for range checks.
-            float sqrDist = (transform.position - _playerContext.Transform.position).sqrMagnitude;
-            float sqrDetection = _data.DetectionRange * _data.DetectionRange;
+            float dist = Vector3.Distance(transform.position, _playerContext.Transform.position);
 
-            if (sqrDist <= sqrDetection)
+            if (dist <= _data.DetectionRange)
             {
                 _lastKnownPlayerPosition = _playerContext.Transform.position;
                 BroadcastAlert(_lastKnownPlayerPosition);
@@ -440,11 +443,7 @@ namespace Game.Enemy
             }
         }
 
-        /// <param name="runPerception">
-        /// When true, distance checks against detection and engage ranges are evaluated.
-        /// Navigation toward the last known position runs every frame regardless.
-        /// </param>
-        private void TickSearch(bool runPerception)
+        private void TickSearch()
         {
             _searchTimer += Time.deltaTime;
 
@@ -454,37 +453,32 @@ namespace Game.Enemy
                 return;
             }
 
-            if (runPerception && _playerContext != null)
+            if (_playerContext != null)
             {
-                float sqrDist = (transform.position - _playerContext.Transform.position).sqrMagnitude;
-                float sqrEngage = _data.AttackEngageRange * _data.AttackEngageRange;
-                float sqrDetection = _data.DetectionRange * _data.DetectionRange;
-
-                if (sqrDist <= sqrEngage)
+                float dist = Vector3.Distance(transform.position, _playerContext.Transform.position);
+                if (dist <= _data.AttackEngageRange)
                 {
                     TransitionTo(EnemyState.Attack);
                     return;
                 }
-                if (sqrDist <= sqrDetection)
+                if (dist <= _data.DetectionRange)
                 {
                     _lastKnownPlayerPosition = _playerContext.Transform.position;
                 }
             }
 
-            // Navigation runs every frame — only the perception check is throttled.
-            if (_agent != null && _agent.isOnNavMesh)
-                _agent.SetDestination(_lastKnownPlayerPosition);
+            // Navigate toward last known position
+            TrySetDestination(_lastKnownPlayerPosition);
         }
 
         private void TickAttack()
         {
             if (_playerContext == null) return;
 
-            float sqrDist = (transform.position - _playerContext.Transform.position).sqrMagnitude;
-            float sqrLostContact = (_data.DetectionRange * 1.5f) * (_data.DetectionRange * 1.5f);
+            float dist = Vector3.Distance(transform.position, _playerContext.Transform.position);
 
             // Lost contact
-            if (sqrDist > sqrLostContact)
+            if (dist > _data.DetectionRange * 1.5f)
             {
                 TransitionTo(EnemyState.Search);
                 return;
@@ -504,8 +498,7 @@ namespace Game.Enemy
             }
 
             // Pursue player
-            if (_agent != null && _agent.isOnNavMesh)
-                _agent.SetDestination(_playerContext.Transform.position);
+            TrySetDestination(_playerContext.Transform.position);
 
             // Face player
             FaceTarget(_playerContext.Transform.position);
@@ -513,8 +506,7 @@ namespace Game.Enemy
             // Attack if in melee range and cooldown ready
             _attackCooldownTimer -= Time.deltaTime;
 
-            float sqrMelee = _data.MeleeAttackRange * _data.MeleeAttackRange;
-            if (sqrDist <= sqrMelee && _attackCooldownTimer <= 0f && !_comboInProgress)
+            if (dist <= _data.MeleeAttackRange && _attackCooldownTimer <= 0f && !_comboInProgress)
             {
                 StartCombo();
             }
@@ -533,8 +525,7 @@ namespace Game.Enemy
         {
             _evadeTimer += Time.deltaTime;
 
-            if (_agent != null && _agent.isOnNavMesh)
-                _agent.SetDestination(_evadeTarget);
+            TrySetDestination(_evadeTarget);
 
             // Return to Attack when evade is complete or Surge ended
             bool surgeEnded = !(_playerContext?.CombatController?.IsSurgeActive ?? false);
@@ -544,21 +535,17 @@ namespace Game.Enemy
             }
         }
 
-        private void TickRetreat(bool runPerception)
+        private void TickRetreat()
         {
             if (_playerContext == null) return;
 
             Vector3 awayDir = (transform.position - _playerContext.Transform.position).normalized;
-            Vector3 target  = transform.position + awayDir * 6f;
+            Vector3 retreatTarget = transform.position + awayDir * 6f;
 
-            if (_agent != null && _agent.isOnNavMesh)
-                _agent.SetDestination(target);
+            TrySetDestination(retreatTarget);
 
-            float sqrDist = (transform.position - _playerContext.Transform.position).sqrMagnitude;
-            float sqrLostContact = (_data.DetectionRange) * (_data.DetectionRange);
-
-            // Lost contact
-            if (sqrDist > sqrLostContact)
+            float dist = Vector3.Distance(transform.position, _playerContext.Transform.position);
+            if (dist > _data.DetectionRange)
                 TransitionTo(EnemyState.Patrol);
         }
 
@@ -568,9 +555,9 @@ namespace Game.Enemy
 
         private void StartCombo()
         {
-            _comboInProgress    = true;
+            _comboInProgress = true;
             _comboHitsRemaining = _data.ComboLength;
-            _comboStepTimer     = 0f;
+            _comboStepTimer = 0f;
 
             if (_agent != null) _agent.isStopped = true;
         }
@@ -590,8 +577,8 @@ namespace Game.Enemy
 
             if (_comboHitsRemaining <= 0)
             {
-                _comboInProgress      = false;
-                _attackCooldownTimer  = _scaledAttackCooldown;
+                _comboInProgress = false;
+                _attackCooldownTimer = _scaledAttackCooldown;
                 if (_agent != null) _agent.isStopped = false;
             }
         }
@@ -610,7 +597,7 @@ namespace Game.Enemy
             // that integration point is Stage C (SH_PlayerCombatReceiver).
             // For Stage B, we apply damage directly to SH_HealthComponent.
             float baseAttack = _data.CombatStats.Strength * 1.0f; // Normal multiplier
-            float finalDmg   = Mathf.Max(0f, baseAttack -
+            float finalDmg = Mathf.Max(0f, baseAttack -
                 (_playerContext.PlayerCombatStats?.Defense ?? 0f) * 0.5f);
 
             _playerContext.Health.TakeDamage(finalDmg);
@@ -618,8 +605,10 @@ namespace Game.Enemy
             // Notify damage to interrupt any active interaction hold
             _playerContext.Interaction?.NotifyDamageReceived();
 
+#if UNITY_EDITOR
             Debug.Log($"[SH_EnemyController] {_data.DisplayName} attacked player: " +
                       $"{finalDmg:F1} damage.");
+#endif
         }
 
         private void EvaluateBlockDecision()
@@ -633,8 +622,8 @@ namespace Game.Enemy
 
         private void StartBlock()
         {
-            _isBlocking   = true;
-            _blockTimer   = _data.BlockDuration;
+            _isBlocking = true;
+            _blockTimer = _data.BlockDuration;
             _isInParryWindow = UnityEngine.Random.value < _data.ParryUpgradeProbability;
         }
 
@@ -644,7 +633,7 @@ namespace Game.Enemy
             _blockTimer -= Time.deltaTime;
             if (_blockTimer <= 0f)
             {
-                _isBlocking      = false;
+                _isBlocking = false;
                 _isInParryWindow = false;
             }
         }
@@ -671,17 +660,19 @@ namespace Game.Enemy
 
         private void EnterStagger()
         {
-            _isStaggered    = true;
-            _isBlocking      = false;
+            _isStaggered = true;
+            _isBlocking = false;
             _isInParryWindow = false;
             _comboInProgress = false;
             _comboHitsRemaining = 0;
-            _staggerTimer   = 0f;
+            _staggerTimer = 0f;
 
             if (_agent != null) _agent.isStopped = true;
 
             OnStaggerChanged?.Invoke(true);
+#if UNITY_EDITOR
             Debug.Log($"[SH_EnemyController] {_data.DisplayName} staggered.");
+#endif
         }
 
         private void TickStagger()
@@ -693,7 +684,7 @@ namespace Game.Enemy
 
             if (_staggerTimer >= _playerContext.CombatSettings.staggerDuration)
             {
-                _isStaggered  = false;
+                _isStaggered = false;
                 _currentPosture = _data.ResolvedPostureMax;
                 if (_agent != null) _agent.isStopped = false;
                 OnStaggerChanged?.Invoke(false);
@@ -737,20 +728,41 @@ namespace Game.Enemy
 
             OnDefeated?.Invoke(this);
 
-            Debug.Log($"[SH_EnemyController] {_data?.DisplayName ?? gameObject.name} defeated.");
-
-            // Disable after a brief delay to allow death animation to play
-            Invoke(nameof(Deactivate), 1.5f);
-        }
-
-        private void Deactivate()
-        {
-            gameObject.SetActive(false);
+            // Replace Invoke(nameof(Deactivate), 1.5f) with a plain float timer.
+            // Invoke() uses reflection to resolve the method name at the call site
+            // and registers a SendMessage-style callback checked every frame.
+            // A bool+float timer has zero allocation and zero reflection overhead.
+            _pendingDeactivation = true;
+            _deactivationTimer = DeactivationDelay;
         }
 
         #endregion
 
         #region Utility
+
+        /// <summary>
+        /// Throttled wrapper around NavMeshAgent.SetDestination().
+        /// NavMesh path recalculation is expensive — calling it every frame
+        /// (60–120 Hz) with 6+ enemies adds several ms of pathfinding work
+        /// per frame. This method submits a new path only when:
+        ///   a) The throttle interval has elapsed (≥DestinationUpdateInterval), AND
+        ///   b) The requested destination has moved more than the threshold
+        ///      (DestinationMoveThresholdSqr) since the last submission.
+        /// Movement remains smooth because NavMeshAgent continues traversing the
+        /// existing path between updates.
+        /// </summary>
+        private void TrySetDestination(Vector3 destination)
+        {
+            if (_agent == null || !_agent.isOnNavMesh) return;
+            if (_destinationTimer < DestinationUpdateInterval) return;
+
+            float moveSqr = (destination - _lastSubmittedDestination).sqrMagnitude;
+            if (moveSqr < DestinationMoveThresholdSqr) return;
+
+            _agent.SetDestination(destination);
+            _lastSubmittedDestination = destination;
+            _destinationTimer = 0f;
+        }
 
         private void TransitionTo(EnemyState newState)
         {
@@ -818,6 +830,24 @@ namespace Game.Enemy
         /// Current FSM state label. Exposed for SH_Debugger.
         /// </summary>
         public string CurrentStateName => _state.ToString();
+
+        /// <summary>
+        /// Whether this enemy is an Elite variant.
+        /// Exposed as a public property so SH_HitboxController can read it
+        /// directly without Reflection into the private _data field.
+        /// </summary>
+        public bool IsElite => _data != null && _data.IsElite;
+
+        /// <summary>
+        /// Base combat stats for this enemy archetype.
+        /// Exposed as a public property so SH_HitboxController can pass
+        /// defenderStats to SH_DamageCalculator.BuildPayload() without calling
+        /// GetComponent on a ScriptableObject — which Unity does not support
+        /// (ArgumentException: GetComponent requires Component or interface).
+        /// SH_CombatStats is a ScriptableObject and cannot be attached to a
+        /// GameObject as a component; it must be read via this accessor.
+        /// </summary>
+        public SH_CombatStats CombatStats => _data?.CombatStats;
 
         /// <summary>
         /// Injects a player context reference without requiring re-initialization.

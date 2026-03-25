@@ -74,7 +74,7 @@ namespace Actions.Data
 
         [Header("Systemic Meta")]
         [Tooltip("Interruption hierarchy. Higher values can override lower priority actions.")]
-        public int priority = 2; // Default above Locomotion (1)
+        public int priority = 2;
 
         [Tooltip("Energy resource consumption required to initiate the action.")]
         [Min(0f)] public float staminaCost = 10f;

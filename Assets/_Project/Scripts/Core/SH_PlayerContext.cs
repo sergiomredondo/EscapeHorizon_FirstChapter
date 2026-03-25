@@ -36,6 +36,7 @@ namespace Core
         public SH_MovementSettings Settings { get; }
         public Animator Animator { get; }
         public SH_AnimatorBridge AnimatorBridge { get; }
+        public SH_ActionAnimationMap ActionAnimationMap {  get; }
 
         #endregion
 
@@ -108,6 +109,7 @@ namespace Core
             SH_MovementSettings settings,
             Animator animator,
             SH_AnimatorBridge animatorBridge,
+            SH_ActionAnimationMap animationMap,
             SH_PlayerStateMachine stateMachine,
             SH_HealthComponent health,
             SH_ResourceSystem resources,
@@ -131,6 +133,7 @@ namespace Core
             Settings = settings;
             Animator = animator;
             AnimatorBridge = animatorBridge;
+            ActionAnimationMap = animationMap;
             StateMachine = stateMachine;
             Health = health;
             Resources = resources;

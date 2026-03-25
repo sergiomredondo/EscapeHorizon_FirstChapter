@@ -36,23 +36,50 @@ namespace Core.StateMachine
         #region Dependencies — Movement & Control
 
         [Header("Movement & Control References")]
+        [Tooltip("Central input handler. Routes player input to the current state. " +
+                 "Add SH_InputHandler component to Bear and set up bindings.")]
         [SerializeField] private SH_InputHandler _input;
+        [Tooltip("Perspective controller manages camera modes and view rotation. " +
+                 "Add SH_PerspectiveController component to Bear and assign the main camera.")]
         [SerializeField] private SH_PerspectiveController _perspective;
+        [Tooltip("Locomotion controller handles movement logic and state transitions. " +
+                 "Add SH_LocomotionController component to Bear.")]
         [SerializeField] private SH_LocomotionController _locomotion;
+        [Tooltip("Physics motor applies movement forces and handles collision. " +
+                 "Add SH_PhysicsMotor component to Bear and configure colliders/rigidbody.")]
         [SerializeField] private SH_PhysicsMotor _physics;
+        [Tooltip("Movement settings asset. Configure walk/run speeds, acceleration, etc. " +
+                 "Create via ScapeHorizon/Settings/MovementSettings and assign it here.")]
         [SerializeField] private SH_MovementSettings _settings;
+        [Tooltip("Animator component for controlling animations. " +
+                 "Add Animator component to Bear and set up the controller with movement/combat animations.")]
         [SerializeField] private Animator _animator;
+        [Tooltip("Animator bridge for syncing animation events and parameters. " +
+                 "Add SH_AnimatorBridge component to Bear.")]
         [SerializeField] private SH_AnimatorBridge _animatorBridge;
+        [Tooltip("Maps each SH_ActionData to its AnimationClip for the player entity. " +
+         "Create via ScapeHorizon/Animation/ActionAnimationMap.")]
+        [SerializeField] private SH_ActionAnimationMap _actionAnimationMap;
 
         #endregion
 
         #region Dependencies — Economic Systems
 
         [Header("Economic System References")]
+        [Tooltip("Health component manages Durability/HP and defeat state. " +
+                 "Add SH_HealthComponent to Bear.")]
         [SerializeField] private SH_HealthComponent _health;
+        [Tooltip("Resource system manages Scrap and other player resources. " +
+                 "Add SH_ResourceSystem component to Bear.")]
         [SerializeField] private SH_ResourceSystem _resources;
+        [Tooltip("Economic event manager handles global economic events and their effects. " +
+                 "Add SH_EconomicEventManager component to Bear (or a persistent manager object).")]
         [SerializeField] private SH_EconomicEventManager _economicEvents;
+        [Tooltip("Economy settings asset. Configure global economic parameters and scaling. " +
+                 "Create via ScapeHorizon/Settings/EconomySettings and assign it here.")]
         [SerializeField] private SH_EconomySettings _economySettings;
+        [Tooltip("Economic event settings asset. Configure specific economic events, triggers, and effects. " +
+                 "Create via ScapeHorizon/Settings/EconomicEventSettings and assign it here.")]
         [SerializeField] private SH_EconomicEventSettings _economicEventSettings;
 
         #endregion
@@ -60,7 +87,11 @@ namespace Core.StateMachine
         #region Dependencies — Interaction System
 
         [Header("Interaction System References")]
+        [Tooltip("Interaction controller manages interactable detection, hold timers, and event routing. " +
+                 "Add SH_InteractionController component to Bear.")]
         [SerializeField] private SH_InteractionController _interaction;
+        [Tooltip("Interaction settings asset. Configure interaction ranges, hold durations, and other parameters. " +
+                 "Create via ScapeHorizon/Settings/InteractionSettings and assign it here.")]
         [SerializeField] private SH_InteractionSettings _interactionSettings;
 
         #endregion
@@ -138,6 +169,7 @@ namespace Core.StateMachine
                 _settings,
                 _animator,
                 _animatorBridge,
+                _actionAnimationMap,
                 this,
                 _health,
                 _resources,
@@ -235,7 +267,7 @@ namespace Core.StateMachine
             if (_currentState == null || actionData.priority >= _currentState.Priority)
             {
                 _actionCooldowns[actionData] = Time.time;
-                ChangeState(new SH_ActionState(_context, this, actionData));
+                ChangeState(new SH_ActionState(_context, this, actionData, _actionAnimationMap));
                 return true;
             }
 

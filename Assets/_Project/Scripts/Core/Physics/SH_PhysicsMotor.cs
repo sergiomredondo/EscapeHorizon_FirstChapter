@@ -224,6 +224,18 @@ namespace Core.Physics
         }
 
         /// <summary>
+        /// Zeroes out horizontal velocity immediately.
+        /// Called by SH_ActionState on Enter() to prevent residual locomotion
+        /// momentum from interfering with attack animation and hitbox positioning.
+        /// Vertical velocity (gravity) is preserved.
+        /// </summary>
+        public void CancelHorizontalVelocity()
+        {
+            _velocity.x = 0f;
+            _velocity.z = 0f;
+        }
+
+        /// <summary>
         /// Adds a direct velocity delta to current movement. 
         /// </summary>
         public void AddHorizontalVelocity(Vector3 delta)
