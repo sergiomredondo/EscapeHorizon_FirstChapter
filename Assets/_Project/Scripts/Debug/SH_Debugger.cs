@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Game.Combat.Core;
 using Game.Combat.Data;
+using Unity.VisualScripting;
 
 namespace DebugTools
 {
@@ -854,8 +855,12 @@ namespace DebugTools
             bool dead = enemy.IsDead;
             bool stag = enemy.IsStaggered;
             bool block = enemy.IsBlocking;
+            bool knock = enemy.IsNockdback;
+            float dist = enemy.Distance;
+            Vector3 dest = enemy.Destination;
 
-            Color nameColor = dead ? Color.gray : stag ? Color.red : Color.white;
+            Color nameColor = dead ? Color.gray : stag ? Color.red : state == "Evade" ? Color.yellow : Color.white;
+            Color Knockback = knock? Color.yellow : Color.white;
 
             GUILayout.BeginHorizontal();
             GUILayout.Label($"{name} [{state}]",
@@ -865,6 +870,10 @@ namespace DebugTools
                 $"HP {hp:P0}  PST {pst:P0}{(stag ? " STAGGER" : "")}{(block ? " BLOCK" : "")}",
                 new GUIStyle(_style) { normal = { textColor = dead ? Color.gray : Color.white } });
             GUILayout.EndHorizontal();
+            GUILayout.Label($"{name} {(knock ? " KNOCKBACK" : "")}",
+                new GUIStyle(_style) { normal = { textColor = Knockback } },
+                GUILayout.Width(LabelWidth));
+            GUILayout.Label($"Destination [{dest}], Distance: {dist}");
         }
 
         #endregion

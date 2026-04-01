@@ -28,11 +28,9 @@ namespace Animation
         order = 150)]
     public class SH_ActionAnimationMap : ScriptableObject
     {
+        // The structure of this asset is organized into thematic regions for clarity and ease of use in the Inspector.
         #region Data Structure
 
-        /// <summary>
-        /// Single entry pairing a gameplay action contract with its animation clip.
-        /// </summary>
         [System.Serializable]
         public class ActionAnimationEntry
         {
@@ -48,6 +46,7 @@ namespace Animation
 
         #endregion
 
+        // This serialized list is the source of truth for the mappings and is designed for ease of use in the Inspector.
         #region Serialized Fields
 
         [Header("Action — Clip Mappings")]
@@ -64,14 +63,11 @@ namespace Animation
 
         #endregion
 
+        // The runtime cache is designed for efficient lookups during gameplay, converting the serialized list into
+        // a dictionary on demand.
         #region Runtime Cache
 
-        /// <summary>
-        /// Dictionary built from _entries on first access.
-        /// Provides O(1) lookup at action dispatch time instead of O(n) list scan.
-        /// </summary>
         private Dictionary<SH_ActionData, List<AnimationClip>> _cache;
-
         private Dictionary<SH_ActionData, int> _lastIndex = new();
 
         #endregion
@@ -117,6 +113,8 @@ namespace Animation
         /// Returns false if only the fallback would be used.
         /// Useful for debug logging and editor tooling.
         /// </summary>
+        /// <param name="actionData">The action contract to check for.</param>
+        /// <returns>True if a direct entry exists, false if only fallback applies.</returns>
         public bool HasDirectEntry(SH_ActionData actionData)
         {
             if (actionData == null) return false;
@@ -127,10 +125,18 @@ namespace Animation
         #endregion
 
         #region Cache Management
+
         /// <summary>
         /// Builds the runtime cache dictionary from the serialized list if it hasn't been built yet.
         /// Performs validation checks for null references and duplicate keys, logging warnings as needed.
         /// </summary>
+        /// <remarks>
+        /// This method is designed to be idempotent and efficient, only building the cache once and reusing
+        /// it for subsequent lookups. The validation checks help catch common data entry errors in the Inspector,
+        /// improving robustness without throwing exceptions that could disrupt gameplay. If more complex cache
+        /// management is needed in the future (e.g., partial updates, event-driven invalidation), this is the
+        /// central place to implement it while keeping the rest of the codebase decoupled from cache management details.
+        /// </remarks>
         private void BuildCacheIfNeeded()
         {
             if (_cache != null) return;
@@ -164,12 +170,29 @@ namespace Animation
         /// Called automatically by OnValidate so Inspector edits take effect
         /// without restarting Play mode.
         /// </summary>
+        /// <remarks>
+        /// This method is intentionally simple to avoid unintended side effects.
+        /// If more complex cache invalidation logic is needed in the future (e.g., partial invalidation,
+        /// event-driven updates), this is the central place to implement it while keeping the rest of the
+        /// codebase decoupled from cache management details.
+        /// </remarks>
         private void InvalidateCache() => _cache = null;
 
         #endregion
 
         #region Editor Validation
-
+        
+        /// <summary>
+        /// Called by Unity when the asset is edited in the Inspector.
+        /// Invalidates the runtime cache so that changes to the mappings take effect immediately without needing
+        /// to restart Play mode. This ensures a smooth iteration experience for designers configuring the action-to-clip mappings.
+        /// </summary>
+        /// <remarks>
+        /// While OnValidate provides a convenient way to automatically invalidate the cache when changes are made in the Inspector,
+        /// it's important to note that it is only called in the Editor and does not run in builds. This means that any logic placed
+        /// in OnValidate will not have any performance impact on the final game, making it a safe place to handle editor-specific
+        /// concerns like cache invalidation and data validation without worrying about runtime overhead.
+        /// </remarks>
         private void OnValidate()
         {
             InvalidateCache();

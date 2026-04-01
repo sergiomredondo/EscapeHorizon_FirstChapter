@@ -17,20 +17,20 @@ MonoBehaviour:
   recoveryTime: 0.2
   cancelWindowStart: 0.25
   coolDownTime: 0.5
-  impulseMagnitude: 5000
+  impulseMagnitude: 1000
   impulseDuration: 0.05
   directionMode: 0
   customDirection: {x: 0, y: 0, z: 1}
-  hitboxRadius: 1.2
-  hitboxOffset: {x: 0, y: 0, z: 1.2}
+  hitboxRadius: 2.2
+  hitboxOffset: {x: 0, y: 0, z: 1.7}
   targetLayers:
     serializedVersion: 2
     m_Bits: 64
-  damage: 10
-  staggerImpulse: 800
+  damage: 20
+  staggerImpulse: 250
   hitstopDuration: 0.05
   priority: 2
-  staminaCost: 5
+  staminaCost: 2
   animationTrigger: Action_Base
   locksMovement: 1
   useRootMotion: 0

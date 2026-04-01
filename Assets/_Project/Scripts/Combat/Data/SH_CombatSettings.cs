@@ -105,9 +105,9 @@ namespace Game.Combat.Data
 
         #endregion
 
-        #region Energy Surge Multipliers (GDD §5.3.2 — Sobrecarga de Energía)
+        #region Energy Surge Multipliers
 
-        [Header("Energy Surge (Sobrecarga de Energía)")]
+        [Header("Energy Surge")]
 
         [Tooltip("Damage multiplier applied to AttackValue while the Energy Surge state is active. " +
                  "Applied on top of the build's Strength modifier. " +

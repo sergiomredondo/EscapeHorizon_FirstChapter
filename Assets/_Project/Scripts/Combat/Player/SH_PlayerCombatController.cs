@@ -253,6 +253,10 @@ namespace Game.Combat.Core
 
         #region Energy Surge (GDD §5.3.2 — Sobrecarga de Energía)
 
+        /// <summary>
+        /// Manages the Energy Surge state duration and cooldown timers.
+        /// Called every frame from SH_IdleState and SH_MoveState Update() via context.
+        /// </summary>
         private void TickSurge()
         {
             if (!IsSurgeActive && !IsInSurgeCooldown) return;
@@ -261,21 +265,15 @@ namespace Game.Combat.Core
 
             if (IsSurgeActive)
             {
-                // Surge bar drains progressively — for Stage A, fixed duration.
-                // Stage B will integrate the actual surge bar accumulation system.
-                // The Surge bar accumulation (filling from damage dealt/received)
-                // is a Stage B integration point.
-                if (_surgeTimer >= 10f) // placeholder duration until surge bar is implemented
-                {
+                if (_context.SurgeSystem != null && _context.SurgeSystem.SurgeBar <= 0f)
                     EndSurge();
-                }
             }
             else if (IsInSurgeCooldown)
             {
                 if (_surgeTimer >= _combatSettings.surgeCooldownDuration)
                 {
                     IsInSurgeCooldown = false;
-                    _surgeTimer       = 0f;
+                    _surgeTimer = 0f;
                 }
             }
         }

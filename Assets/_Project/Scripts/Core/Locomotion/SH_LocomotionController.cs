@@ -100,7 +100,7 @@ namespace Core.Locomotion
             Vector3 horizontalVelocity = new Vector3(currentVelocity.x, 0f, currentVelocity.z);
 
             // Determine target speed based on input (boost vs run) to allow for dynamic speed changes without needing separate states or complex logic.
-            float targetSpeed = _input.BoostInput ? _settings.boostSpeed : _settings.runSpeed;
+            float targetSpeed = _input.EnergySurgetInput ? _settings.boostSpeed : _settings.runSpeed;
 
             // Calculate the desired target velocity vector based on input direction and target speed.
             Vector3 targetVelocity = direction * targetSpeed;

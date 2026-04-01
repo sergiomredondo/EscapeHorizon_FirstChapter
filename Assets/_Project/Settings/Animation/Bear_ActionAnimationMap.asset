@@ -23,4 +23,7 @@ MonoBehaviour:
   - actionData: {fileID: 11400000, guid: 60d9b0273ed099647901c77850e67c0f, type: 2}
     clip:
     - {fileID: 4645524590424446077, guid: 11e6e2757ecd32547a5c9b857db7597c, type: 3}
+  - actionData: {fileID: 11400000, guid: c8270df5db8ebe540ab85596178d5a05, type: 2}
+    clip:
+    - {fileID: -6989946573967037462, guid: d614bdd708fc9914da3949d1b0c9cad8, type: 3}
   _fallbackClip: {fileID: -4722465767704927230, guid: 4988406988758b843b0f0d89fd78ebfc, type: 3}

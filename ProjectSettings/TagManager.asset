@@ -12,9 +12,9 @@ TagManager:
   - Water
   - UI
   - CombatTarget
-  - 
-  - 
-  - 
+  - Player
+  - Terrain
+  - Props
   - 
   - 
   - 

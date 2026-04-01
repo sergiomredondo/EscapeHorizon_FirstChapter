@@ -145,12 +145,15 @@ namespace Core.StateMachine
 
         #region Private State
 
+        
         private SH_PlayerContext _context;
         private SH_BaseState _currentState;
         private SH_Debugger _physicsDebugger;
 
         private readonly Dictionary<SH_ActionData, float> _actionCooldowns =
             new Dictionary<SH_ActionData, float>();
+
+        public SH_PlayerContext GetContext() => _context;
 
         #endregion
 
@@ -272,6 +275,24 @@ namespace Core.StateMachine
             }
 
             return false;
+        }
+
+        public bool RequestSurge()
+        {
+            if (_settings.surgeAction == null)
+            {
+                Debug.LogWarning("[SH_PlayerStateMachine] RequestSurge: surgeAction is not assigned in SH_MovementSettings.");
+                return false;
+            }
+
+            if (_context.SurgeSystem == null || !_context.SurgeSystem.CanActivateSurge)
+                return false;
+
+            if (_currentState != null && _settings.surgeAction.priority < _currentState.Priority)
+                return false;
+
+            ChangeState(new SH_SurgeState(_context, this, _settings.surgeAction, _actionAnimationMap));
+            return true;
         }
 
         public void RegisterActionCooldown(SH_ActionData actionData)

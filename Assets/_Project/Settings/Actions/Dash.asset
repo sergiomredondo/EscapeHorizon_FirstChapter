@@ -21,16 +21,16 @@ MonoBehaviour:
   impulseDuration: 0
   directionMode: 0
   customDirection: {x: 0, y: 0, z: 1}
-  hitboxRadius: 0
-  hitboxOffset: {x: 0, y: 0, z: 1.2}
+  hitboxRadius: 6
+  hitboxOffset: {x: 0, y: 0, z: 0}
   targetLayers:
     serializedVersion: 2
     m_Bits: 4294967295
   damage: 10
-  staggerImpulse: 1000
+  staggerImpulse: 250
   hitstopDuration: 0.05
   priority: 8
-  staminaCost: 10
+  staminaCost: 5
   animationTrigger: Action_Base
   locksMovement: 1
   useRootMotion: 0

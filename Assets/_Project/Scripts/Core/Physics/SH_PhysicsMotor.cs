@@ -21,6 +21,7 @@ namespace Core.Physics
         private float _frictionMultiplier = 1f;
         private float _forceTimer;
         private float _currentFrictionMultiplier = 1f;
+        private float _speedMultiplier = 1f;
 
         #endregion
 
@@ -177,6 +178,15 @@ namespace Core.Physics
         }
 
         /// <summary>
+        /// Allows external systems to modify the speed multiplier, enabling dynamic changes to max speed (e.g., speed boosts or slow debuffs).
+        /// </summary>
+        public void SetSpeedMultiplier(float multiplier)
+        {
+            if (multiplier < 0f) { Debug.LogError($"[SH_PhysicsMotor] SetSpeedMultiplier failed: multiplier cannot be negative. Received multiplier={multiplier}."); return; }
+            _speedMultiplier = Mathf.Max(0f, multiplier);
+        }
+
+        /// <summary>
         /// Applies kinetic friction on the horizontal plane.
         /// Friction acceleration is derived from gravity: a = μ * |g|.
         /// </summary>
@@ -255,7 +265,7 @@ namespace Core.Physics
 
             Vector2 horizontalVel = new Vector2(_velocity.x, _velocity.z);
 
-            float maxSpeed = settings.maxSpeed;
+            float maxSpeed = settings.maxSpeed * _speedMultiplier;
 
             if (horizontalVel.sqrMagnitude > maxSpeed * maxSpeed)
             {

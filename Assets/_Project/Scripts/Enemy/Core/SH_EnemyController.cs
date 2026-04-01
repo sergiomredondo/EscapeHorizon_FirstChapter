@@ -1,8 +1,6 @@
 using Core;
 using Game.Combat.Core;
 using Game.Combat.Data;
-using Game.Economy;
-using Game.Economy.Data;
 using Game.Enemy.Data;
 using System;
 using UnityEngine;
@@ -11,10 +9,10 @@ using UnityEngine.AI;
 namespace Game.Enemy
 {
     /// <summary>
-    /// Autonomous enemy agent implementing the five AI states defined in GDD §5.3.3
+    /// Autonomous enemy agent implementing the five AI states defined in GDD 5.3.3
     /// and the ICombatTarget contract required by SH_HitboxController (Stage A).
     ///
-    /// State machine (GDD §5.3.3.4):
+    /// State machine:
     ///   Patrol    → passive roaming, low detection.
     ///   Search    → lost contact, medium detection, investigates last known position.
     ///   Attack    → player in engage range, cycles approach → combo → recover.
@@ -97,7 +95,7 @@ namespace Game.Enemy
         #region Runtime State — FSM
 
         /// <summary>
-        /// The five AI states from GDD §5.3.3.4.
+        /// The five AI states
         /// </summary>
         private enum EnemyState
         {
@@ -141,7 +139,7 @@ namespace Game.Enemy
         /// </summary>
         private Vector3 _evadeTarget;
         private float _evadeTimer;
-        private const float EvadeDuration = 1.2f;
+        private const float EvadeDuration = 2f;
 
         // ─── SetDestination throttle ──────────────────────────────────────
         // NavMeshAgent.SetDestination() recalculates the full NavMesh path.
@@ -152,7 +150,7 @@ namespace Game.Enemy
         private float _destinationTimer;
         private Vector3 _lastSubmittedDestination;
         private const float DestinationUpdateInterval = 0.15f;   // max 6–7 updates/s
-        private const float DestinationMoveThresholdSqr = 0.25f; // 0.5m² = retrigger if moved >0.5m
+        private const float DestinationMoveThresholdSqr = 0.2f; // 0.5m² = retrigger if moved >0.5m
 
         // ─── Death timer (replaces Invoke) ────────────────────────────────
         // MonoBehaviour.Invoke() uses reflection to resolve the method name at
@@ -160,11 +158,19 @@ namespace Game.Enemy
         // SendMessage overhead. A plain float timer has zero allocation.
         private bool _pendingDeactivation;
         private float _deactivationTimer;
-        private const float DeactivationDelay = 1.5f;
+        private const float DeactivationDelay = 1.5f; // Delay before deactivating the GameObject in seconds
+
+        // ─── Temporary Knockback ───────────────────────────────────────────
+        // Applied as an instantaneous velocity change on the NavMeshAgent when hit,
+        // then decays over time. This is a simple implementation for Stage A to
+        // visualize hit impact.
+        private bool _knockbackActive;
+        private Vector3 _knockbackVelocity;
+        private const float KnockbackDecay = 8f; // Higher = faster decay, 0 = no decay (constant velocity)
 
         #endregion
 
-        #region Shared Alert (Group AI — GDD §5.3.3.6)
+        #region Shared Alert (Group AI)
 
         /// <summary>
         /// Static flag. When any enemy calls BroadcastAlert(), all controllers
@@ -218,6 +224,13 @@ namespace Game.Enemy
         public void ReceiveHit(SH_DamagePayload payload)
         {
             if (_isDead) return;
+            
+            // --- Death check ---
+            if (_currentHP <= 0f && !_isDead)
+            {
+                Die();
+                return;
+            }
 
             // --- Apply HP damage ---
             _currentHP -= payload.EffectiveDamage;
@@ -233,8 +246,8 @@ namespace Game.Enemy
             // --- Knockback ---
             if (!payload.WasBlocked && !payload.WasParried && payload.KnockbackImpulse.sqrMagnitude > 0.01f)
             {
-                if (_agent != null && _agent.isOnNavMesh)
-                    _agent.velocity += payload.KnockbackImpulse / Mathf.Max(1f, _data?.CombatStats?.Defense ?? 8f);
+                float defenseFactor = Mathf.Max(1f, _data?.CombatStats?.Defense ?? 8f);
+                ApplyKnockback(payload.KnockbackImpulse / defenseFactor);
             }
 
             // --- Stagger check ---
@@ -243,18 +256,17 @@ namespace Game.Enemy
                 EnterStagger();
             }
 
-            // --- Death check ---
-            if (_currentHP <= 0f && !_isDead)
-            {
-                Die();
-                return;
-            }
-
             // --- Reaction: break combo and re-evaluate ---
             if (_comboInProgress)
             {
                 _comboInProgress = false;
                 _comboHitsRemaining = 0;
+                _attackCooldownTimer = _scaledAttackCooldown;
+                if (_agent != null && !_knockbackActive)
+                {
+                    _agent.isStopped = false;
+                    TrySetDestination(_playerContext.Transform.position, force: true);
+                }
             }
 
             // --- Transition toward Evade if Surge is active ---
@@ -329,6 +341,7 @@ namespace Game.Enemy
                 _agent.speed = _data.PatrolSpeed;
                 _agent.angularSpeed = _data.RotationSpeed;
                 _agent.stoppingDistance = _data.MeleeAttackRange * 0.9f;
+                _agent.updateRotation = false;
             }
         }
 
@@ -367,6 +380,10 @@ namespace Game.Enemy
                 _lastKnownPlayerPosition = s_alertPlayerPosition;
                 TransitionTo(EnemyState.Attack);
             }
+
+            // Temporary knockback handling. If active, applies velocity and decays over time.
+            if (_knockbackActive)
+                TickKnockback();
 
             switch (_state)
             {
@@ -431,7 +448,7 @@ namespace Game.Enemy
 
         private void TickPatrol()
         {
-            if (_playerContext == null) return;
+            if (_playerContext == null || _isStaggered) return;
 
             float dist = Vector3.Distance(transform.position, _playerContext.Transform.position);
 
@@ -447,7 +464,7 @@ namespace Game.Enemy
         {
             _searchTimer += Time.deltaTime;
 
-            if (_searchTimer >= SearchTimeout)
+            if (_searchTimer >= SearchTimeout || _isStaggered)
             {
                 TransitionTo(EnemyState.Patrol);
                 return;
@@ -466,11 +483,13 @@ namespace Game.Enemy
                     _lastKnownPlayerPosition = _playerContext.Transform.position;
                 }
             }
+            // Face destination
+            FaceTarget(_lastKnownPlayerPosition);
 
             // Navigate toward last known position
             TrySetDestination(_lastKnownPlayerPosition);
         }
-
+        
         private void TickAttack()
         {
             if (_playerContext == null) return;
@@ -498,7 +517,8 @@ namespace Game.Enemy
             }
 
             // Pursue player
-            TrySetDestination(_playerContext.Transform.position);
+            if (!_knockbackActive)
+                TrySetDestination(_playerContext.Transform.position);
 
             // Face player
             FaceTarget(_playerContext.Transform.position);
@@ -525,7 +545,14 @@ namespace Game.Enemy
         {
             _evadeTimer += Time.deltaTime;
 
-            TrySetDestination(_evadeTarget);
+            Vector3 awayDir = (transform.position - _playerContext.Transform.position).normalized;
+            // Flanker evades sideways, Assailant/Tank evade backward
+            if (_data.Archetype == EnemyArchetype.Flanker)
+                awayDir = Vector3.Cross(awayDir, Vector3.up).normalized;
+            _evadeTarget = transform.position + awayDir * _data.EvasionDistance;
+
+            FaceTarget(_evadeTarget);
+            TrySetDestination(_evadeTarget, force: true);
 
             // Return to Attack when evade is complete or Surge ended
             bool surgeEnded = !(_playerContext?.CombatController?.IsSurgeActive ?? false);
@@ -660,15 +687,15 @@ namespace Game.Enemy
 
         private void EnterStagger()
         {
+            _comboInProgress = false;
+            _comboHitsRemaining = 0;
+            _attackCooldownTimer = _scaledAttackCooldown;
+
             _isStaggered = true;
             _isBlocking = false;
             _isInParryWindow = false;
-            _comboInProgress = false;
-            _comboHitsRemaining = 0;
             _staggerTimer = 0f;
-
             if (_agent != null) _agent.isStopped = true;
-
             OnStaggerChanged?.Invoke(true);
 #if UNITY_EDITOR
             Debug.Log($"[SH_EnemyController] {_data.DisplayName} staggered.");
@@ -686,9 +713,11 @@ namespace Game.Enemy
             {
                 _isStaggered = false;
                 _currentPosture = _data.ResolvedPostureMax;
-                if (_agent != null) _agent.isStopped = false;
+                if (_agent != null && !_knockbackActive)
+                    _agent.isStopped = false;
                 OnStaggerChanged?.Invoke(false);
             }
+            Debug.Log($"[SH_EnemyController] {_data.DisplayName} _isStaggered {_isStaggered}, _agent.isOnNavMesh: {_agent.isOnNavMesh}");
         }
 
         private void TickPostureRegen()
@@ -751,14 +780,15 @@ namespace Game.Enemy
         /// Movement remains smooth because NavMeshAgent continues traversing the
         /// existing path between updates.
         /// </summary>
-        private void TrySetDestination(Vector3 destination)
+        private void TrySetDestination(Vector3 destination, bool force = false)
         {
             if (_agent == null || !_agent.isOnNavMesh) return;
-            if (_destinationTimer < DestinationUpdateInterval) return;
-
-            float moveSqr = (destination - _lastSubmittedDestination).sqrMagnitude;
-            if (moveSqr < DestinationMoveThresholdSqr) return;
-
+            if (!force)
+            {
+                if (_destinationTimer < DestinationUpdateInterval) return;
+                float moveSqr = (destination - _lastSubmittedDestination).sqrMagnitude;
+                if (moveSqr < DestinationMoveThresholdSqr && Vector3.Distance(transform.position, _lastSubmittedDestination) <= _data.MeleeAttackRange) return;
+            }
             _agent.SetDestination(destination);
             _lastSubmittedDestination = destination;
             _destinationTimer = 0f;
@@ -795,6 +825,49 @@ namespace Game.Enemy
                     _evadeTimer = 0f;
                     break;
             }
+        }
+
+        private void TickKnockback()
+        {
+            if (!_knockbackActive) return;
+
+            // Apply knockback velocity to the agent's position. This is a simple implementation
+            transform.position += _knockbackVelocity * Time.deltaTime;
+
+            // Decay knockback velocity over time
+            _knockbackVelocity = Vector3.Lerp(_knockbackVelocity, Vector3.zero, KnockbackDecay * Time.deltaTime);
+
+            if (_knockbackVelocity.sqrMagnitude < 0.01f)
+            {
+                _knockbackActive = false;
+                _knockbackVelocity = Vector3.zero;
+
+                if (_cc != null) _cc.enabled = true;
+                // After knockback ends, warp the agent to the current position to reset NavMeshAgent's internal state.
+                if (_agent != null && _agent.isOnNavMesh)
+                {
+                    _agent.Warp(transform.position);
+                    _agent.ResetPath();
+                    if (!_isDead && !_isStaggered)
+                    {
+                        _agent.isStopped = false;
+                        TrySetDestination(_playerContext.Transform.position, force: true);
+                    }
+                }
+            }
+        }
+
+        private void ApplyKnockback(Vector3 impulse)
+        {
+            if (impulse.sqrMagnitude < 0.01f) return;
+
+            // Immediately apply the impulse to the agent's velocity. This is a simple implementation for Stage A.
+            if (_agent != null) _agent.isStopped = true;
+
+            if (_cc != null) _cc.enabled = false;
+
+            _knockbackVelocity = impulse;
+            _knockbackActive = true;
         }
 
         private void FaceTarget(Vector3 target)
@@ -837,6 +910,18 @@ namespace Game.Enemy
         /// directly without Reflection into the private _data field.
         /// </summary>
         public bool IsElite => _data != null && _data.IsElite;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool IsNockdback => _knockbackActive;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Vector3 Destination => _lastSubmittedDestination;
+
+        public float Distance => Vector3.Distance(transform.position, _lastSubmittedDestination);
 
         /// <summary>
         /// Base combat stats for this enemy archetype.

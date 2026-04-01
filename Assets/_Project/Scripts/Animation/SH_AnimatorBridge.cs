@@ -4,113 +4,108 @@ using UnityEngine;
 namespace Animation
 {
     /// <summary>
-    /// Bridge between the Animator Controller and the player's sub-systems.
-    /// Encapsulates all animation parameter writes and serves as the routing
-    /// point for animation events and action phase callbacks.
-    ///
-    /// Extended for the Layered Override Animation System:
-    ///   + AnimatorOverrideController — replaces the Action layer clip at runtime
-    ///     without modifying the base Animator Controller asset.
-    ///   + Playback speed normalization — adjusts Animator.speed on the Action
-    ///     layer so any clip duration matches SH_ActionData.TotalDuration exactly.
-    ///   + Internal phase timer — fires OnStartupComplete, OnActiveBegin, and
-    ///     OnRecoveryBegin callbacks driven by SH_ActionData timing values,
-    ///     decoupling hitbox activation from Unity Animation Events.
-    ///
-    /// Responsibility boundaries:
-    ///   OWNS: All Animator parameter writes and override controller management.
-    ///   OWNS: Phase timer tick and callback dispatch.
-    ///   DOES NOT OWN: Damage logic, hitbox scanning, state transitions.
-    ///                 Those remain in SH_HitboxController and SH_ActionState.
+    /// Runtime bridge between gameplay action dispatch and the Animator system.
+    /// Receives action play requests from SH_ActionState, overrides the Action layer clip,
+    /// and manages the internal phase timer that drives gameplay callbacks for startup, active,
+    /// and recovery phases. Designed to be flexible and robust, allowing for missing clips while
+    /// ensuring all gameplay logic executes correctly based on SH_ActionData timing, independent
+    /// of the animation assets.
+    /// 
+    /// Responsibility boundary:
+    ///  OWNS: The AnimatorOverrideController instance used for per-action clip replacement.
+    ///  DOES NOT OWN: The Animator Controller asset itself, which defines the state machine
+    ///       structure, parameters, and transitions. SH_AnimatorBridge operates at runtime to
+    ///       inject clips and control playback speed, but does not modify the underlying asset.
+    /// Designed for the player character (Bear) but can be adapted for enemies if they share a similar
+    /// Animator Controller structure. For enemies with different animation needs, a separate bridge
+    /// class can be created following the same principles of runtime clip injection and phase timer management.
+    /// 
+    /// Usage:
+    /// - Attach SH_AnimatorBridge to the Bear GameObject.
+    /// - Initialize it from SH_PlayerContext, passing the Animator component reference.
+    /// - SH_ActionState calls PlayActionClip() with the resolved clip and timing parameters from SH_ActionData.
+    /// - SH_AnimatorBridge handles the rest: it overrides the clip, normalizes playback speed, and fires the
+    ///   appropriate callbacks at the correct times based on the internal phase timer, ensuring that gameplay logic
+    ///   executes correctly regardless of the presence or duration of the animation clip. This decoupling allows for
+    ///   flexible iteration on both gameplay and animation aspects without blocking each other, which is crucial
+    ///   during the prototyping stage.
+    /// Stage B additions:
+    ///  + The internal phase timer now serves as the primary driver for hitbox activation and deactivation callbacks,
+    ///    replacing the reliance on Unity Animation Events. This ensures that gameplay logic executes correctly even
+    ///    if clips are missing or still carry their original events.
+    ///  + The legacy OnHitImpact Animation Event and its callback registration remain in place as a fallback for clips
+    ///    that have not yet been updated to remove their events, ensuring backward compatibility during the transition period.
+    /// 
+    /// Implementation plan:
+    /// Etapa 1: Core functionality
+    ///  - Step 1: Create SH_AnimatorBridge with the ability to override clips in the Action layer and manage an
+    ///    internal phase timer based on SH_ActionData parameters.
+    ///  - Step 2: Define public events for startup complete, active begin, recovery begin, and action complete,
+    ///    and invoke them at the correct times based on the phase timer.
+    ///  - Step 3: Set up the AnimatorOverrideController to replace the clip in the Action layer slot. This requires
+    ///    that the Action state in the Animator Controller uses a placeholder clip (e.g., "Action_Base") that can be
+    ///    overridden at runtime. The override controller allows us to inject different clips for different actions
+    ///    without modifying the Animator Controller asset itself, maintaining a clean separation of concerns.
+    /// Etapa 2: Stage B additions
+    ///  - Step 1: Refactor SH_HitboxController to subscribe to the OnActiveBegin event from SH_AnimatorBridge instead
+    ///    of relying on an Animation Event for hitbox activation. This ensures that hitbox logic executes correctly
+    ///    based on the internal phase timer, independent of the presence or timing of animation events.
+    ///  - Step 2: Retain the legacy OnHitImpact Animation Event and its callback registration in SH_AnimatorBridge
+    ///    as a fallback for clips that have not yet been updated to remove their events. This allows for a smooth
+    ///    transition period where both paths can coexist without breaking gameplay logic.
+    /// Etapa 3: Future improvements (post-prototype)
+    ///  - Step 1: Update the Animator Controller asset to include a dedicated Action layer if it does not already exist,
+    ///    and ensure that the Action state uses a placeholder clip for runtime overriding. This will allow us to remove
+    ///    the fallback logic for missing layers and parameters in SH_AnimatorBridge, simplifying the implementation and
+    ///    improving robustness.
+    ///  - Step 2: Add a dedicated float parameter (e.g., "ActionSpeed") to the Animator Controller for controlling the
+    ///    speed of the Action layer independently of the Base layer. This will allow for more precise control over
+    ///    playback speed normalization without affecting other layers, and we can remove the fallback to setting the
+    ///    global Animator.speed in SH_AnimatorBridge.
     /// </summary>
     public class SH_AnimatorBridge : MonoBehaviour
     {
+        // This region contains the core dependencies for SH_AnimatorBridge, including references to the Animator component,
+        // the AnimatorOverrideController used for clip injection, and precomputed parameter hashes for efficient access.
         #region Dependencies
 
         private Animator _animator;
         private AnimatorOverrideController _overrideController;
-
-        // Precomputed parameter hashes
         private int _movementSpeedHash;
         private int _dashForceHash;
         private int _actionLayerIndex;
 
         #endregion
 
-        #region Hit Impact Callback (legacy — kept for Animation Event compatibility)
+        // This region is reserved for any callbacks related to hit impacts that may still be triggered by legacy Animation Events.
+        #region Hit Impact Callback
 
-        /// <summary>
-        /// Callback registered by SH_PlayerCombatController.
-        /// Invoked by OnHitImpact() when a Unity Animation Event fires.
-        /// This path remains active as a fallback for clips that retain
-        /// their original Animation Events. The primary activation path
-        /// is now the internal phase timer via OnActiveBegin.
-        /// </summary>
         private Action _hitImpactCallback;
 
         #endregion
 
+        // This region manages the internal state of the phase timer, including the durations of each phase, the current timer value,
+        // and flags to track whether each phase boundary has been crossed.
         #region Phase Timer — Internal State
 
-        /// <summary>
-        /// Action clip duration used as the normalization reference.
-        /// Set in PlayActionClip() from the clip assigned to the override slot.
-        /// </summary>
         private float _clipDuration;
-
-        /// <summary>
-        /// Total gameplay duration of the current action (SH_ActionData.TotalDuration).
-        /// The clip is accelerated or decelerated so its playback fits this window.
-        /// </summary>
         private float _actionTotalDuration;
-
-        /// <summary>
-        /// Startup phase duration of the current action (SH_ActionData.startupTime).
-        /// </summary>
         private float _startupTime;
-
-        /// <summary>
-        /// Active phase duration of the current action (SH_ActionData.activeTime).
-        /// </summary>
         private float _activeTime;
-
-        /// <summary>
-        /// Elapsed time within the current action, advanced each Update tick
-        /// while _phaseTimerRunning is true.
-        /// </summary>
         private float _phaseTimer;
-
         private bool _phaseTimerRunning;
         private bool _startupFired;
         private bool _recoveryFired;
 
         #endregion
 
+        // This region defines the public events that external systems can subscribe to in order to receive notifications
+        // about the progression of the action phases.
         #region Phase Callbacks — Public API
 
-        /// <summary>
-        /// Fired when the startup phase ends (at startupTime seconds into the action).
-        /// SH_ActionState uses this to trigger VFX or audio anticipation cues.
-        /// </summary>
         public event Action OnStartupComplete;
-
-        /// <summary>
-        /// Fired when the active phase begins (at startupTime seconds into the action).
-        /// SH_ActionState uses this to enable hitbox scanning in SH_HitboxController,
-        /// replacing the Unity Animation Event path.
-        /// </summary>
         public event Action OnActiveBegin;
-
-        /// <summary>
-        /// Fired when the recovery phase begins (at startupTime + activeTime seconds).
-        /// SH_ActionState uses this to disable hitbox scanning and open the cancel window.
-        /// </summary>
         public event Action OnRecoveryBegin;
-
-        /// <summary>
-        /// Fired when the full action duration has elapsed.
-        /// SH_ActionState uses this to return to Idle or Move state.
-        /// </summary>
         public event Action OnActionComplete;
 
         #endregion
@@ -121,6 +116,7 @@ namespace Animation
         /// Context-driven initialization. Called by SH_PlayerContext during orchestration.
         /// Caches the Animator, precomputes parameter hashes, and sets up the
         /// AnimatorOverrideController using the runtime controller as the base.
+        /// 
         /// </summary>
         /// <param name="animator">
         /// The Animator component on the entity. Must not be null.
@@ -135,12 +131,9 @@ namespace Animation
 
             _animator = animator;
 
-            // Precompute parameter hashes — identical to the previous implementation.
             _movementSpeedHash = Animator.StringToHash("Movement_Blend");
             _dashForceHash = Animator.StringToHash("DashForce");
 
-            // Locate the Action layer by name. Falls back to layer 0 with a warning
-            // if the Animator Controller has not yet been updated to include it.
             _actionLayerIndex = _animator.GetLayerIndex("Action");
             if (_actionLayerIndex < 0)
             {
@@ -150,9 +143,6 @@ namespace Animation
                 _actionLayerIndex = 0;
             }
 
-            // Build the AnimatorOverrideController using the existing runtime controller
-            // as the base. This preserves all existing states, parameters, and transitions
-            // while allowing per-action clip replacement without modifying the asset.
             var baseController = animator.runtimeAnimatorController;
             if (baseController == null)
             {
@@ -171,9 +161,25 @@ namespace Animation
 
         /// <summary>
         /// Registers the legacy Animation Event callback.
-        /// Kept for backward compatibility with clips that retain their
-        /// original OnHitImpact Animation Events.
+        /// Kept for backward compatibility with clips that retain their original OnHitImpact Animation Events.
+        /// The primary path for hitbox activation should now be the OnActiveBegin event driven by the internal
+        /// phase timer, which ensures correct gameplay logic execution regardless of animation assets.
+        /// This method allows external systems to register a callback for the OnHitImpact Animation Event,
+        /// but it is recommended to transition to using the OnActiveBegin event for more robust and decoupled
+        /// hitbox activation logic in the future.
+        /// 
         /// </summary>
+        /// <param name="callback">
+        /// The Action delegate to invoke when the OnHitImpact Animation Event is fired. This is a legacy path and
+        /// is expected to be phased out in favor of the OnActiveBegin event, but it remains available for clips that
+        /// have not yet been updated to remove their events.
+        /// </param>
+        /// 
+        /// <remarks>
+        /// This method is designed to be flexible, allowing for a single callback to be registered for the OnHitImpact
+        /// Animation Event. If multiple systems need to respond to hit impacts, consider implementing a more robust event
+        /// system or using the OnActiveBegin event for better decoupling and reliability.
+        /// </remarks>
         public void SetHitImpactCallback(Action callback)
         {
             _hitImpactCallback = callback;
@@ -183,13 +189,24 @@ namespace Animation
 
         #region Unity Lifecycle — Phase Timer Tick
 
+        /// <summary>
+        /// Ticks the internal phase timer when running, checking against the defined phase durations to fire
+        /// the appropriate callbacks at the correct times. This method is called every frame by Unity.
+        /// The phase timer is started by PlayActionClip() and stopped by StopActionClip(), ensuring that it
+        /// only runs during the lifecycle of an action. The callbacks are fired based on the timing defined in SH_ActionData,
+        /// ensuring that gameplay logic executes correctly regardless of the presence or timing of animation clips and events.
+        /// The order of callbacks is guaranteed: OnStartupComplete → OnActiveBegin → OnRecoveryBegin → OnActionComplete,
+        /// 
+        /// Note: The legacy OnHitImpact Animation Event and its callback are still available as a fallback for clips that have
+        /// not yet been updated to remove their events, but the primary path for hitbox activation should now be the OnActiveBegin
+        /// event driven by this internal phase timer, which ensures correct gameplay logic execution regardless of animation assets.
+        /// </summary>
         private void Update()
         {
             if (!_phaseTimerRunning) return;
 
             _phaseTimer += Time.deltaTime;
 
-            // Startup → Active boundary
             if (!_startupFired && _phaseTimer >= _startupTime)
             {
                 _startupFired = true;
@@ -197,14 +214,12 @@ namespace Animation
                 OnActiveBegin?.Invoke();
             }
 
-            // Active → Recovery boundary
             if (!_recoveryFired && _phaseTimer >= _startupTime + _activeTime)
             {
                 _recoveryFired = true;
                 OnRecoveryBegin?.Invoke();
             }
 
-            // Full action complete
             if (_phaseTimer >= _actionTotalDuration)
             {
                 StopPhaseTimer();
@@ -226,6 +241,7 @@ namespace Animation
         /// If no clip is available (null), the phase timer still runs and all callbacks
         /// fire at the correct times, ensuring gameplay logic is never blocked by a
         /// missing animation asset.
+        /// 
         /// </summary>
         /// <param name="clip">
         /// The AnimationClip to inject. May be null during early prototyping — gameplay
@@ -245,40 +261,25 @@ namespace Animation
             float activeTime,
             float crossFadeDuration = 0.08f)
         {
-            // --- Reset phase timer ---
             StopPhaseTimer();
 
             _actionTotalDuration = Mathf.Max(totalDuration, 0.01f);
             _startupTime = Mathf.Clamp(startupTime, 0f, _actionTotalDuration);
             _activeTime = Mathf.Clamp(activeTime, 0f, _actionTotalDuration - _startupTime);
 
-            // --- Clip override ---
             if (clip != null && _overrideController != null)
             {
-                // The override controller replaces the clip in the slot named "Action_Base".
-                // This name must match the Motion field of the Action state in the
-                // Animator Controller. See implementation plan — Etapa 1, step 3.
                 _overrideController["Action_Base"] = clip;
                 _clipDuration = clip.length;
 
-                // Normalize playback speed so the clip's visual duration matches
-                // the gameplay duration defined in SH_ActionData.
-                // speed = clipDuration / totalDuration
-                // Example: clip = 1.2s, totalDuration = 0.8s → speed = 1.5 (faster)
-                // Example: clip = 0.4s, totalDuration = 0.8s → speed = 0.5 (slower)
                 float normalizedSpeed = _clipDuration / _actionTotalDuration;
-                _animator.SetFloat(_dashForceHash, 0f); // clear any residual dash blend
+                _animator.SetFloat(_dashForceHash, 0f);
                 SetActionLayerSpeed(normalizedSpeed);
 
-                // When a state lives in a non-Base layer, Unity requires the fully
-                // qualified name "LayerName.StateName" for CrossFadeInFixedTime to
-                // resolve it correctly at runtime.
                 _animator.CrossFadeInFixedTime("Action.Action_Base", crossFadeDuration, _actionLayerIndex, 0f);
             }
             else
             {
-                // No clip available — reset layer speed and let the timer run.
-                // Gameplay (hitbox, callbacks) works correctly without a visual clip.
                 SetActionLayerSpeed(1f);
 
                 if (clip == null)
@@ -287,15 +288,25 @@ namespace Animation
                                      "Assign a clip in the SH_ActionAnimationMap asset.");
             }
 
-            // --- Start phase timer ---
             StartPhaseTimer();
         }
 
         /// <summary>
-        /// Stops the phase timer and resets the Action layer speed.
-        /// The Base Layer locomotion never stopped — no crossfade back needed.
-        /// The Action layer returns to its default state via Exit Time on Action_Base.
+        /// Stops the current action clip and resets the Action layer speed to default.
+        /// This should be called when an action is interrupted or cancelled to ensure that
+        /// the Animator returns to a neutral state and that the phase timer is stopped.
+        /// If the action is allowed to complete naturally, the phase timer will stop itself
+        /// and reset the speed in the OnActionComplete callback, so this method is primarily
+        /// for handling interruptions.
         /// </summary>
+        /// <remarks>
+        /// This method ensures that if an action is interrupted (e.g., by a higher priority action or a stun),
+        /// the Animator does not remain stuck in the Action state with an overridden clip and modified speed.
+        /// 
+        /// Note: If the action completes naturally, the OnActionComplete callback will handle stopping the phase
+        /// timer and resetting the speed, so this method is specifically for handling cases where the action is
+        /// interrupted before it reaches its natural completion.
+        /// </remarks>
         public void StopActionClip()
         {
             StopPhaseTimer();
@@ -307,34 +318,31 @@ namespace Animation
         #region Animation Parameter API (unchanged from previous implementation)
 
         /// <summary>
-        /// Updates the Movement_Blend float parameter to drive the locomotion blend tree.
-        /// Called every frame by SH_IdleState and SH_MoveState.
+        /// Sets the movement speed parameter for blending locomotion animations on the Base layer.
+        /// This method is called by SH_LocomotionController with the normalized movement speed (0 to 1)
+        /// to update the Animator parameter that controls the blend tree for movement animations. The parameter
+        /// is expected to be named "Movement_Blend" in the Animator Controller, and the precomputed hash is used
+        /// for efficient access. This method is separate from the action clip management and can be called independently
+        /// to update movement animations regardless of the current action state. If the Animator or parameter is not set
+        /// up correctly, a warning is logged but the method fails gracefully without throwing exceptions, ensuring that
+        /// the game remains playable even if the animation setup is incomplete during prototyping.
         /// </summary>
+        /// <remarks>
+        /// The movement speed parameter is expected to be a float that blends between different locomotion animations
+        /// (e.g., idle, walk, run) based on the player's input. The SH_LocomotionController is responsible for calculating
+        /// </remarks>
+        /// <param name="normalizedSpeed"> A float value normalized to the range [0, 1] representing the player's current
+        /// movement speed relative to their maximum speed. </param>
+        /// <example>
+        /// In SH_LocomotionController.Tick():
+        ///   float normalizedSpeed = inputMagnitude; // Assuming inputMagnitude is already normalized to [0, 1]
+        ///  animatorBridge.UpdateMovement(normalizedSpeed);
+        /// </example>
+        /// <remarks>
         public void UpdateMovement(float normalizedSpeed)
         {
             if (_animator == null) return;
             _animator.SetFloat(_movementSpeedHash, normalizedSpeed);
-        }
-
-        /// <summary>
-        /// Updates DashForce for the dash animation blend.
-        /// Called by SH_ActionState during the active dash phase.
-        /// </summary>
-        public void TriggerDash(float normalizedSpeed)
-        {
-            if (_animator == null) return;
-
-            if (normalizedSpeed < 0f)
-            {
-                Debug.Log($"[SH_AnimatorBridge] TriggerDash: negative normalizedSpeed ({normalizedSpeed}).");
-                return;
-            }
-
-            if (_animator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.60f && normalizedSpeed > 0f)
-                _animator.SetFloat(_dashForceHash,
-                    _animator.GetCurrentAnimatorStateInfo(0).normalizedTime + 0.61f);
-            else
-                _animator.SetFloat(_dashForceHash, normalizedSpeed);
         }
 
         #endregion
@@ -342,10 +350,14 @@ namespace Animation
         #region Animation Event Callbacks (legacy fallback)
 
         /// <summary>
-        /// Called by a Unity Animation Event at the hit-impact frame.
-        /// This path is now secondary — the primary hitbox activation path
-        /// is the OnActiveBegin callback fired by the internal phase timer.
-        /// Retained for clips that still carry their original Animation Events.
+        /// Legacy callback for hit impact, triggered by an Animation Event in the clip.
+        /// This is a fallback path for clips that have not yet been updated to remove their events,
+        /// and it is expected to be phased out in favor of the OnActiveBegin event driven by the
+        /// internal phase timer. If the OnHitImpact Animation Event is fired, this method will invoke
+        /// the registered callback if it exists, allowing external systems to respond to hit impacts
+        /// as they did previously. However, for new development and future iterations, it is recommended
+        /// to transition to using the OnActiveBegin event for more robust and decoupled hitbox activation
+        /// logic that does not rely onanimation assets.
         /// </summary>
         public void OnHitImpact()
         {
@@ -367,6 +379,7 @@ namespace Animation
 
         #region Internal Helpers
 
+
         private void StartPhaseTimer()
         {
             _phaseTimer = 0f;
@@ -385,11 +398,6 @@ namespace Animation
         {
             if (_animator == null) return;
 
-            // AnimatorStateInfo.speed is read-only per-state; we set it via a dedicated
-            // float parameter named "ActionSpeed" on the Animator Controller.
-            // If the parameter does not yet exist (pre-Etapa 3), we fall back to setting
-            // the global Animator.speed, which affects all layers equally.
-            // This fallback is acceptable for the prototype stage.
             int actionSpeedHash = Animator.StringToHash("ActionSpeed");
 
             bool hasActionSpeedParam = false;
@@ -405,7 +413,7 @@ namespace Animation
             if (hasActionSpeedParam)
                 _animator.SetFloat(actionSpeedHash, speed);
             else
-                _animator.speed = speed; // global fallback — all layers affected
+                _animator.speed = speed;
         }
 
         #endregion

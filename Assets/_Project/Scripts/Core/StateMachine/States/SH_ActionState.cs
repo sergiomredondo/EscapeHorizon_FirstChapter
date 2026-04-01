@@ -181,8 +181,6 @@ namespace Core.StateMachine.States
             // provides a safety fallback in case the bridge callbacks are not
             // available (e.g. AnimatorBridge not yet initialized).
             UpdatePhase();
-
-            SyncAnimationWithPhysics();
         }
 
         public override void PhysicsUpdate(float dt)
@@ -264,10 +262,11 @@ namespace Core.StateMachine.States
                 _actionData.TotalDuration,
                 _actionData.startupTime,
                 _actionData.activeTime);
-
+            /*
             Debug.Log($"[SH_ActionState] Dispatched action '{_actionData.name}'. " +
                       $"Clip: '{(clip != null ? clip.name : "none")}'. " +
                       $"Total duration: {_actionData.TotalDuration:F2}s.");
+            */
         }
 
         #endregion
@@ -368,11 +367,6 @@ namespace Core.StateMachine.States
                 {
                     _transitionRequested = true;
                     _stateMachine.RegisterActionCooldown(_actionData);
-
-                    string trigger = _actionData.animationTrigger;
-                    if (!string.IsNullOrEmpty(trigger) && trigger == "Dash")
-                        _context.AnimatorBridge?.TriggerDash(0f);
-
                     _stateMachine.ChangeState(new SH_IdleState(_context, _stateMachine));
                 }
             }
@@ -384,7 +378,9 @@ namespace Core.StateMachine.States
 
         private void HandleImpulsePhysics()
         {
-            _context.Physics.SetFrictionMultiplier(1f);
+            bool surgeActive = _context.CombatController != null && _context.CombatController.IsSurgeActive;
+            _context.Physics.SetFrictionMultiplier(surgeActive ? 0.4f : 1f);
+
             if (_phase != ActionPhase.Active) return;
             if (_actionData.impulseMagnitude <= 0f) return;
 
@@ -434,21 +430,6 @@ namespace Core.StateMachine.States
         #endregion
 
         #region Animation Sync
-
-        private void SyncAnimationWithPhysics()
-        {
-            if (_context.AnimatorBridge == null) return;
-            if (_phase == ActionPhase.Completed) return;
-
-            string trigger = _actionData.animationTrigger;
-            if (string.IsNullOrEmpty(trigger) || trigger != "Dash") return;
-
-            Vector3 velocity = _context.Physics.CurrentVelocity;
-            float horizontalSpeed = new Vector2(velocity.x, velocity.z).magnitude;
-            float normalizedSpeed = horizontalSpeed <= _context.Settings.runSpeed ? 0.5f : 1f;
-
-            _context.AnimatorBridge.TriggerDash(normalizedSpeed);
-        }
 
         private void SyncMovementAnimation()
         {

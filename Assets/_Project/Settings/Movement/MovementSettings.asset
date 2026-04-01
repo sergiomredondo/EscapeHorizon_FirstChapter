@@ -25,3 +25,4 @@ MonoBehaviour:
   stopThreshold: 0.25
   rotationSpeed: 8
   dashAction: {fileID: 11400000, guid: 60d9b0273ed099647901c77850e67c0f, type: 2}
+  surgeAction: {fileID: 11400000, guid: c8270df5db8ebe540ab85596178d5a05, type: 2}

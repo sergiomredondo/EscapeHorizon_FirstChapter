@@ -49,12 +49,12 @@ namespace Core.Input
         /// <summary> True while the Dash button is held. </summary>
         public bool DashInput { get; private set; }
 
-        /// <summary> True while the Boost button is held. </summary>
-        public bool BoostInput { get; private set; }
+        /// <summary> True while the EnergySurge button is held. </summary>
+        public bool EnergySurgetInput { get; private set; }
 
         #endregion
 
-        #region Interaction Properties (GDD §5.2.1)
+        #region Interaction Properties
 
         /// <summary>
         /// True for the single frame the Interact button transitions to pressed.
@@ -77,7 +77,7 @@ namespace Core.Input
 
         #endregion
 
-        #region Combat Properties (GDD §5.3)
+        #region Combat Properties
 
         /// <summary>
         /// True for the single frame the Attack button transitions to pressed.
@@ -91,6 +91,12 @@ namespace Core.Input
         /// from heavy (hold) attacks.
         /// </summary>
         public bool AttackHeld { get; private set; }
+
+        /// <summary>
+        /// True while the EnergySurge button is held. Used by SH_PlayerCombatController
+        /// to trigger the surge attack when the button is released after holding for the required time.
+        /// </summary>
+        public bool SurgePressed { get; private set; }
 
         #endregion
 
@@ -111,6 +117,11 @@ namespace Core.Input
         /// Clears AttackPressed. Call once per frame after reading.
         /// </summary>
         public void ConsumeAttackPressed() => AttackPressed = false;
+
+        /// <summary>
+        /// Resets the surge pressed state to indicate that the surge action is no longer active.
+        /// </summary>
+        public void ConsumeSurgePressed() => SurgePressed = false;
 
         #endregion
 
@@ -162,12 +173,15 @@ namespace Core.Input
         }
 
         /// <summary>
-        /// Receives Boost action events.
+        /// Handles the input event for the energy surge action when triggered by the user.
         /// </summary>
-        public void OnBoost(InputAction.CallbackContext context)
+        /// <remarks>Call this method in response to the energy surge input action to update the state
+        /// accordingly. Typically used within an input system event handler.</remarks>
+        /// <param name="context">The callback context containing information about the input action event.</param>
+        public void OnEnergySurge(InputAction.CallbackContext context)
         {
-            BoostInput = context.phase == InputActionPhase.Started
-                      || context.phase == InputActionPhase.Performed;
+            if (context.phase == InputActionPhase.Started)
+                SurgePressed = true;
         }
 
         /// <summary>

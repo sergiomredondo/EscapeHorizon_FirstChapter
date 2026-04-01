@@ -59,7 +59,15 @@ namespace Core.StateMachine.States
                 return;
             }
 
-            // 4. Return to Idle when movement input ceases.
+            // 4. Surge check — request activation if bar threshold is met.
+            if (_context.Input.SurgePressed)
+            {
+                _context.Input.ConsumeSurgePressed();
+                _stateMachine.RequestSurge();
+                return;
+            }
+
+            // 5. Return to Idle when movement input ceases.
             if (_context.Input.MoveInput.sqrMagnitude < 0.01f)
             {
                 _stateMachine.ChangeState(new SH_IdleState(_context, _stateMachine));
@@ -77,11 +85,19 @@ namespace Core.StateMachine.States
                 return;
             }
 
-            // Smooth friction ramp from whatever value was inherited on Enter().
+            bool surgeActive = _context.CombatController != null && _context.CombatController.IsSurgeActive;
+            bool surgeCooldown = _context.CombatController != null && _context.CombatController.IsInSurgeCooldown;
+
             float rampT = Mathf.SmoothStep(0f, 1f,
                 Mathf.Clamp01(Time.time / Mathf.Max(0.01f, _context.Settings.accelerationTime)));
-            _context.Physics.SetFrictionMultiplier(
-                Mathf.Lerp(_initialFriction, 1f, rampT));
+
+            float baseFriction = Mathf.Lerp(_initialFriction, 1f, rampT);
+            _context.Physics.SetFrictionMultiplier(surgeActive ? baseFriction * 0.4f : baseFriction);
+
+            float speedMult = surgeActive ? 1.25f
+                            : surgeCooldown ? _context.CombatSettings.surgeCooldownPenalty
+                            : 1f;
+            _context.Physics.SetSpeedMultiplier(speedMult);
 
             _context.Locomotion.Tick(dt);
             _context.Physics.Tick(_context.Settings, dt);

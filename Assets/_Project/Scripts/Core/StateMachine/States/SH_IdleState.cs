@@ -59,14 +59,22 @@ namespace Core.StateMachine.States
                 return;
             }
 
-            // 4. Move transition — if movement input exceeds deadzone.
+            // 4. Surge check — request activation if bar threshold is met.
+            if (_context.Input.SurgePressed)
+            {
+                _context.Input.ConsumeSurgePressed();
+                _stateMachine.RequestSurge();
+                return;
+            }
+
+            // 5. Move transition — if movement input exceeds deadzone.
             if (_context.Input.MoveInput.sqrMagnitude > 0.01f)
             {
                 _stateMachine.ChangeState(new SH_MoveState(_context, _stateMachine));
                 return;
             }
 
-            // 5. Animation sync with actual physics velocity.
+            // 6. Animation sync with actual physics velocity.
             SyncAnimationWithPhysics();
         }
 
@@ -77,6 +85,10 @@ namespace Core.StateMachine.States
                 Debug.LogError($"[SH_IdleState] PhysicsUpdate: invalid dt ({dt}).");
                 return;
             }
+
+            bool surgeCooldown = _context.CombatController != null && _context.CombatController.IsInSurgeCooldown;
+            _context.Physics.SetSpeedMultiplier(surgeCooldown ? _context.CombatSettings.surgeCooldownPenalty : 1f);
+
             _context.Physics.Tick(_context.Settings, dt);
         }
 

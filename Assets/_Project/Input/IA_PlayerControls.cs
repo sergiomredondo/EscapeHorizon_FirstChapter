@@ -131,7 +131,7 @@ namespace StarterAssets
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Boost"",
+                    ""name"": ""EnergySurge"",
                     ""type"": ""Button"",
                     ""id"": ""1280bb64-01bb-4ab3-a23c-36ffb868d55a"",
                     ""expectedControlType"": """",
@@ -307,7 +307,7 @@ namespace StarterAssets
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Boost"",
+                    ""action"": ""EnergySurge"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -318,7 +318,7 @@ namespace StarterAssets
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Boost"",
+                    ""action"": ""EnergySurge"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -388,7 +388,7 @@ namespace StarterAssets
             m_Player_Attack = m_Player.FindAction("Attack", throwIfNotFound: true);
             m_Player_Interact = m_Player.FindAction("Interact", throwIfNotFound: true);
             m_Player_Dash = m_Player.FindAction("Dash", throwIfNotFound: true);
-            m_Player_Boost = m_Player.FindAction("Boost", throwIfNotFound: true);
+            m_Player_EnergySurge = m_Player.FindAction("EnergySurge", throwIfNotFound: true);
             m_Player_Scan = m_Player.FindAction("Scan", throwIfNotFound: true);
             m_Player_Menu = m_Player.FindAction("Menu", throwIfNotFound: true);
             m_Player_Look = m_Player.FindAction("Look", throwIfNotFound: true);
@@ -476,7 +476,7 @@ namespace StarterAssets
         private readonly InputAction m_Player_Attack;
         private readonly InputAction m_Player_Interact;
         private readonly InputAction m_Player_Dash;
-        private readonly InputAction m_Player_Boost;
+        private readonly InputAction m_Player_EnergySurge;
         private readonly InputAction m_Player_Scan;
         private readonly InputAction m_Player_Menu;
         private readonly InputAction m_Player_Look;
@@ -508,9 +508,9 @@ namespace StarterAssets
             /// </summary>
             public InputAction @Dash => m_Wrapper.m_Player_Dash;
             /// <summary>
-            /// Provides access to the underlying input action "Player/Boost".
+            /// Provides access to the underlying input action "Player/EnergySurge".
             /// </summary>
-            public InputAction @Boost => m_Wrapper.m_Player_Boost;
+            public InputAction @EnergySurge => m_Wrapper.m_Player_EnergySurge;
             /// <summary>
             /// Provides access to the underlying input action "Player/Scan".
             /// </summary>
@@ -561,9 +561,9 @@ namespace StarterAssets
                 @Dash.started += instance.OnDash;
                 @Dash.performed += instance.OnDash;
                 @Dash.canceled += instance.OnDash;
-                @Boost.started += instance.OnBoost;
-                @Boost.performed += instance.OnBoost;
-                @Boost.canceled += instance.OnBoost;
+                @EnergySurge.started += instance.OnEnergySurge;
+                @EnergySurge.performed += instance.OnEnergySurge;
+                @EnergySurge.canceled += instance.OnEnergySurge;
                 @Scan.started += instance.OnScan;
                 @Scan.performed += instance.OnScan;
                 @Scan.canceled += instance.OnScan;
@@ -596,9 +596,9 @@ namespace StarterAssets
                 @Dash.started -= instance.OnDash;
                 @Dash.performed -= instance.OnDash;
                 @Dash.canceled -= instance.OnDash;
-                @Boost.started -= instance.OnBoost;
-                @Boost.performed -= instance.OnBoost;
-                @Boost.canceled -= instance.OnBoost;
+                @EnergySurge.started -= instance.OnEnergySurge;
+                @EnergySurge.performed -= instance.OnEnergySurge;
+                @EnergySurge.canceled -= instance.OnEnergySurge;
                 @Scan.started -= instance.OnScan;
                 @Scan.performed -= instance.OnScan;
                 @Scan.canceled -= instance.OnScan;
@@ -677,12 +677,12 @@ namespace StarterAssets
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnDash(InputAction.CallbackContext context);
             /// <summary>
-            /// Method invoked when associated input action "Boost" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// Method invoked when associated input action "EnergySurge" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
             /// </summary>
             /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-            void OnBoost(InputAction.CallbackContext context);
+            void OnEnergySurge(InputAction.CallbackContext context);
             /// <summary>
             /// Method invoked when associated input action "Scan" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
             /// </summary>

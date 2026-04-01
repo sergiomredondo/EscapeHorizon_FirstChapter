@@ -83,6 +83,9 @@ namespace Data
         [Tooltip("Dash action data defines the impulse, timing, and hitbox for the dash maneuver. Use SH_ActionData asset.")]
         public SH_ActionData dashAction;
 
+        [Tooltip("Surge activation action data. Defines startup animation and FSM priority for Energy Surge. Assign SurgeActivation.asset.")]
+        public SH_ActionData surgeAction;
+
         #endregion
 
         #region Editor Validation

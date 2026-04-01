@@ -3,13 +3,29 @@ using UnityEngine;
 namespace Actions.Data
 {
     /// <summary>
-    /// Atomic and declarative definition of an executable action unit.
-    /// Models the temporal, dynamic (physics), and spatial behavior of any Mecha interaction.
-    /// Acts as the Data-Driven source for SH_ActionState.
+    /// Data asset defining the parameters and properties of a Mecha action, such as an attack or dash.
+    /// 
+    /// Responsibility boundary:
+    ///  OWNS: All gameplay-relevant parameters for an action, including timing, damage, physics impulses,
+    ///        and systemic properties like priority and stamina cost.
+    /// DOES NOT OWN: Any presentation or visual aspects, such as animation clips or VFX. Those are handled
+    ///               separately by SH_ActionAnimationMap to maintain a clean separation of concerns.
+    /// 
+    /// This asset is designed to be flexible and extensible, allowing for a wide variety of actions to be defined
+    /// through a combination of temporal structure, physical dynamics, spatial interaction, and systemic meta properties.
+    /// 
+    /// Usage:
+    ///  - Create new SH_ActionData assets for each unique action (e.g., Light Attack, Heavy Attack, Dash).
+    ///  - Configure the parameters in the Inspector to define the behavior of each action.
+    ///  - Assign these assets to the appropriate fields in SH_PlayerStateMachine (for player actions).
     /// </summary>
-    [CreateAssetMenu(fileName = "ActionData", menuName = "ScapeHorizon/Actions/ActionData", order = 200)]
+    [CreateAssetMenu(
+        fileName = "ActionData",
+        menuName = "ScapeHorizon/Actions/ActionData",
+        order = 200)]
     public class SH_ActionData : ScriptableObject
     {
+        // The structure of this asset is organized into thematic regions for clarity and ease of use in the Inspector.
         #region Temporal Structure (Tactical Commitment)
 
         [Header("Temporal Structure")]
@@ -30,6 +46,8 @@ namespace Actions.Data
 
         #endregion
 
+        // Impulse dynamics parameters define the physical forces applied to the Mecha during the action,
+        // such as a dash or a knockback from an attack.
         #region Impulse Dynamics (Newtonian Physics)
 
         [Header("Newtonian Impulse")]
@@ -47,6 +65,8 @@ namespace Actions.Data
 
         #endregion
 
+        // Spatial interaction parameters define the offensive capabilities of the action, including how it detects
+        // and interacts with targets, the damage it inflicts, and the feedback it provides through hitstop and stagger effects.
         #region Spatial Interaction (Hitbox & Damage)
 
         [Header("Spatial Interaction")]
@@ -70,6 +90,8 @@ namespace Actions.Data
 
         #endregion
 
+        // Systemic meta properties define how the action fits into the broader gameplay system, including its priority relative
+        // to other actions, the resource cost to execute it, and how it interacts with the animation and movement systems.
         #region Systemic Meta & Priority
 
         [Header("Systemic Meta")]
@@ -90,6 +112,8 @@ namespace Actions.Data
 
         #endregion
 
+        // Derived properties are computed from the base parameters to provide convenient access to commonly needed values,
+        // such as the total duration of the action lifecycle.
         #region Derived Properties
 
         /// <summary> Total duration of the action lifecycle (Startup + Active + Recovery). </summary>
@@ -99,13 +123,17 @@ namespace Actions.Data
 
         #region Validation Logic
 
+        /// <summary>
+        /// Ensures that all temporal parameters are non-negative and that the cancel window
+        /// logically follows the activation phase. Also validates that impulse parameters are non-negative.
+        /// This method is called automatically by Unity when the asset is modified in the editor.
+        /// </summary>
         private void OnValidate()
         {
             startupTime = Mathf.Max(0f, startupTime);
             activeTime = Mathf.Max(0f, activeTime);
             recoveryTime = Mathf.Max(0f, recoveryTime);
 
-            // Structural Integrity: Cancel window cannot occur before the effect activation
             float minCancelThreshold = startupTime + activeTime;
             cancelWindowStart = Mathf.Max(cancelWindowStart, minCancelThreshold);
 
@@ -116,7 +144,9 @@ namespace Actions.Data
         #endregion
     }
 
-    /// <summary> Defines orientation logic for the application of physical impulses or action directions. </summary>
+    /// <summary> 
+    /// Defines orientation logic for the application of physical impulses or action directions.
+    /// </summary>
     public enum DirectionMode
     {
         Forward,        // Towards the transform's current forward

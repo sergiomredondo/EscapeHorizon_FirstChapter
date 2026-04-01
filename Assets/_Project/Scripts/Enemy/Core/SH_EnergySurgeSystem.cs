@@ -67,6 +67,11 @@ namespace Game.Combat.Core
         [Range(0f, 0.1f)]
         [SerializeField] private float _passiveDecayRate = 0.005f;
 
+        [Tooltip("Minimum SurgeBar fraction (0–1) required to manually activate Surge. " +
+         "Prevents activation below this threshold even when SurgePressed is true.")]
+        [Range(0.5f, 1f)]
+        [SerializeField] private float _activationThreshold = 0.8f;
+
         #endregion
 
         #region Runtime State
@@ -76,6 +81,15 @@ namespace Game.Combat.Core
         /// 0 = empty, 1 = full (auto-activates Surge).
         /// </summary>
         public float SurgeBar { get; private set; }
+
+        /// <summary>
+        /// True if the player can manually activate Surge (e.g. by holding the Surge button).
+        /// </summary>
+        public bool CanActivateSurge =>
+            _isInitialized
+            && SurgeBar >= _activationThreshold
+            && !_combatController.IsSurgeActive
+            && !_combatController.IsInSurgeCooldown;
 
         #endregion
 
@@ -191,13 +205,6 @@ namespace Game.Combat.Core
 
             if (!Mathf.Approximately(SurgeBar, prev))
                 OnSurgeBarChanged?.Invoke(SurgeBar);
-
-            // Auto-activate when full
-            if (SurgeBar >= 1f)
-            {
-                SurgeBar = 1f;
-                _combatController.ActivateSurge();
-            }
         }
 
         private void TickDrainBar()
