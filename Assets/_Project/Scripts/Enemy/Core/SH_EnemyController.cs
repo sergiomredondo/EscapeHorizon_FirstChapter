@@ -139,6 +139,7 @@ namespace Game.Enemy
         /// </summary>
         private Vector3 _evadeTarget;
         private float _evadeTimer;
+        private float _flankerOrbitSide = 1f;
         private const float EvadeDuration = 2f;
 
         // ─── SetDestination throttle ──────────────────────────────────────
@@ -516,29 +517,13 @@ namespace Game.Enemy
                 return;
             }
 
-            // Pursue player
-            if (!_knockbackActive)
-                TrySetDestination(_playerContext.Transform.position);
-
-            // Face player
-            FaceTarget(_playerContext.Transform.position);
-
-            // Attack if in melee range and cooldown ready
-            _attackCooldownTimer -= Time.deltaTime;
-
-            if (dist <= _data.MeleeAttackRange && _attackCooldownTimer <= 0f && !_comboInProgress)
+            // Archetype-specific attack behavior
+            switch (_data.Archetype)
             {
-                StartCombo();
+                case EnemyArchetype.Tank: TickAttackTank(dist); break;
+                case EnemyArchetype.Flanker: TickAttackFlanker(dist); break;
+                default: TickAttackAssailant(dist); break;
             }
-
-            // Tick combo if in progress
-            if (_comboInProgress)
-            {
-                TickCombo();
-            }
-
-            // Block decision — try to block if player is about to attack
-            EvaluateBlockDecision();
         }
 
         private void TickEvade()
@@ -574,6 +559,92 @@ namespace Game.Enemy
             float dist = Vector3.Distance(transform.position, _playerContext.Transform.position);
             if (dist > _data.DetectionRange)
                 TransitionTo(EnemyState.Patrol);
+        }
+
+        #endregion
+
+        #region Archetype-specific Attack Ticks
+
+        private void TickAttackAssailant(float dist)
+        {
+            if (!_knockbackActive)
+                TrySetDestination(_playerContext.Transform.position);
+
+            FaceTarget(_playerContext.Transform.position);
+
+            _attackCooldownTimer -= Time.deltaTime;
+
+            if (dist <= _data.MeleeAttackRange && _attackCooldownTimer <= 0f && !_comboInProgress)
+                StartCombo();
+
+            if (_comboInProgress)
+                TickCombo();
+
+            EvaluateBlockDecision();
+        }
+
+        private void TickAttackTank(float dist)
+        {
+            float preferredHoldRange = _data.AttackEngageRange * 0.6f;
+
+            // Close to melee only when ready to attack; otherwise hold at mid-range.
+            if (_attackCooldownTimer <= 0f && !_comboInProgress)
+            {
+                if (!_knockbackActive)
+                    TrySetDestination(_playerContext.Transform.position);
+            }
+            else if (dist < preferredHoldRange && !_comboInProgress)
+            {
+                // Step back to preferred hold range.
+                Vector3 awayDir = (transform.position - _playerContext.Transform.position).normalized;
+                TrySetDestination(transform.position + awayDir * (preferredHoldRange - dist), force: true);
+            }
+
+            FaceTarget(_playerContext.Transform.position);
+
+            _attackCooldownTimer -= Time.deltaTime;
+
+            if (dist <= _data.MeleeAttackRange && _attackCooldownTimer <= 0f && !_comboInProgress)
+                StartCombo();
+
+            if (_comboInProgress)
+                TickCombo();
+
+            // Tank evaluates block more frequently — BlockProbability is scaled higher in its SH_EnemyData asset.
+            EvaluateBlockDecision();
+        }
+
+        private void TickAttackFlanker(float dist)
+        {
+            Vector3 toPlayer = (_playerContext.Transform.position - transform.position).normalized;
+            Vector3 lateralDir = Vector3.Cross(Vector3.up, toPlayer) * _flankerOrbitSide;
+            Vector3 orbitTarget = _playerContext.Transform.position
+                                + lateralDir * _data.EvasionDistance
+                                - toPlayer * (_data.MeleeAttackRange * 0.8f);
+
+            float distToOrbit = Vector3.Distance(transform.position, orbitTarget);
+
+            if (distToOrbit > 0.5f && !_comboInProgress)
+            {
+                TrySetDestination(orbitTarget, force: true);
+                FaceTarget(_playerContext.Transform.position);
+            }
+            else
+            {
+                FaceTarget(_playerContext.Transform.position);
+            }
+
+            _attackCooldownTimer -= Time.deltaTime;
+
+            if (dist <= _data.MeleeAttackRange && _attackCooldownTimer <= 0f && !_comboInProgress)
+            {
+                StartCombo();
+                // Flip orbit side after each attack to circle to the opposite flank.
+                _flankerOrbitSide *= -1f;
+            }
+
+            if (_comboInProgress)
+                TickCombo();
         }
 
         #endregion

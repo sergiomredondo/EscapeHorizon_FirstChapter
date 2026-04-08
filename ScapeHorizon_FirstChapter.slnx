@@ -12,7 +12,6 @@
   <Project Path="Unity.Splines.csproj" />
   <Project Path="Unity.RenderPipelines.HighDefinition.Editor.csproj" />
   <Project Path="Unity.Burst.csproj" />
-  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.VisualScripting.Flow.Editor.csproj" />
   <Project Path="Unity.FilmInternalUtilities.Editor.csproj" />
   <Project Path="Unity.ProBuilder.Csg.csproj" />
@@ -25,6 +24,7 @@
   <Project Path="Unity.VisualScripting.State.Editor.csproj" />
   <Project Path="Unity.Burst.CodeGen.csproj" />
   <Project Path="Unity.Cinemachine.csproj" />
+  <Project Path="Unity.Postprocessing.Editor.csproj" />
   <Project Path="Unity.VisualScripting.Flow.csproj" />
   <Project Path="Unity.Splines.Editor.csproj" />
   <Project Path="Unity.PerformanceTesting.csproj" />
@@ -35,6 +35,8 @@
   <Project Path="Unity.VisualScripting.State.csproj" />
   <Project Path="Unity.AI.Navigation.Updater.csproj" />
   <Project Path="Unity.Toonshader.Editor.csproj" />
+  <Project Path="Unity.Postprocessing.Runtime.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.AI.Navigation.Editor.csproj" />
   <Project Path="Unity.ProBuilder.KdTree.csproj" />
   <Project Path="Unity.ProBuilder.AddOns.Editor.csproj" />
