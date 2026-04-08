@@ -212,6 +212,14 @@ namespace Core.StateMachine.States
             // regardless of which phase was reached.
             _context.HitboxController?.DeactivateHitDetection();
 
+            // Always clear invulnerability on exit regardless of which phase was reached,
+            // preventing permanent immunity if the action is interrupted before HandleRecoveryBegin fires.
+            if (_actionData != null && _actionData.grantsInvulnerability)
+                _context.Health?.SetInvulnerable(false);
+
+            // Clear movement lock on exit to ensure the player can move again after the action ends,
+            // regardless of which phase was reached. This also prevents permanent movement lock
+            // if the action is interrupted before the lock would normally be lifted.
             if (_actionData != null && _actionData.locksMovement)
             {
                 _context.Physics.SetFrictionMultiplier(5f);
@@ -305,6 +313,9 @@ namespace Core.StateMachine.States
         private void HandleActiveBegin()
         {
             _context.CombatController?.ActivateHitDetection();
+
+            if (_actionData.grantsInvulnerability)
+                _context.Health?.SetInvulnerable(true);
         }
 
         /// <summary>
@@ -314,6 +325,9 @@ namespace Core.StateMachine.States
         private void HandleRecoveryBegin()
         {
             _context.HitboxController?.DeactivateHitDetection();
+
+            if (_actionData.grantsInvulnerability)
+                _context.Health?.SetInvulnerable(false);
         }
 
         /// <summary>

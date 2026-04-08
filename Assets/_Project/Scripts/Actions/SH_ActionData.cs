@@ -110,6 +110,10 @@ namespace Actions.Data
         [Tooltip("Determines if translation is controlled by animation (Root Motion) or the PhysicsMotor.")]
         public bool useRootMotion = false;
 
+        [Tooltip("If true, the player becomes invulnerable during the Active phase of this action. " +
+         "Dash grants a temporal i-frame window during displacement.")]
+        public bool grantsInvulnerability = false;
+
         #endregion
 
         // Derived properties are computed from the base parameters to provide convenient access to commonly needed values,

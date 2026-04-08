@@ -38,6 +38,12 @@ namespace Game.Economy
         private bool _isDefeated;
 
         /// <summary>
+        /// Flag to indicate temporary invulnerability states (e.g., during certain actions or effects).
+        /// When true, TakeDamage will ignore incoming damage and not trigger events.
+        /// </summary>
+        private bool _isInvulnerable;
+
+        /// <summary>
         /// Tracks whether the component has been initialized with valid settings.
         /// Guards all public methods against execution before initialization.
         /// </summary>
@@ -63,6 +69,13 @@ namespace Game.Economy
         /// External systems (FSM, narrative) query this to trigger escape sequences.
         /// </summary>
         public bool IsDefeated => _isDefeated;
+
+        /// <summary>
+        /// Returns true if the Mecha is currently invulnerable. Used by the FSM and action states
+        /// to gate damage application during i-frame windows. This is a simple flag; the logic to set and clear it
+        /// must be implemented by the relevant systems (e.g., SH_SurgeState sets it to true during surge activation).
+        /// </summary>
+        public bool IsInvulnerable => _isInvulnerable;
 
         #endregion
 
@@ -133,9 +146,10 @@ namespace Game.Economy
         /// </param>
         public void TakeDamage(float damageAmount)
         {
-            if (!_isInitialized) { Debug.LogWarning($"[SH_HealthComponent] TakeDamage called on {gameObject.name} before initialization. Call Initialize() first."); return;}
+            if (!_isInitialized) { Debug.LogWarning($"[SH_HealthComponent] TakeDamage called on {gameObject.name} before initialization. Call Initialize() first."); return; }
             if (_isDefeated) return;
-            if (damageAmount <= 0f) { Debug.LogWarning($"[SH_HealthComponent] TakeDamage called with invalid damageAmount ({damageAmount}). Value must be greater than zero."); return;}
+            if (_isInvulnerable) return;
+            if (damageAmount <= 0f) { Debug.LogWarning($"[SH_HealthComponent] TakeDamage called with invalid damageAmount ({damageAmount}). Value must be greater than zero."); return; }
 
             float previousDurability = _currentDurability;
             _currentDurability = Mathf.Max(0f, _currentDurability - damageAmount);
@@ -179,6 +193,13 @@ namespace Game.Economy
             _currentDurability = _settings.maxDurability;
             _isDefeated = false;
         }
+
+        /// <summary>
+        /// Sets whether the object is invulnerable to damage or effects.
+        /// When invulnerable, TakeDamage will ignore incoming damage and not trigger events.
+        /// </summary>
+        /// <param name="invulnerable">true to make the object invulnerable; otherwise, false.</param>
+        public void SetInvulnerable(bool invulnerable) => _isInvulnerable = invulnerable;
 
         #endregion
 
