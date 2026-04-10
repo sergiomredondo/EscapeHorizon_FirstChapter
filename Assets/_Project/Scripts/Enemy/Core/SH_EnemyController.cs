@@ -82,6 +82,9 @@ namespace Game.Enemy
         /// </summary>
         private float _scaledAttackCooldown;
 
+        /// Cached effective attack cooldown after applying difficulty scaling.
+        private float _scaledAttackStrength;
+
         #endregion
 
         #region Runtime State — Blocking / Parrying
@@ -334,6 +337,7 @@ namespace Game.Enemy
 
             _scaledMaxHP = _data.ResolvedMaxDurability;
             _scaledAttackCooldown = _data.AttackCooldown;
+            _scaledAttackStrength = _data.CombatStats != null ? _data.CombatStats.Strength : 1f;
             _currentHP = _scaledMaxHP;
             _currentPosture = _data.ResolvedPostureMax;
 
@@ -419,10 +423,12 @@ namespace Game.Enemy
 
             float hpMult = GetHpMultiplier(difficulty) * zoneFactor;
             float aiMult = GetAIMult(difficulty);
+            float attackMult = GetAttackMult(difficulty) * zoneFactor;
 
             _scaledMaxHP = _data.ResolvedMaxDurability * hpMult;
             _currentHP = Mathf.Min(_currentHP, _scaledMaxHP);
             _scaledAttackCooldown = _data.AttackCooldown / Mathf.Max(0.1f, aiMult);
+            _scaledAttackStrength = (_data.CombatStats != null ? _data.CombatStats.Strength : 1f) * attackMult;
         }
 
         private static float GetHpMultiplier(DifficultyLevel d) => d switch
@@ -440,6 +446,15 @@ namespace Game.Enemy
             DifficultyLevel.Normal => 1.0f,
             DifficultyLevel.Hard => 1.5f,
             DifficultyLevel.Nightmare => 1.3f,
+            _ => 1.0f
+        };
+
+        private static float GetAttackMult(DifficultyLevel d) => d switch
+        {
+            DifficultyLevel.Easy => 0.8f,
+            DifficultyLevel.Normal => 1.0f,
+            DifficultyLevel.Hard => 1.3f,
+            DifficultyLevel.Nightmare => 1.6f,
             _ => 1.0f
         };
 
@@ -682,30 +697,34 @@ namespace Game.Enemy
         }
 
         /// <summary>
-        /// Delivers a single melee hit to the player's SH_HealthComponent using the
-        /// attacker's CombatStats and SH_CombatSettings.
-        /// GDD §5.3.4: enemy attacks apply EffectiveDamage to player Durability.
+        /// Executes a single attack hit within the combo sequence.
+        /// Calculates final damage based on the enemy's scaled attack strength,
+        /// the player's defense, and any active Surge effects. Applies damage to the
+        /// player's health and notifies the interaction system of the hit.
         /// </summary>
         private void ExecuteSingleAttack()
         {
             if (_playerContext == null || _data?.CombatStats == null) return;
 
-            // Build a simple flat damage value from the enemy's Strength.
-            // A full BuildPayload path would require an ICombatTarget on the player —
-            // that integration point is Stage C (SH_PlayerCombatReceiver).
-            // For Stage B, we apply damage directly to SH_HealthComponent.
-            float baseAttack = _data.CombatStats.Strength * 1.0f; // Normal multiplier
-            float finalDmg = Mathf.Max(0f, baseAttack -
-                (_playerContext.PlayerCombatStats?.Defense ?? 0f) * 0.5f);
+            float playerDefense = _playerContext.PlayerCombatStats?.Defense ?? 0f;
+            float defEffectiveness = _playerContext.CombatSettings?.defenseEffectiveness ?? 0.5f;
+
+            float finalDmg = Mathf.Max(0f, _scaledAttackStrength - playerDefense * defEffectiveness);
+
+            // Apply Surge defense multiplier — Surge actively reduces incoming damage.
+            if (_playerContext.CombatController?.IsSurgeActive ?? false)
+            {
+                float surgeDefMult = _playerContext.CombatSettings?.surgeDefenseMultiplier ?? 1.3f;
+                finalDmg /= surgeDefMult;
+            }
 
             _playerContext.Health.TakeDamage(finalDmg);
-
-            // Notify damage to interrupt any active interaction hold
             _playerContext.Interaction?.NotifyDamageReceived();
 
 #if UNITY_EDITOR
             Debug.Log($"[SH_EnemyController] {_data.DisplayName} attacked player: " +
-                      $"{finalDmg:F1} damage.");
+                      $"{finalDmg:F1} damage (strength={_scaledAttackStrength:F1}, " +
+                      $"defense={playerDefense:F1}, surge={_playerContext.CombatController?.IsSurgeActive}).");
 #endif
         }
 
