@@ -64,6 +64,27 @@ namespace Game.Interaction
         [Tooltip("Base color to restore when focus is lost.")]
         [SerializeField] private Color _baseColor = Color.white;
 
+        [Header("Captive Core — Reveal Effects")]
+
+        [Tooltip("Prefab instantiated once at reveal moment (flash pulse). " +
+         "Configure Stop Action → Destroy on its Particle System or VFX Graph.")]
+        [SerializeField] private GameObject _revealFlashPrefab;
+
+        [Tooltip("Prefab instantiated when Vulnerable state begins and destroyed on resolution. " +
+                 "Attach pulsing light, looping VFX and AudioSource with loop=true inside.")]
+        [SerializeField] private GameObject _captivePulsePrefab;
+
+        [Tooltip("AudioClip played once at the reveal moment via AudioSource.PlayClipAtPoint.")]
+        [SerializeField] private AudioClip _revealSoundClip;
+
+        [Tooltip("Fallback lifetime (seconds) for the flash prefab if it does not self-terminate.")]
+        [Min(0.1f)]
+        [SerializeField] private float _revealFlashAutoDestroy = 1f;
+
+        [Tooltip("Layer name assigned to this GameObject when the core becomes interactable. " +
+         "Must match the layer used in SH_InteractionSettings.interactableLayer.")]
+        [SerializeField] private string _interactableLayerName = "Interactable";
+
         #endregion
 
         #region Runtime State
@@ -74,6 +95,8 @@ namespace Game.Interaction
         /// Used by the persistence system to record the outcome.
         /// </summary>
         private bool _wasRescued = false;
+        private bool _isRevealed = false;
+        private GameObject _activePulseInstance;
 
         #endregion
 
@@ -102,14 +125,73 @@ namespace Game.Interaction
         {
             base.Awake();
 
-            // Captive Cores always use Hold interaction (GDD §5.2.1).
             interactionType = InteractionType.Hold;
+
+            _isAvailable = false;
+            var col = GetComponent<Collider>();
+            if (col != null) col.enabled = false;
+
+            // Own renderer is hidden by default — the pulse prefab provides the visual on reveal.
+            if (_renderer != null)
+                _renderer.enabled = false;
 
             if (_dropData == null)
             {
                 Debug.LogWarning($"[SH_CaptiveCore] '{gameObject.name}' has no " +
                                  $"SH_ResourceDropData assigned. No rewards will be " +
                                  $"delivered on interaction. Assign a drop data asset.");
+            }
+        }
+
+        public void ActivateCaptiveReveal()
+        {
+            if (_isRevealed) return;
+            _isRevealed = true;
+
+            // Enable the collider on this child GameObject (Interactable layer, set in prefab).
+            // The enemy root CharacterController stays on Combat layer — attacks still register.
+            _isAvailable = true;
+            var col = GetComponent<Collider>();
+            if (col != null) col.enabled = true;
+
+            if (_revealFlashPrefab != null)
+            {
+                GameObject flash = Instantiate(
+                    _revealFlashPrefab,
+                    transform.position,
+                    transform.rotation);
+                Destroy(flash, _revealFlashAutoDestroy);
+            }
+
+            if (_captivePulsePrefab != null)
+            {
+                _activePulseInstance = Instantiate(
+                    _captivePulsePrefab,
+                    transform.position,
+                    transform.rotation,
+                    transform);
+            }
+
+            if (_revealSoundClip != null)
+                AudioSource.PlayClipAtPoint(_revealSoundClip, transform.position);
+        }
+
+        public void ResetCaptiveState()
+        {
+            _isRevealed = false;
+            _wasRescued = false;
+            _isAvailable = false;
+
+            var col = GetComponent<Collider>();
+            if (col != null) col.enabled = false;
+
+            if (_renderer != null)
+                _renderer.enabled = false;
+
+            if (_activePulseInstance != null)
+            {
+                Destroy(_activePulseInstance);
+                _activePulseInstance = null;
             }
         }
 
@@ -150,6 +232,13 @@ namespace Game.Interaction
             }
 
             _wasRescued = true;
+
+            if (_activePulseInstance != null)
+            {
+                Destroy(_activePulseInstance);
+                _activePulseInstance = null;
+            }
+
             MarkConsumed();
             OnRescued?.Invoke(persistentID);
 
@@ -194,6 +283,13 @@ namespace Game.Interaction
             }
 
             _wasRescued = false;
+
+            if (_activePulseInstance != null)
+            {
+                Destroy(_activePulseInstance);
+                _activePulseInstance = null;
+            }
+
             MarkConsumed();
             OnDestroyed?.Invoke(persistentID);
 
@@ -229,9 +325,14 @@ namespace Game.Interaction
 
         protected override void OnDestroyVisualOnLoad()
         {
-            // Hide the object mesh when loading a previously consumed core.
             var renderers = GetComponentsInChildren<Renderer>();
             foreach (var r in renderers) r.enabled = false;
+
+            if (_activePulseInstance != null)
+            {
+                Destroy(_activePulseInstance);
+                _activePulseInstance = null;
+            }
         }
 
         #endregion

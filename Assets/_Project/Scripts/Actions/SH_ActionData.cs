@@ -116,6 +116,25 @@ namespace Actions.Data
 
         #endregion
 
+        #region Visual & Audio Feedback
+
+        [Header("Visual & Audio Feedback")]
+
+        [Tooltip("Prefab instantiated at the attacker's position when the Active phase begins. " +
+                 "Assemble VFX and AudioSource inside the prefab. Null disables the effect.")]
+        public GameObject activationEffectPrefab;
+
+        [Tooltip("Prefab instantiated at the hit point on each successful contact. " +
+                 "Assemble VFX and AudioSource inside the prefab. Null disables the effect.")]
+        public GameObject hitEffectPrefab;
+
+        [Tooltip("Fallback lifetime (seconds) before the effect instance is force-destroyed. " +
+                 "Use if the prefab does not self-terminate via its VFX or Particle System settings.")]
+        [Min(0.1f)]
+        public float effectAutoDestroyTime = 2f;
+
+        #endregion
+
         // Derived properties are computed from the base parameters to provide convenient access to commonly needed values,
         // such as the total duration of the action lifecycle.
         #region Derived Properties

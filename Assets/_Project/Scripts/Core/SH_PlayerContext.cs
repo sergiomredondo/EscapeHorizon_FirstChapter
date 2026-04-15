@@ -70,6 +70,8 @@ namespace Core
         public SH_CombatSettings CombatSettings { get; }
         public SH_CombatStats PlayerCombatStats { get; }
 
+        public SH_PlayerFeedbackData FeedbackData { get; }
+
         #endregion
 
         #region Read-Only Authorities — Combat System (Stage B)
@@ -95,6 +97,7 @@ namespace Core
         // leaving the Interaction component retained by the Health event even after
         // both components have been logically decommissioned.
         private Action<float, float, float> _onDamageReceivedHandler;
+        private Action<float, float, float> _onHitFeedbackHandler;
 
         #endregion
 
@@ -122,6 +125,7 @@ namespace Core
             SH_HitboxController hitboxController,
             SH_CombatSettings combatSettings,
             SH_CombatStats playerCombatStats,
+            SH_PlayerFeedbackData playerFeedbackData,
             SH_EnergySurgeSystem surgeSystem,
             SH_DifficultyManager difficultyManager)
         {
@@ -146,6 +150,7 @@ namespace Core
             HitboxController = hitboxController;
             CombatSettings = combatSettings;
             PlayerCombatStats = playerCombatStats;
+            FeedbackData = playerFeedbackData;
             SurgeSystem = surgeSystem;
             DifficultyManager = difficultyManager;
 
@@ -197,6 +202,12 @@ namespace Core
             _onDamageReceivedHandler = (_, __, ___) => Interaction.NotifyDamageReceived();
             Health.OnDamageReceived += _onDamageReceivedHandler;
 
+            // Player hit feedback — spawn effect and play audio on damage received.
+            if (FeedbackData != null)
+            {
+                Health.OnDamageReceived += OnPlayerHitFeedback;
+            }
+
             // Combat Stage A
             HitboxController.Initialize(this, CombatSettings, PlayerCombatStats);
             CombatController.Initialize(this, HitboxController, CombatSettings);
@@ -204,6 +215,30 @@ namespace Core
             // Combat Stage B
             SurgeSystem.Initialize(this, CombatController);
             DifficultyManager.Initialize(this);
+        }
+
+        /// <summary>
+        /// Plays hit feedback effects when the player takes damage.
+        /// Subscribed to Health.OnDamageReceived. Parameters: (float currentHealth, float maxHealth, float damageTaken).
+        /// </summary>
+        /// <param name="current"></param>
+        /// <param name="max"></param>
+        /// <param name="damageTaken"></param>
+        private void OnPlayerHitFeedback(float current, float max, float damageTaken)
+        {
+            if (FeedbackData == null) return;
+
+            if (FeedbackData.hitEffectPrefab != null)
+            {
+                GameObject fx = UnityEngine.Object.Instantiate(
+                    FeedbackData.hitEffectPrefab,
+                    Transform.position,
+                    Transform.rotation);
+                UnityEngine.Object.Destroy(fx, FeedbackData.effectAutoDestroyTime);
+            }
+
+            if (FeedbackData.hitAudioClip != null)
+                AudioSource.PlayClipAtPoint(FeedbackData.hitAudioClip, Transform.position);
         }
 
         /// <summary>
@@ -217,6 +252,10 @@ namespace Core
             {
                 Health.OnDamageReceived -= _onDamageReceivedHandler;
                 _onDamageReceivedHandler = null;
+            }
+            if (Health != null && _onHitFeedbackHandler != null)
+            {
+                Health.OnDamageReceived -= OnPlayerHitFeedback;
             }
         }
 

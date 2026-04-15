@@ -48,6 +48,7 @@ namespace Game.Combat.Core
         private SH_ActionData _currentAction;
         private AttackType _currentAttackType;
         private bool _surgeActiveAtActivation;
+        private Coroutine _hitstopCoroutine;
 
         // Pre-allocated fallback used when a target exposes no SH_CombatStats.
         // Static + readonly: one allocation at class load, zero per-hit.
@@ -194,20 +195,14 @@ namespace Game.Combat.Core
         {
             SH_CombatStats defenderStats = null;
 
-            // SH_EnemyController exposes CombatStats as a public property.
-            // GetComponent<SH_CombatStats> would throw ArgumentException because
-            // SH_CombatStats is a ScriptableObject, not a Component.
             if (target is Game.Enemy.SH_EnemyController enemyCtrl)
             {
                 defenderStats = enemyCtrl.CombatStats;
 
-                // IsElite is a public property — no Reflection, no GetComponent.
                 if (enemyCtrl.IsElite)
                     _context.EconomicEvents?.RollEnergyEventOnEliteEncounter();
             }
 
-            // Fallback for future ICombatTarget types that are not SH_EnemyController.
-            // Uses the static pre-allocated instance: zero heap allocation per hit.
             if (defenderStats == null)
             {
                 defenderStats = CreateZeroDefenseFallback();
@@ -241,6 +236,30 @@ namespace Game.Combat.Core
 
             _context.SurgeSystem?.NotifyDamageDealt(payload.EffectiveDamage);
             _context.DifficultyManager?.NotifyDamageDealt(payload.EffectiveDamage);
+
+            if (payload.HitstopDuration > 0.001f && _hitstopCoroutine == null)
+                _hitstopCoroutine = StartCoroutine(HitstopRoutine(payload.HitstopDuration));
+
+            if (_currentAction.hitEffectPrefab != null)
+            {
+                Vector3 hitDir = (hitPoint - transform.position);
+                hitDir.y = 0f;
+                Quaternion hitRot = hitDir.sqrMagnitude > 0.01f
+                    ? Quaternion.LookRotation(hitDir.normalized)
+                    : transform.rotation;
+
+                GameObject fx = Instantiate(_currentAction.hitEffectPrefab, hitPoint, hitRot);
+                Destroy(fx, _currentAction.effectAutoDestroyTime);
+            }
+        }
+
+        private System.Collections.IEnumerator HitstopRoutine(float duration)
+        {
+            Time.timeScale = 0f;
+            // WaitForSecondsRealtime is unaffected by timeScale.
+            yield return new WaitForSecondsRealtime(duration);
+            Time.timeScale = 1f;
+            _hitstopCoroutine = null;
         }
 
         #endregion

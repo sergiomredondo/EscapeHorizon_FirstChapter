@@ -1,0 +1,588 @@
+{
+  "assetCategories": {
+    "surface": {
+      "rock": {
+        "cliff": {}
+      }
+    }
+  },
+  "averageColor": "#000000",
+  "categories": [
+    "surface",
+    "rock",
+    "cliff"
+  ],
+  "comp_version": 1,
+  "description": "",
+  "displacementBias": 0.400953,
+  "displacementCalibrationAccuracy": 0.948352,
+  "displacementScale": 912.036621,
+  "environment": {
+    "biome": "undefined",
+    "region": "Americas"
+  },
+  "highest_available_res": 16384,
+  "id": "vetgagfdy",
+  "json": {
+    "contentLength": 12305,
+    "uri": "vetgagfdy.json"
+  },
+  "maps": [
+    {
+      "averageColor": "#A8A8A8",
+      "bitDepth": 32,
+      "colorSpace": "sRGB",
+      "contentLength": 106246620,
+      "maxIntensity": 244,
+      "mimeType": "image/x-exr",
+      "minIntensity": 83,
+      "name": "AO",
+      "physicalSize": "80.31x40.15",
+      "resolution": "8192x4096",
+      "type": "ao",
+      "uri": "vetgagfdy_8K_AO.exr"
+    },
+    {
+      "averageColor": "#A8A8A8",
+      "bitDepth": 8,
+      "colorSpace": "sRGB",
+      "contentLength": 17962501,
+      "maxIntensity": 244,
+      "mimeType": "image/jpeg",
+      "minIntensity": 83,
+      "name": "AO",
+      "physicalSize": "80.31x40.15",
+      "resolution": "8192x4096",
+      "type": "ao",
+      "uri": "vetgagfdy_8K_AO.jpg"
+    },
+    {
+      "averageColor": "#8C5844",
+      "bitDepth": 16,
+      "colorSpace": "sRGB",
+      "contentLength": 112224557,
+      "maxIntensity": 129,
+      "mimeType": "image/x-exr",
+      "minIntensity": 80,
+      "name": "Basecolor",
+      "physicalSize": "80.31x40.15",
+      "resolution": "8192x4096",
+      "type": "basecolor",
+      "uri": "vetgagfdy_8K_Basecolor.exr"
+    },
+    {
+      "averageColor": "#8C5844",
+      "bitDepth": 8,
+      "colorSpace": "sRGB",
+      "contentLength": 20589727,
+      "maxIntensity": 129,
+      "mimeType": "image/jpeg",
+      "minIntensity": 80,
+      "name": "Basecolor",
+      "physicalSize": "80.31x40.15",
+      "resolution": "8192x4096",
+      "type": "basecolor",
+      "uri": "vetgagfdy_8K_Basecolor.jpg"
+    },
+    {
+      "averageColor": "#808080",
+      "bitDepth": 32,
+      "colorSpace": "Linear",
+      "contentLength": 94135550,
+      "maxIntensity": 255,
+      "mimeType": "image/x-exr",
+      "minIntensity": 0,
+      "name": "Bump",
+      "physicalSize": "80.31x40.15",
+      "resolution": "8192x4096",
+      "type": "bump",
+      "uri": "vetgagfdy_8K_Bump.exr"
+    },
+    {
+      "averageColor": "#808080",
+      "bitDepth": 8,
+      "colorSpace": "Linear",
+      "contentLength": 5523689,
+      "maxIntensity": 255,
+      "mimeType": "image/jpeg",
+      "minIntensity": 0,
+      "name": "Bump",
+      "physicalSize": "80.31x40.15",
+      "resolution": "8192x4096",
+      "type": "bump",
+      "uri": "vetgagfdy_8K_Bump.jpg"
+    },
+    {
+      "averageColor": "#FFFFFF",
+      "bitDepth": 32,
+      "colorSpace": "sRGB",
+      "contentLength": 110976012,
+      "maxIntensity": 255,
+      "mimeType": "image/x-exr",
+      "minIntensity": 255,
+      "name": "Cavity",
+      "physicalSize": "80.31x40.15",
+      "resolution": "8192x4096",
+      "type": "cavity",
+      "uri": "vetgagfdy_8K_Cavity.exr"
+    },
+    {
+      "averageColor": "#FFFFFF",
+      "bitDepth": 8,
+      "colorSpace": "sRGB",
+      "contentLength": 23790345,
+      "maxIntensity": 255,
+      "mimeType": "image/jpeg",
+      "minIntensity": 255,
+      "name": "Cavity",
+      "physicalSize": "80.31x40.15",
+      "resolution": "8192x4096",
+      "type": "cavity",
+      "uri": "vetgagfdy_8K_Cavity.jpg"
+    },
+    {
+      "averageColor": "#1A1A1A",
+      "bitDepth": 32,
+      "colorSpace": "Linear",
+      "contentLength": 108506184,
+      "maxIntensity": 43,
+      "mimeType": "image/x-exr",
+      "minIntensity": 19,
+      "name": "Gloss",
+      "physicalSize": "80.31x40.15",
+      "resolution": "8192x4096",
+      "type": "gloss",
+      "uri": "vetgagfdy_8K_Gloss.exr"
+    },
+    {
+      "averageColor": "#1A1A1A",
+      "bitDepth": 8,
+      "colorSpace": "Linear",
+      "contentLength": 10075827,
+      "maxIntensity": 43,
+      "mimeType": "image/jpeg",
+      "minIntensity": 19,
+      "name": "Gloss",
+      "physicalSize": "80.31x40.15",
+      "resolution": "8192x4096",
+      "type": "gloss",
+      "uri": "vetgagfdy_8K_Gloss.jpg"
+    },
+    {
+      "averageColor": "#8388E0",
+      "bitDepth": 16,
+      "colorSpace": "Linear",
+      "contentLength": 114810657,
+      "maxIntensity": 211,
+      "mimeType": "image/x-exr",
+      "minIntensity": 59,
+      "name": "Normal",
+      "physicalSize": "80.31x40.15",
+      "resolution": "8192x4096",
+      "type": "normal",
+      "uri": "vetgagfdy_8K_Normal.exr"
+    },
+    {
+      "averageColor": "#8388E0",
+      "bitDepth": 8,
+      "colorSpace": "Linear",
+      "contentLength": 48063380,
+      "maxIntensity": 211,
+      "mimeType": "image/jpeg",
+      "minIntensity": 59,
+      "name": "Normal",
+      "physicalSize": "80.31x40.15",
+      "resolution": "8192x4096",
+      "type": "normal",
+      "uri": "vetgagfdy_8K_Normal.jpg"
+    },
+    {
+      "averageColor": "#E5E5E5",
+      "bitDepth": 32,
+      "colorSpace": "Linear",
+      "contentLength": 97035112,
+      "maxIntensity": 236,
+      "mimeType": "image/x-exr",
+      "minIntensity": 212,
+      "name": "Roughness",
+      "physicalSize": "80.31x40.15",
+      "resolution": "8192x4096",
+      "type": "roughness",
+      "uri": "vetgagfdy_8K_Roughness.exr"
+    },
+    {
+      "averageColor": "#E5E5E5",
+      "bitDepth": 8,
+      "colorSpace": "Linear",
+      "contentLength": 9233454,
+      "maxIntensity": 236,
+      "mimeType": "image/jpeg",
+      "minIntensity": 212,
+      "name": "Roughness",
+      "physicalSize": "80.31x40.15",
+      "resolution": "8192x4096",
+      "type": "roughness",
+      "uri": "vetgagfdy_8K_Roughness.jpg"
+    },
+    {
+      "averageColor": "#383838",
+      "bitDepth": 16,
+      "colorSpace": "sRGB",
+      "contentLength": 124703054,
+      "maxIntensity": 56,
+      "mimeType": "image/x-exr",
+      "minIntensity": 56,
+      "name": "Specular",
+      "physicalSize": "80.31x40.15",
+      "resolution": "8192x4096",
+      "type": "specular",
+      "uri": "vetgagfdy_8K_Specular.exr"
+    },
+    {
+      "averageColor": "#383838",
+      "bitDepth": 8,
+      "colorSpace": "sRGB",
+      "contentLength": 15334523,
+      "maxIntensity": 56,
+      "mimeType": "image/jpeg",
+      "minIntensity": 56,
+      "name": "Specular",
+      "physicalSize": "80.31x40.15",
+      "resolution": "8192x4096",
+      "type": "specular",
+      "uri": "vetgagfdy_8K_Specular.jpg"
+    }
+  ],
+  "meta": [
+    {
+      "key": "scanArea",
+      "name": "Scan Area",
+      "value": "80.31x40.15 m"
+    },
+    {
+      "key": "height",
+      "name": "Height",
+      "value": "0.174 m"
+    },
+    {
+      "key": "tileable",
+      "name": "Tileable",
+      "value": true
+    },
+    {
+      "key": "tiling_directions",
+      "name": "Tiling Directions",
+      "value": [
+        "x",
+        "y"
+      ]
+    },
+    {
+      "key": "texelDensity",
+      "name": "Texel Density",
+      "value": "204 px/m"
+    },
+    {
+      "key": "calibration",
+      "name": "Calibration",
+      "value": "GretagMacbeth ColorChecker Color Rendition Chart"
+    },
+    {
+      "key": "scanner",
+      "name": "Scanner",
+      "value": "MKX"
+    }
+  ],
+  "models": [],
+  "name": "Desert Western Cliff Surface Layered 01",
+  "pack": {
+    "_id": "canyons-of-utah",
+    "name": "Canyons of Utah"
+  },
+  "physicalSize": null,
+  "points": 2,
+  "previews": {
+    "images": [
+      {
+        "contentLength": 301074,
+        "resolution": "360x360",
+        "tags": [
+          "thumb"
+        ],
+        "uri": "vetgagfdy_Grid_360.png"
+      },
+      {
+        "contentLength": 408166,
+        "resolution": "420x420",
+        "tags": [
+          "thumb"
+        ],
+        "uri": "vetgagfdy_Grid_420.png"
+      },
+      {
+        "contentLength": 1153235,
+        "resolution": "720x720",
+        "tags": [
+          "thumb",
+          "retina"
+        ],
+        "uri": "vetgagfdy_Grid_720.png"
+      },
+      {
+        "contentLength": 1559711,
+        "resolution": "840x840",
+        "tags": [
+          "thumb",
+          "retina"
+        ],
+        "uri": "vetgagfdy_Grid_840.png"
+      },
+      {
+        "contentLength": 3079400,
+        "resolution": "1440x810",
+        "tags": [
+          "preview",
+          "clay"
+        ],
+        "uri": "vetgagfdy_PopupClay_1440.png"
+      },
+      {
+        "contentLength": 5397027,
+        "resolution": "1920x1080",
+        "tags": [
+          "preview",
+          "clay"
+        ],
+        "uri": "vetgagfdy_PopupClay_1920.png"
+      },
+      {
+        "contentLength": 11624518,
+        "resolution": "2880x1620",
+        "tags": [
+          "preview",
+          "clay",
+          "retina"
+        ],
+        "uri": "vetgagfdy_PopupClay_2880.png"
+      },
+      {
+        "contentLength": 19828845,
+        "resolution": "3840x2160",
+        "tags": [
+          "preview",
+          "clay",
+          "retina"
+        ],
+        "uri": "vetgagfdy_PopupClay_3840.png"
+      },
+      {
+        "contentLength": 3088871,
+        "resolution": "1440x810",
+        "tags": [
+          "preview",
+          "tiled"
+        ],
+        "uri": "vetgagfdy_PopupTiled_1440.png"
+      },
+      {
+        "contentLength": 5441771,
+        "resolution": "1920x1080",
+        "tags": [
+          "preview",
+          "tiled"
+        ],
+        "uri": "vetgagfdy_PopupTiled_1920.png"
+      },
+      {
+        "contentLength": 11807343,
+        "resolution": "2880x1620",
+        "tags": [
+          "preview",
+          "tiled",
+          "retina"
+        ],
+        "uri": "vetgagfdy_PopupTiled_2880.png"
+      },
+      {
+        "contentLength": 20227907,
+        "resolution": "3840x2160",
+        "tags": [
+          "preview",
+          "tiled",
+          "retina"
+        ],
+        "uri": "vetgagfdy_PopupTiled_3840.png"
+      },
+      {
+        "contentLength": 3024379,
+        "resolution": "1440x810",
+        "tags": [
+          "preview"
+        ],
+        "uri": "vetgagfdy_Popup_1440.png"
+      },
+      {
+        "contentLength": 5306640,
+        "resolution": "1920x1080",
+        "tags": [
+          "preview"
+        ],
+        "uri": "vetgagfdy_Popup_1920.png"
+      },
+      {
+        "contentLength": 11450312,
+        "resolution": "2880x1620",
+        "tags": [
+          "preview",
+          "retina"
+        ],
+        "uri": "vetgagfdy_Popup_2880.png"
+      },
+      {
+        "contentLength": 19614748,
+        "resolution": "3840x2160",
+        "tags": [
+          "preview",
+          "retina"
+        ],
+        "uri": "vetgagfdy_Popup_3840.png"
+      }
+    ],
+    "relativeSize": "1x1",
+    "scaleReferences": []
+  },
+  "process_date": "2024-04-16 23:11:07",
+  "properties": [],
+  "referencePreviews": {
+    "maps": [],
+    "models": []
+  },
+  "references": [],
+  "revised": false,
+  "revision": 0,
+  "semanticTags": {
+    "asset_type": "surface",
+    "color": [
+      "Brown",
+      "Red"
+    ],
+    "contains": [
+      "Cliff",
+      "Sandstone",
+      "Rocks"
+    ],
+    "country": "United States",
+    "descriptive": [
+      "Old",
+      "Weathered",
+      "Dry",
+      "Massive",
+      "Eroded",
+      "Dusty",
+      "drone"
+    ],
+    "environment": [
+      "desert biome"
+    ],
+    "industry": [
+      "games",
+      "VFX"
+    ],
+    "interior_exterior": [
+      "exterior"
+    ],
+    "locations": {
+      "Americas": {
+        "United States": {}
+      }
+    },
+    "maxSize": 80.31,
+    "minSize": 40.15,
+    "name": "Desert Western Cliff Surface Layered 01",
+    "region": "Americas",
+    "season": [
+      "Summer"
+    ],
+    "state": [
+      "old"
+    ],
+    "subject_matter": "nature",
+    "theme": [
+      "Arid",
+      "Desert",
+      "Cliffs",
+      "Nature",
+      "Mountains",
+      "Hills",
+      "Outdoors",
+      "Rockface",
+      "Landscapes",
+      "Moab",
+      "Utah",
+      "Canyon"
+    ]
+  },
+  "tags": [
+    "brown",
+    "red",
+    "arid",
+    "desert",
+    "cliffs",
+    "nature",
+    "mountains",
+    "hills",
+    "outdoors",
+    "rockface",
+    "landscapes",
+    "moab",
+    "utah",
+    "canyon",
+    "cliff",
+    "sand",
+    "sandstone",
+    "rocks",
+    "old",
+    "weathered",
+    "dry",
+    "massive",
+    "eroded",
+    "dusty"
+  ],
+  "texelDensity": 204,
+  "texture_type": "basic",
+  "ue_plugin_archives": [
+    {
+      "contentLength": 152656718,
+      "gltfVersion": "2.0",
+      "tier": 0,
+      "type": "gltf",
+      "uri": "ue_plugin_archives/tier_0/vetgagfdy_tier_0.zip",
+      "version": 1
+    },
+    {
+      "contentLength": 43601787,
+      "gltfVersion": "2.0",
+      "tier": 1,
+      "type": "gltf",
+      "uri": "ue_plugin_archives/tier_1/vetgagfdy_tier_1.zip",
+      "version": 1
+    },
+    {
+      "contentLength": 11600633,
+      "gltfVersion": "2.0",
+      "tier": 2,
+      "type": "gltf",
+      "uri": "ue_plugin_archives/tier_2/vetgagfdy_tier_2.zip",
+      "version": 1
+    },
+    {
+      "contentLength": 1044730,
+      "gltfVersion": "2.0",
+      "tier": 3,
+      "type": "gltf",
+      "uri": "ue_plugin_archives/tier_3/vetgagfdy_tier_3.zip",
+      "version": 1
+    }
+  ],
+  "version": 2
+}

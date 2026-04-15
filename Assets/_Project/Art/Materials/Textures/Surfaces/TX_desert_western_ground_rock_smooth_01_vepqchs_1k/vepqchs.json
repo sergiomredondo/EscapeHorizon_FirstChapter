@@ -1,0 +1,611 @@
+{
+  "assetCategories": {
+    "surface": {
+      "rock": {
+        "rough": {}
+      }
+    }
+  },
+  "averageColor": "#000000",
+  "categories": [
+    "surface",
+    "rock",
+    "rough"
+  ],
+  "comp_version": 1,
+  "description": "",
+  "displacementBias": 0.651271,
+  "displacementCalibrationAccuracy": 0.992526,
+  "displacementScale": 5.2698,
+  "environment": {
+    "biome": "desert biome",
+    "region": "Americas"
+  },
+  "highest_available_res": 8192,
+  "id": "vepqchs",
+  "json": {
+    "contentLength": 12811,
+    "uri": "vepqchs.json"
+  },
+  "maps": [
+    {
+      "averageColor": "#DEDEDE",
+      "bitDepth": 32,
+      "colorSpace": "sRGB",
+      "contentLength": 203890852,
+      "maxIntensity": 251,
+      "mimeType": "image/x-exr",
+      "minIntensity": 159,
+      "name": "AO",
+      "physicalSize": "2x2",
+      "resolution": "8192x8192",
+      "type": "ao",
+      "uri": "vepqchs_8K_AO.exr"
+    },
+    {
+      "averageColor": "#DEDEDE",
+      "bitDepth": 8,
+      "colorSpace": "sRGB",
+      "contentLength": 29479977,
+      "maxIntensity": 251,
+      "mimeType": "image/jpeg",
+      "minIntensity": 159,
+      "name": "AO",
+      "physicalSize": "2x2",
+      "resolution": "8192x8192",
+      "type": "ao",
+      "uri": "vepqchs_8K_AO.jpg"
+    },
+    {
+      "averageColor": "#5B3425",
+      "bitDepth": 16,
+      "colorSpace": "sRGB",
+      "contentLength": 256888164,
+      "maxIntensity": 84,
+      "mimeType": "image/x-exr",
+      "minIntensity": 40,
+      "name": "Basecolor",
+      "physicalSize": "2x2",
+      "resolution": "8192x8192",
+      "type": "basecolor",
+      "uri": "vepqchs_8K_Basecolor.exr"
+    },
+    {
+      "averageColor": "#5B3425",
+      "bitDepth": 8,
+      "colorSpace": "sRGB",
+      "contentLength": 51390494,
+      "maxIntensity": 84,
+      "mimeType": "image/jpeg",
+      "minIntensity": 40,
+      "name": "Basecolor",
+      "physicalSize": "2x2",
+      "resolution": "8192x8192",
+      "type": "basecolor",
+      "uri": "vepqchs_8K_Basecolor.jpg"
+    },
+    {
+      "averageColor": "#808080",
+      "bitDepth": 32,
+      "colorSpace": "Linear",
+      "contentLength": 198311652,
+      "maxIntensity": 255,
+      "mimeType": "image/x-exr",
+      "minIntensity": 0,
+      "name": "Bump",
+      "physicalSize": "2x2",
+      "resolution": "8192x8192",
+      "type": "bump",
+      "uri": "vepqchs_8K_Bump.exr"
+    },
+    {
+      "averageColor": "#808080",
+      "bitDepth": 8,
+      "colorSpace": "Linear",
+      "contentLength": 14972358,
+      "maxIntensity": 255,
+      "mimeType": "image/jpeg",
+      "minIntensity": 0,
+      "name": "Bump",
+      "physicalSize": "2x2",
+      "resolution": "8192x8192",
+      "type": "bump",
+      "uri": "vepqchs_8K_Bump.jpg"
+    },
+    {
+      "averageColor": "#FFFFFF",
+      "bitDepth": 32,
+      "colorSpace": "sRGB",
+      "contentLength": 208287883,
+      "maxIntensity": 255,
+      "mimeType": "image/x-exr",
+      "minIntensity": 255,
+      "name": "Cavity",
+      "physicalSize": "2x2",
+      "resolution": "8192x8192",
+      "type": "cavity",
+      "uri": "vepqchs_8K_Cavity.exr"
+    },
+    {
+      "averageColor": "#FFFFFF",
+      "bitDepth": 8,
+      "colorSpace": "sRGB",
+      "contentLength": 43195261,
+      "maxIntensity": 255,
+      "mimeType": "image/jpeg",
+      "minIntensity": 255,
+      "name": "Cavity",
+      "physicalSize": "2x2",
+      "resolution": "8192x8192",
+      "type": "cavity",
+      "uri": "vepqchs_8K_Cavity.jpg"
+    },
+    {
+      "averageColor": "#818181",
+      "bitDepth": 32,
+      "colorSpace": "Linear",
+      "contentLength": 263179187,
+      "maxIntensity": 165,
+      "mimeType": "image/x-exr",
+      "minIntensity": 91,
+      "name": "Displacement",
+      "physicalSize": "2x2",
+      "resolution": "8192x8192",
+      "type": "displacement",
+      "uri": "vepqchs_8K_Displacement.exr"
+    },
+    {
+      "averageColor": "#818181",
+      "bitDepth": 8,
+      "colorSpace": "Linear",
+      "contentLength": 4057102,
+      "maxIntensity": 165,
+      "mimeType": "image/jpeg",
+      "minIntensity": 91,
+      "name": "Displacement",
+      "physicalSize": "2x2",
+      "resolution": "8192x8192",
+      "type": "displacement",
+      "uri": "vepqchs_8K_Displacement.jpg"
+    },
+    {
+      "averageColor": "#262626",
+      "bitDepth": 32,
+      "colorSpace": "Linear",
+      "contentLength": 124390279,
+      "maxIntensity": 43,
+      "mimeType": "image/x-exr",
+      "minIntensity": 26,
+      "name": "Gloss",
+      "physicalSize": "2x2",
+      "resolution": "8192x8192",
+      "type": "gloss",
+      "uri": "vepqchs_8K_Gloss.exr"
+    },
+    {
+      "averageColor": "#262626",
+      "bitDepth": 8,
+      "colorSpace": "Linear",
+      "contentLength": 25238040,
+      "maxIntensity": 43,
+      "mimeType": "image/jpeg",
+      "minIntensity": 26,
+      "name": "Gloss",
+      "physicalSize": "2x2",
+      "resolution": "8192x8192",
+      "type": "gloss",
+      "uri": "vepqchs_8K_Gloss.jpg"
+    },
+    {
+      "averageColor": "#8383F8",
+      "bitDepth": 16,
+      "colorSpace": "Linear",
+      "contentLength": 110569231,
+      "maxIntensity": 174,
+      "mimeType": "image/x-exr",
+      "minIntensity": 111,
+      "name": "Normal",
+      "physicalSize": "2x2",
+      "resolution": "8192x8192",
+      "type": "normal",
+      "uri": "vepqchs_8K_Normal.exr"
+    },
+    {
+      "averageColor": "#8383F8",
+      "bitDepth": 8,
+      "colorSpace": "Linear",
+      "contentLength": 58189480,
+      "maxIntensity": 174,
+      "mimeType": "image/jpeg",
+      "minIntensity": 111,
+      "name": "Normal",
+      "physicalSize": "2x2",
+      "resolution": "8192x8192",
+      "type": "normal",
+      "uri": "vepqchs_8K_Normal.jpg"
+    },
+    {
+      "averageColor": "#D9D9D9",
+      "bitDepth": 32,
+      "colorSpace": "Linear",
+      "contentLength": 115641316,
+      "maxIntensity": 229,
+      "mimeType": "image/x-exr",
+      "minIntensity": 212,
+      "name": "Roughness",
+      "physicalSize": "2x2",
+      "resolution": "8192x8192",
+      "type": "roughness",
+      "uri": "vepqchs_8K_Roughness.exr"
+    },
+    {
+      "averageColor": "#D9D9D9",
+      "bitDepth": 8,
+      "colorSpace": "Linear",
+      "contentLength": 23341086,
+      "maxIntensity": 229,
+      "mimeType": "image/jpeg",
+      "minIntensity": 212,
+      "name": "Roughness",
+      "physicalSize": "2x2",
+      "resolution": "8192x8192",
+      "type": "roughness",
+      "uri": "vepqchs_8K_Roughness.jpg"
+    },
+    {
+      "averageColor": "#383838",
+      "bitDepth": 16,
+      "colorSpace": "sRGB",
+      "contentLength": 226476580,
+      "maxIntensity": 56,
+      "mimeType": "image/x-exr",
+      "minIntensity": 56,
+      "name": "Specular",
+      "physicalSize": "2x2",
+      "resolution": "8192x8192",
+      "type": "specular",
+      "uri": "vepqchs_8K_Specular.exr"
+    },
+    {
+      "averageColor": "#383838",
+      "bitDepth": 8,
+      "colorSpace": "sRGB",
+      "contentLength": 24914703,
+      "maxIntensity": 56,
+      "mimeType": "image/jpeg",
+      "minIntensity": 56,
+      "name": "Specular",
+      "physicalSize": "2x2",
+      "resolution": "8192x8192",
+      "type": "specular",
+      "uri": "vepqchs_8K_Specular.jpg"
+    }
+  ],
+  "meta": [
+    {
+      "key": "scanArea",
+      "name": "Scan Area",
+      "value": "2x2 m"
+    },
+    {
+      "key": "height",
+      "name": "Height",
+      "value": "0.058 m"
+    },
+    {
+      "key": "tileable",
+      "name": "Tileable",
+      "value": true
+    },
+    {
+      "key": "tiling_directions",
+      "name": "Tiling Directions",
+      "value": [
+        "x",
+        "y"
+      ]
+    },
+    {
+      "key": "texelDensity",
+      "name": "Texel Density",
+      "value": "4096 px/m"
+    },
+    {
+      "key": "calibration",
+      "name": "Calibration",
+      "value": "GretagMacbeth ColorChecker Color Rendition Chart"
+    },
+    {
+      "key": "scanner",
+      "name": "Scanner",
+      "value": "MKX"
+    }
+  ],
+  "models": [],
+  "name": "Desert Western Ground Rock Smooth 01",
+  "pack": null,
+  "physicalSize": null,
+  "points": 2,
+  "previews": {
+    "images": [
+      {
+        "contentLength": 241602,
+        "resolution": "360x360",
+        "tags": [
+          "thumb"
+        ],
+        "uri": "vepqchs_Grid_360.png"
+      },
+      {
+        "contentLength": 327449,
+        "resolution": "420x420",
+        "tags": [
+          "thumb"
+        ],
+        "uri": "vepqchs_Grid_420.png"
+      },
+      {
+        "contentLength": 978224,
+        "resolution": "720x720",
+        "tags": [
+          "thumb",
+          "retina"
+        ],
+        "uri": "vepqchs_Grid_720.png"
+      },
+      {
+        "contentLength": 1339195,
+        "resolution": "840x840",
+        "tags": [
+          "thumb",
+          "retina"
+        ],
+        "uri": "vepqchs_Grid_840.png"
+      },
+      {
+        "contentLength": 2761737,
+        "resolution": "1440x768",
+        "tags": [
+          "preview",
+          "clay"
+        ],
+        "uri": "vepqchs_PopupClay_1440.png"
+      },
+      {
+        "contentLength": 5149295,
+        "resolution": "1920x1080",
+        "tags": [
+          "preview",
+          "clay"
+        ],
+        "uri": "vepqchs_PopupClay_1920.png"
+      },
+      {
+        "contentLength": 11081856,
+        "resolution": "2880x1536",
+        "tags": [
+          "preview",
+          "clay",
+          "retina"
+        ],
+        "uri": "vepqchs_PopupClay_2880.png"
+      },
+      {
+        "contentLength": 21287455,
+        "resolution": "3840x2160",
+        "tags": [
+          "preview",
+          "clay",
+          "retina"
+        ],
+        "uri": "vepqchs_PopupClay_3840.png"
+      },
+      {
+        "contentLength": 2989161,
+        "resolution": "1440x768",
+        "tags": [
+          "preview",
+          "tiled"
+        ],
+        "uri": "vepqchs_PopupTiled_1440.png"
+      },
+      {
+        "contentLength": 5573029,
+        "resolution": "1920x1080",
+        "tags": [
+          "preview",
+          "tiled"
+        ],
+        "uri": "vepqchs_PopupTiled_1920.png"
+      },
+      {
+        "contentLength": 11825389,
+        "resolution": "2880x1536",
+        "tags": [
+          "preview",
+          "tiled",
+          "retina"
+        ],
+        "uri": "vepqchs_PopupTiled_2880.png"
+      },
+      {
+        "contentLength": 22534053,
+        "resolution": "3840x2160",
+        "tags": [
+          "preview",
+          "tiled",
+          "retina"
+        ],
+        "uri": "vepqchs_PopupTiled_3840.png"
+      },
+      {
+        "contentLength": 2960819,
+        "resolution": "1440x768",
+        "tags": [
+          "preview"
+        ],
+        "uri": "vepqchs_Popup_1440.png"
+      },
+      {
+        "contentLength": 5526743,
+        "resolution": "1920x1080",
+        "tags": [
+          "preview"
+        ],
+        "uri": "vepqchs_Popup_1920.png"
+      },
+      {
+        "contentLength": 11887471,
+        "resolution": "2880x1536",
+        "tags": [
+          "preview",
+          "retina"
+        ],
+        "uri": "vepqchs_Popup_2880.png"
+      },
+      {
+        "contentLength": 22868700,
+        "resolution": "3840x2160",
+        "tags": [
+          "preview",
+          "retina"
+        ],
+        "uri": "vepqchs_Popup_3840.png"
+      }
+    ],
+    "relativeSize": "1x1",
+    "scaleReferences": []
+  },
+  "process_date": "2024-04-16 23:09:46",
+  "properties": [],
+  "referencePreviews": {
+    "maps": [],
+    "models": []
+  },
+  "references": [],
+  "revised": false,
+  "revision": 0,
+  "semanticTags": {
+    "architectural_style": {},
+    "asset_type": "surface",
+    "color": [
+      "Brown",
+      "Red"
+    ],
+    "contains": [
+      "rocks",
+      "sandstone"
+    ],
+    "country": "United States",
+    "descriptive": [
+      "dry",
+      "old",
+      "eroded",
+      "weathered",
+      "rough"
+    ],
+    "environment": [
+      "desert biome"
+    ],
+    "industry": [
+      "archviz",
+      "games",
+      "VFX"
+    ],
+    "interior_exterior": [
+      "exterior"
+    ],
+    "locations": {
+      "Americas": {
+        "United States": {}
+      }
+    },
+    "maxSize": 2,
+    "minSize": 2,
+    "name": "Desert Western Ground Rock Smooth 01",
+    "region": "Americas",
+    "state": [
+      "old"
+    ],
+    "subject_matter": "nature",
+    "theme": [
+      "outdoors",
+      "utah",
+      "moab",
+      "rock-formations",
+      "canyons",
+      "rocky landscapes",
+      "deserts",
+      "arid",
+      "nature",
+      "ground",
+      "kane-creek"
+    ]
+  },
+  "tags": [
+    "brown",
+    "red",
+    "exterior",
+    "utah",
+    "moab",
+    "rock formations",
+    "canyons",
+    "rocky landscapes",
+    "desert",
+    "arid",
+    "meerkat",
+    "land",
+    "nature",
+    "ground",
+    "cliffs",
+    "mesas",
+    "buttes",
+    "stones",
+    "soil",
+    "sandstone",
+    "dust",
+    "rubble",
+    "rocks",
+    "rocky",
+    "rough",
+    "scattered",
+    "dusty"
+  ],
+  "texelDensity": 4096,
+  "texture_type": "basic",
+  "ue_plugin_archives": [
+    {
+      "contentLength": 281785088,
+      "gltfVersion": "2.0",
+      "tier": 0,
+      "type": "gltf",
+      "uri": "ue_plugin_archives/tier_0/vepqchs_tier_0.zip",
+      "version": 1
+    },
+    {
+      "contentLength": 88339382,
+      "gltfVersion": "2.0",
+      "tier": 1,
+      "type": "gltf",
+      "uri": "ue_plugin_archives/tier_1/vepqchs_tier_1.zip",
+      "version": 1
+    },
+    {
+      "contentLength": 22947313,
+      "gltfVersion": "2.0",
+      "tier": 2,
+      "type": "gltf",
+      "uri": "ue_plugin_archives/tier_2/vepqchs_tier_2.zip",
+      "version": 1
+    },
+    {
+      "contentLength": 1768990,
+      "gltfVersion": "2.0",
+      "tier": 3,
+      "type": "gltf",
+      "uri": "ue_plugin_archives/tier_3/vepqchs_tier_3.zip",
+      "version": 1
+    }
+  ],
+  "version": 2
+}

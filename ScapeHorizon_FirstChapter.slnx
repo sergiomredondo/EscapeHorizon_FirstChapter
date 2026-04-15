@@ -5,6 +5,7 @@
   <Project Path="Unity.Mathematics.csproj" />
   <Project Path="Unity.Timeline.Editor.csproj" />
   <Project Path="Unity.Cinemachine.Editor.csproj" />
+  <Project Path="Unity.TerrainTools.Editor.csproj" />
   <Project Path="Unity.Collections.csproj" />
   <Project Path="Unity.ProBuilder.Poly2Tri.csproj" />
   <Project Path="Unity.VisualScripting.Core.Editor.csproj" />
@@ -31,6 +32,7 @@
   <Project Path="Unity.FilmInternalUtilities.csproj" />
   <Project Path="Unity.Toonshader.csproj" />
   <Project Path="Unity.Burst.Editor.csproj" />
+  <Project Path="CFXRDemo.csproj" />
   <Project Path="Unity.Rider.Editor.csproj" />
   <Project Path="Unity.VisualScripting.State.csproj" />
   <Project Path="Unity.AI.Navigation.Updater.csproj" />
@@ -45,14 +47,21 @@
   <Project Path="Unity.Collections.CodeGen.csproj" />
   <Project Path="Unity.Mathematics.Editor.csproj" />
   <Project Path="Unity.VisualScripting.SettingsProvider.Editor.csproj" />
+  <Project Path="Unity.VSCode.Editor.csproj" />
   <Project Path="Unity.ProBuilder.AssetIdRemapUtility.csproj" />
   <Project Path="Unity.Settings.Editor.csproj" />
   <Project Path="Unity.InputSystem.TestFramework.csproj" />
   <Project Path="Unity.VisualScripting.Shared.Editor.csproj" />
+  <Project Path="CFXREditor.csproj" />
   <Project Path="Unity.CollabProxy.Editor.csproj" />
+  <Project Path="Unity.TerrainTools.csproj" />
+  <Project Path="ToonyColorsPro.Demo.Editor.csproj" />
+  <Project Path="CFXRRuntime.csproj" />
   <Project Path="Unity.InputSystem.DocCodeSamples.csproj" />
+  <Project Path="CFXR.WelcomeScreen.csproj" />
   <Project Path="Unity.ProBuilder.Stl.csproj" />
   <Project Path="Unity.VisualScripting.DocCodeExamples.csproj" />
   <Project Path="Unity.PlasticSCM.Editor.Entities.csproj" />
   <Project Path="Unity.Collections.Editor.csproj" />
+  <Project Path="KinoBloom.Runtime.csproj" />
 </Solution>

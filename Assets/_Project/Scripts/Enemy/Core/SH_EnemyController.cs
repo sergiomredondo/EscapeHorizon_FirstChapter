@@ -2,6 +2,7 @@ using Core;
 using Game.Combat.Core;
 using Game.Combat.Data;
 using Game.Enemy.Data;
+using Game.Interaction;
 using System;
 using UnityEngine;
 using UnityEngine.AI;
@@ -57,6 +58,20 @@ namespace Game.Enemy
                  "initializer or manually in the Inspector for prototype scenes.")]
         [SerializeField] private SH_PlayerContext _playerContext;
 
+        [Header("Animation")]
+        [SerializeField] private Animator _animator;
+
+        [Header("Animator Parameters")]
+        [SerializeField] private string _animMoveX = "MoveX";
+        [SerializeField] private string _animMoveY = "MoveY";
+
+        [Header("Animation Tuning")]
+        [SerializeField] private float _animDamping = 0.1f;
+
+        private int _animMoveXHash;
+        private int _animMoveYHash;
+        private SH_CaptiveCore _captiveCore;
+        private bool _captiveRevealed = false;
         private NavMeshAgent _agent;
         private CharacterController _cc;
 
@@ -106,7 +121,8 @@ namespace Game.Enemy
             Search,
             Attack,
             Evade,
-            Retreat
+            Retreat,
+            Vulnerable
         }
 
         private EnemyState _state = EnemyState.Patrol;
@@ -273,13 +289,31 @@ namespace Game.Enemy
                 }
             }
 
+            // --- Captive reveal check ---
+            if (!_captiveRevealed && _captiveCore != null)
+            {
+                float hpFraction = _scaledMaxHP > 0f ? _currentHP / _scaledMaxHP : 0f;
+                if (hpFraction <= 0.5f)
+                {
+                    _captiveRevealed = true;
+                    TransitionTo(EnemyState.Vulnerable);
+                    _captiveCore.ActivateCaptiveReveal();
+                }
+            }
+
             // --- Transition toward Evade if Surge is active ---
-            if (_playerContext?.CombatController?.IsSurgeActive ?? false)
+            if ((_playerContext?.CombatController?.IsSurgeActive ?? false)
+                && _state != EnemyState.Vulnerable)
             {
                 TryEvaluateSurgeEvasion();
             }
 
-            // --- Log (editor only — string interpolation has GC cost per call) ---
+            // --- 2nd Death check ---
+            if (_currentHP <= 0f && !_isDead)
+            {
+                Die();
+                return;
+            }
 #if UNITY_EDITOR
             Debug.Log($"[SH_EnemyController] {_data?.DisplayName ?? gameObject.name} " +
                       $"hit: -{payload.EffectiveDamage:F1} HP ({_currentHP:F1} remaining), " +
@@ -329,6 +363,12 @@ namespace Game.Enemy
             _agent = GetComponent<NavMeshAgent>();
             _cc = GetComponent<CharacterController>();
 
+            if (_animator == null)
+                _animator = GetComponentInChildren<Animator>();
+            
+            _animMoveXHash = Animator.StringToHash(_animMoveX);
+            _animMoveYHash = Animator.StringToHash(_animMoveY);
+            
             if (_data == null)
             {
                 Debug.LogError($"[SH_EnemyController] SH_EnemyData is not assigned on {gameObject.name}.");
@@ -338,6 +378,7 @@ namespace Game.Enemy
             _scaledMaxHP = _data.ResolvedMaxDurability;
             _scaledAttackCooldown = _data.AttackCooldown;
             _scaledAttackStrength = _data.CombatStats != null ? _data.CombatStats.Strength : 1f;
+            _captiveCore = GetComponentInChildren<SH_CaptiveCore>(includeInactive: true);
             _currentHP = _scaledMaxHP;
             _currentPosture = _data.ResolvedPostureMax;
 
@@ -379,6 +420,8 @@ namespace Game.Enemy
             // Individual ticks call TrySetDestination() instead of SetDestination() directly.
             _destinationTimer += Time.deltaTime;
 
+            UpdateAnimatorMovement();
+
             // Shared alert check
             if (s_sharedAlertActive && _state == EnemyState.Patrol)
             {
@@ -397,6 +440,7 @@ namespace Game.Enemy
                 case EnemyState.Attack: TickAttack(); break;
                 case EnemyState.Evade: TickEvade(); break;
                 case EnemyState.Retreat: TickRetreat(); break;
+                case EnemyState.Vulnerable: TickVulnerable(); break;
             }
         }
 
@@ -574,6 +618,12 @@ namespace Game.Enemy
             float dist = Vector3.Distance(transform.position, _playerContext.Transform.position);
             if (dist > _data.DetectionRange)
                 TransitionTo(EnemyState.Patrol);
+        }
+
+        private void TickVulnerable()
+        {
+            if (_agent != null && !_agent.isStopped)
+                _agent.isStopped = true;
         }
 
         #endregion
@@ -836,7 +886,14 @@ namespace Game.Enemy
             // Deliver economic rewards to the player
             if (_data?.DropData != null && _playerContext?.Resources != null)
             {
-                _data.DropData.DeliverDestroyRewards(_playerContext.Resources);
+                if (_captiveCore != null && _captiveRevealed && _captiveCore.IsAvailable)
+                {
+                    _captiveCore.ForceDestroy(_playerContext);
+                }
+                else if (_data?.DropData != null && _playerContext?.Resources != null)
+                {
+                    _data.DropData.DeliverDestroyRewards(_playerContext.Resources);
+                }
             }
 
             // Elite encounter: roll Energy Flux event (GDD §5.3.2)
@@ -914,6 +971,9 @@ namespace Game.Enemy
                     if (_agent != null) _agent.speed = _data.PursuitSpeed * 1.2f;
                     _evadeTimer = 0f;
                     break;
+                case EnemyState.Vulnerable:
+                    if (_agent != null) _agent.isStopped = true;
+                    break;
             }
         }
 
@@ -970,6 +1030,26 @@ namespace Game.Enemy
             transform.rotation = Quaternion.RotateTowards(
                 transform.rotation, targetRot,
                 _data.RotationSpeed * Time.deltaTime);
+        }
+
+        /// <summary>
+        /// Updates the Animator parameters for movement based on the NavMeshAgent's velocity.
+        /// Converts world velocity to local space, normalizes it, and applies damping for smooth transitions.
+        /// </summary>
+        private void UpdateAnimatorMovement()
+        {
+            if (_animator == null || _agent == null) return;
+
+            Vector3 velocity = _knockbackActive ? _knockbackVelocity : _agent.velocity;
+            Vector3 localVelocity = transform.InverseTransformDirection(velocity);
+
+            float x = localVelocity.x;
+            float y = localVelocity.z;
+
+            Vector2 normalized = Vector2.ClampMagnitude(new Vector2(x, y), 1f);
+
+            _animator.SetFloat(_animMoveXHash, normalized.x, _animDamping, Time.deltaTime);
+            _animator.SetFloat(_animMoveYHash, normalized.y, _animDamping, Time.deltaTime);
         }
 
         #endregion
@@ -1029,6 +1109,42 @@ namespace Game.Enemy
         /// Used when the player context is rebuilt mid-scene.
         /// </summary>
         public void SetPlayerContext(SH_PlayerContext ctx) => _playerContext = ctx;
+
+        public void ResetEnemy(SH_PlayerContext playerContext)
+        {
+            if (_data == null) return;
+
+            _playerContext = playerContext;
+
+            _currentHP = _scaledMaxHP;
+            _currentPosture = _data.ResolvedPostureMax;
+
+            _isDead = false;
+            _isStaggered = false;
+            _isBlocking = false;
+            _isInParryWindow = false;
+            _comboInProgress = false;
+            _comboHitsRemaining = 0;
+            _attackCooldownTimer = 0f;
+            _knockbackActive = false;
+            _knockbackVelocity = Vector3.zero;
+            _pendingDeactivation = false;
+            _captiveRevealed = false;
+
+            if (_captiveCore != null)
+            {
+                _captiveCore.ResetCaptiveState();
+            }
+
+            if (_agent != null)
+            {
+                _agent.isStopped = false;
+                _agent.speed = _data.PatrolSpeed;
+            }
+
+            TransitionTo(EnemyState.Patrol);
+            gameObject.SetActive(true);
+        }
 
         #endregion
 

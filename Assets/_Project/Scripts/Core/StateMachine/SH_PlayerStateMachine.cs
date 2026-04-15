@@ -60,6 +60,17 @@ namespace Core.StateMachine
         [Tooltip("Maps each SH_ActionData to its AnimationClip for the player entity. " +
          "Create via ScapeHorizon/Animation/ActionAnimationMap.")]
         [SerializeField] private SH_ActionAnimationMap _actionAnimationMap;
+        [Tooltip("World-space position and rotation the camera moves to during the defeat cinematic. " +
+         "Place an empty GameObject in the scene at the desired cinematic angle and assign it here.")]
+        [SerializeField] private Transform _defeatCameraTarget;
+        [Tooltip("Duration in seconds of the defeat cinematic before the player resets.")]
+        [Min(1f)]
+        [SerializeField] private float _defeatSequenceDuration = 3f;
+        [Tooltip("Animation trigger string sent to Bear's Animator when defeated.")]
+        [SerializeField] private string _defeatAnimationTrigger = "Defeat";
+        [Tooltip("World-space spawn point where the player resets after defeat. " +
+                 "Assign an empty GameObject placed at the level start position.")]
+        [SerializeField] private Transform _spawnPoint;
 
         #endregion
 
@@ -117,6 +128,9 @@ namespace Core.StateMachine
         [Tooltip("Player archetype base attribute sheet (Strength, Defense, Agility, PostureMax). " +
                  "Create via ScapeHorizon/Combat/CombatStats and name it PlayerStats.")]
         [SerializeField] private SH_CombatStats _playerCombatStats;
+
+        [Tooltip("Visual and audio feedback data for player hit and defeat reactions.")]
+        [SerializeField] private SH_PlayerFeedbackData _playerFeedbackData;
 
         #endregion
 
@@ -185,9 +199,12 @@ namespace Core.StateMachine
                 _hitboxController,
                 _combatSettings,
                 _playerCombatStats,
+                _playerFeedbackData,
                 _surgeSystem,          // Stage B
                 _difficultyManager     // Stage B
             );
+
+            _context.Health.OnDefeated += HandlePlayerDefeated;
 
             if (showOnScreenDebugging)
             {
@@ -221,6 +238,17 @@ namespace Core.StateMachine
             else
                 Debug.LogWarning("[SH_PlayerStateMachine] No SH_EnemyController found in scene. " +
                                  "Place at least one enemy before pressing Play.");
+        }
+
+        private void HandlePlayerDefeated()
+        {
+            ChangeState(new SH_DeathSequenceState(
+                _context,
+                this,
+                _defeatAnimationTrigger,
+                _defeatSequenceDuration,
+                _defeatCameraTarget,
+                _spawnPoint));
         }
 
         private void Update()
@@ -343,6 +371,10 @@ namespace Core.StateMachine
             // Combat Stage B
             if (_surgeSystem == null) Debug.LogError($"[SH_PlayerStateMachine] SH_EnergySurgeSystem not assigned on {gameObject.name}. Add component to Bear.");
             if (_difficultyManager == null) Debug.LogError($"[SH_PlayerStateMachine] SH_DifficultyManager not assigned on {gameObject.name}.");
+
+            if (_spawnPoint == null)
+                Debug.LogWarning($"[SH_PlayerStateMachine] No spawn point assigned on {gameObject.name}. " +
+                                 $"Player will reset to origin on defeat.");
         }
 
         #endregion
@@ -352,6 +384,8 @@ namespace Core.StateMachine
         /// <summary> Disposes the player context to clean up event subscriptions and other resources. </summary>
         private void OnDestroy()
         {
+            if (_context?.Health != null)
+                _context.Health.OnDefeated -= HandlePlayerDefeated;
             _context?.Dispose();
         }
 

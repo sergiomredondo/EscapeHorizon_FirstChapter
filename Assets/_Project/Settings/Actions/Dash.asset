@@ -35,3 +35,6 @@ MonoBehaviour:
   locksMovement: 1
   useRootMotion: 0
   grantsInvulnerability: 1
+  activationEffectPrefab: {fileID: 0}
+  hitEffectPrefab: {fileID: 3432958286849152088, guid: 87ee7299dd44ed747af24dbb91bcd33b, type: 3}
+  effectAutoDestroyTime: 2

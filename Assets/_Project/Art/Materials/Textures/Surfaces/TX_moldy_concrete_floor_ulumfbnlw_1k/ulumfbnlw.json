@@ -1,0 +1,613 @@
+{
+  "assetCategories": {
+    "surface": {
+      "concrete": {
+        "damaged": {},
+        "dirty": {}
+      },
+      "soil": {
+        "mud": {}
+      }
+    }
+  },
+  "averageColor": "#000000",
+  "categories": [
+    "surface",
+    "concrete",
+    "damaged"
+  ],
+  "comp_version": 1,
+  "description": "",
+  "displacementBias": 0.390025,
+  "displacementCalibrationAccuracy": 0.949238,
+  "displacementScale": 1.379344,
+  "environment": {
+    "biome": "undefined",
+    "region": "Asia"
+  },
+  "highest_available_res": 8192,
+  "id": "ulumfbnlw",
+  "json": {
+    "contentLength": 12901,
+    "uri": "ulumfbnlw.json"
+  },
+  "maps": [
+    {
+      "averageColor": "#B3B3B3",
+      "bitDepth": 32,
+      "colorSpace": "sRGB",
+      "contentLength": 212782742,
+      "maxIntensity": 255,
+      "mimeType": "image/x-exr",
+      "minIntensity": 85,
+      "name": "AO",
+      "physicalSize": "1x1",
+      "resolution": "8192x8192",
+      "type": "ao",
+      "uri": "ulumfbnlw_8K_AO.exr"
+    },
+    {
+      "averageColor": "#B3B3B3",
+      "bitDepth": 8,
+      "colorSpace": "sRGB",
+      "contentLength": 36960809,
+      "maxIntensity": 255,
+      "mimeType": "image/jpeg",
+      "minIntensity": 85,
+      "name": "AO",
+      "physicalSize": "1x1",
+      "resolution": "8192x8192",
+      "type": "ao",
+      "uri": "ulumfbnlw_8K_AO.jpg"
+    },
+    {
+      "averageColor": "#7E776C",
+      "bitDepth": 16,
+      "colorSpace": "sRGB",
+      "contentLength": 236266715,
+      "maxIntensity": 166,
+      "mimeType": "image/x-exr",
+      "minIntensity": 60,
+      "name": "Basecolor",
+      "physicalSize": "1x1",
+      "resolution": "8192x8192",
+      "type": "basecolor",
+      "uri": "ulumfbnlw_8K_Basecolor.exr"
+    },
+    {
+      "averageColor": "#7E776C",
+      "bitDepth": 8,
+      "colorSpace": "sRGB",
+      "contentLength": 41526866,
+      "maxIntensity": 166,
+      "mimeType": "image/jpeg",
+      "minIntensity": 60,
+      "name": "Basecolor",
+      "physicalSize": "1x1",
+      "resolution": "8192x8192",
+      "type": "basecolor",
+      "uri": "ulumfbnlw_8K_Basecolor.jpg"
+    },
+    {
+      "averageColor": "#808080",
+      "bitDepth": 32,
+      "colorSpace": "Linear",
+      "contentLength": 197993716,
+      "maxIntensity": 255,
+      "mimeType": "image/x-exr",
+      "minIntensity": 0,
+      "name": "Bump",
+      "physicalSize": "1x1",
+      "resolution": "8192x8192",
+      "type": "bump",
+      "uri": "ulumfbnlw_8K_Bump.exr"
+    },
+    {
+      "averageColor": "#808080",
+      "bitDepth": 8,
+      "colorSpace": "Linear",
+      "contentLength": 16342558,
+      "maxIntensity": 255,
+      "mimeType": "image/jpeg",
+      "minIntensity": 0,
+      "name": "Bump",
+      "physicalSize": "1x1",
+      "resolution": "8192x8192",
+      "type": "bump",
+      "uri": "ulumfbnlw_8K_Bump.jpg"
+    },
+    {
+      "averageColor": "#FFFFFF",
+      "bitDepth": 32,
+      "colorSpace": "sRGB",
+      "contentLength": 209952011,
+      "maxIntensity": 255,
+      "mimeType": "image/x-exr",
+      "minIntensity": 255,
+      "name": "Cavity",
+      "physicalSize": "1x1",
+      "resolution": "8192x8192",
+      "type": "cavity",
+      "uri": "ulumfbnlw_8K_Cavity.exr"
+    },
+    {
+      "averageColor": "#FFFFFF",
+      "bitDepth": 8,
+      "colorSpace": "sRGB",
+      "contentLength": 50649517,
+      "maxIntensity": 255,
+      "mimeType": "image/jpeg",
+      "minIntensity": 255,
+      "name": "Cavity",
+      "physicalSize": "1x1",
+      "resolution": "8192x8192",
+      "type": "cavity",
+      "uri": "ulumfbnlw_8K_Cavity.jpg"
+    },
+    {
+      "averageColor": "#808080",
+      "bitDepth": 32,
+      "colorSpace": "Linear",
+      "contentLength": 262632275,
+      "maxIntensity": 137,
+      "mimeType": "image/x-exr",
+      "minIntensity": 119,
+      "name": "Displacement",
+      "physicalSize": "1x1",
+      "resolution": "8192x8192",
+      "type": "displacement",
+      "uri": "ulumfbnlw_8K_Displacement.exr"
+    },
+    {
+      "averageColor": "#808080",
+      "bitDepth": 8,
+      "colorSpace": "Linear",
+      "contentLength": 8214761,
+      "maxIntensity": 137,
+      "mimeType": "image/jpeg",
+      "minIntensity": 119,
+      "name": "Displacement",
+      "physicalSize": "1x1",
+      "resolution": "8192x8192",
+      "type": "displacement",
+      "uri": "ulumfbnlw_8K_Displacement.jpg"
+    },
+    {
+      "averageColor": "#3F3F3F",
+      "bitDepth": 32,
+      "colorSpace": "Linear",
+      "contentLength": 179637790,
+      "maxIntensity": 90,
+      "mimeType": "image/x-exr",
+      "minIntensity": 33,
+      "name": "Gloss",
+      "physicalSize": "1x1",
+      "resolution": "8192x8192",
+      "type": "gloss",
+      "uri": "ulumfbnlw_8K_Gloss.exr"
+    },
+    {
+      "averageColor": "#3F3F3F",
+      "bitDepth": 8,
+      "colorSpace": "Linear",
+      "contentLength": 27374871,
+      "maxIntensity": 90,
+      "mimeType": "image/jpeg",
+      "minIntensity": 33,
+      "name": "Gloss",
+      "physicalSize": "1x1",
+      "resolution": "8192x8192",
+      "type": "gloss",
+      "uri": "ulumfbnlw_8K_Gloss.jpg"
+    },
+    {
+      "averageColor": "#8281F2",
+      "bitDepth": 16,
+      "colorSpace": "Linear",
+      "contentLength": 221648329,
+      "maxIntensity": 201,
+      "mimeType": "image/x-exr",
+      "minIntensity": 78,
+      "name": "Normal",
+      "physicalSize": "1x1",
+      "resolution": "8192x8192",
+      "type": "normal",
+      "uri": "ulumfbnlw_8K_Normal.exr"
+    },
+    {
+      "averageColor": "#8281F2",
+      "bitDepth": 8,
+      "colorSpace": "Linear",
+      "contentLength": 90895526,
+      "maxIntensity": 201,
+      "mimeType": "image/jpeg",
+      "minIntensity": 78,
+      "name": "Normal",
+      "physicalSize": "1x1",
+      "resolution": "8192x8192",
+      "type": "normal",
+      "uri": "ulumfbnlw_8K_Normal.jpg"
+    },
+    {
+      "averageColor": "#C0C0C0",
+      "bitDepth": 32,
+      "colorSpace": "Linear",
+      "contentLength": 166438201,
+      "maxIntensity": 222,
+      "mimeType": "image/x-exr",
+      "minIntensity": 165,
+      "name": "Roughness",
+      "physicalSize": "1x1",
+      "resolution": "8192x8192",
+      "type": "roughness",
+      "uri": "ulumfbnlw_8K_Roughness.exr"
+    },
+    {
+      "averageColor": "#C0C0C0",
+      "bitDepth": 8,
+      "colorSpace": "Linear",
+      "contentLength": 26195254,
+      "maxIntensity": 222,
+      "mimeType": "image/jpeg",
+      "minIntensity": 165,
+      "name": "Roughness",
+      "physicalSize": "1x1",
+      "resolution": "8192x8192",
+      "type": "roughness",
+      "uri": "ulumfbnlw_8K_Roughness.jpg"
+    },
+    {
+      "averageColor": "#383838",
+      "bitDepth": 16,
+      "colorSpace": "sRGB",
+      "contentLength": 244059522,
+      "maxIntensity": 56,
+      "mimeType": "image/x-exr",
+      "minIntensity": 56,
+      "name": "Specular",
+      "physicalSize": "1x1",
+      "resolution": "8192x8192",
+      "type": "specular",
+      "uri": "ulumfbnlw_8K_Specular.exr"
+    },
+    {
+      "averageColor": "#383838",
+      "bitDepth": 8,
+      "colorSpace": "sRGB",
+      "contentLength": 32620227,
+      "maxIntensity": 56,
+      "mimeType": "image/jpeg",
+      "minIntensity": 56,
+      "name": "Specular",
+      "physicalSize": "1x1",
+      "resolution": "8192x8192",
+      "type": "specular",
+      "uri": "ulumfbnlw_8K_Specular.jpg"
+    }
+  ],
+  "meta": [
+    {
+      "key": "scanArea",
+      "name": "Scan Area",
+      "value": "1x1 m"
+    },
+    {
+      "key": "height",
+      "name": "Height",
+      "value": "0.014 m"
+    },
+    {
+      "key": "tileable",
+      "name": "Tileable",
+      "value": true
+    },
+    {
+      "key": "tiling_directions",
+      "name": "Tiling Directions",
+      "value": [
+        "x",
+        "y"
+      ]
+    },
+    {
+      "key": "texelDensity",
+      "name": "Texel Density",
+      "value": "8192 px/m"
+    },
+    {
+      "key": "calibration",
+      "name": "Calibration",
+      "value": "GretagMacbeth ColorChecker Color Rendition Chart"
+    },
+    {
+      "key": "scanner",
+      "name": "Scanner",
+      "value": "MKX"
+    }
+  ],
+  "models": [],
+  "name": "Moldy Concrete Floor",
+  "pack": null,
+  "physicalSize": null,
+  "points": 2,
+  "previews": {
+    "images": [
+      {
+        "contentLength": 254409,
+        "resolution": "360x360",
+        "tags": [
+          "thumb"
+        ],
+        "uri": "ulumfbnlw_Grid_360.png"
+      },
+      {
+        "contentLength": 345596,
+        "resolution": "420x420",
+        "tags": [
+          "thumb"
+        ],
+        "uri": "ulumfbnlw_Grid_420.png"
+      },
+      {
+        "contentLength": 1019196,
+        "resolution": "720x720",
+        "tags": [
+          "thumb",
+          "retina"
+        ],
+        "uri": "ulumfbnlw_Grid_720.png"
+      },
+      {
+        "contentLength": 1387432,
+        "resolution": "840x840",
+        "tags": [
+          "thumb",
+          "retina"
+        ],
+        "uri": "ulumfbnlw_Grid_840.png"
+      },
+      {
+        "contentLength": 3076558,
+        "resolution": "1440x768",
+        "tags": [
+          "preview",
+          "clay"
+        ],
+        "uri": "ulumfbnlw_PopupClay_1440.png"
+      },
+      {
+        "contentLength": 5778635,
+        "resolution": "1920x1080",
+        "tags": [
+          "preview",
+          "clay"
+        ],
+        "uri": "ulumfbnlw_PopupClay_1920.png"
+      },
+      {
+        "contentLength": 12369530,
+        "resolution": "2880x1536",
+        "tags": [
+          "preview",
+          "clay",
+          "retina"
+        ],
+        "uri": "ulumfbnlw_PopupClay_2880.png"
+      },
+      {
+        "contentLength": 23445830,
+        "resolution": "3840x2160",
+        "tags": [
+          "preview",
+          "clay",
+          "retina"
+        ],
+        "uri": "ulumfbnlw_PopupClay_3840.png"
+      },
+      {
+        "contentLength": 3312782,
+        "resolution": "1440x768",
+        "tags": [
+          "preview",
+          "tiled"
+        ],
+        "uri": "ulumfbnlw_PopupTiled_1440.png"
+      },
+      {
+        "contentLength": 6233313,
+        "resolution": "1920x1080",
+        "tags": [
+          "preview",
+          "tiled"
+        ],
+        "uri": "ulumfbnlw_PopupTiled_1920.png"
+      },
+      {
+        "contentLength": 13367627,
+        "resolution": "2880x1536",
+        "tags": [
+          "preview",
+          "tiled",
+          "retina"
+        ],
+        "uri": "ulumfbnlw_PopupTiled_2880.png"
+      },
+      {
+        "contentLength": 25225822,
+        "resolution": "3840x2160",
+        "tags": [
+          "preview",
+          "tiled",
+          "retina"
+        ],
+        "uri": "ulumfbnlw_PopupTiled_3840.png"
+      },
+      {
+        "contentLength": 3344510,
+        "resolution": "1440x768",
+        "tags": [
+          "preview"
+        ],
+        "uri": "ulumfbnlw_Popup_1440.png"
+      },
+      {
+        "contentLength": 6289456,
+        "resolution": "1920x1080",
+        "tags": [
+          "preview"
+        ],
+        "uri": "ulumfbnlw_Popup_1920.png"
+      },
+      {
+        "contentLength": 13470676,
+        "resolution": "2880x1536",
+        "tags": [
+          "preview",
+          "retina"
+        ],
+        "uri": "ulumfbnlw_Popup_2880.png"
+      },
+      {
+        "contentLength": 25333292,
+        "resolution": "3840x2160",
+        "tags": [
+          "preview",
+          "retina"
+        ],
+        "uri": "ulumfbnlw_Popup_3840.png"
+      }
+    ],
+    "relativeSize": "1x1",
+    "scaleReferences": []
+  },
+  "process_date": "2024-04-17 01:04:09",
+  "properties": [],
+  "referencePreviews": {
+    "maps": [],
+    "models": []
+  },
+  "references": [],
+  "revised": false,
+  "revision": 0,
+  "semanticTags": {
+    "architectural_style": {},
+    "asset_type": "surface",
+    "city": "Islamabad",
+    "color": [
+      "Gray",
+      "Green"
+    ],
+    "contains": [
+      "mud",
+      "moss",
+      "soil",
+      "flakes",
+      "cracks",
+      "mold",
+      "Concrete"
+    ],
+    "country": "Pakistan",
+    "descriptive": [
+      "mossy",
+      "flaked",
+      "muddy",
+      "mossy",
+      "wet",
+      "cracked",
+      "chipped"
+    ],
+    "environment": [
+      "rural",
+      "industrial"
+    ],
+    "industry": [
+      "archviz",
+      "games",
+      "VFX"
+    ],
+    "locations": {
+      "Asia": {
+        "Pakistan": {
+          "Islamabad": {}
+        }
+      }
+    },
+    "maxSize": 1,
+    "minSize": 1,
+    "name": "Moldy Concrete Floor",
+    "orientation": [
+      "floor"
+    ],
+    "region": "Asia",
+    "state": [
+      "damaged"
+    ],
+    "subject_matter": "manmade",
+    "theme": [
+      "construction site",
+      "constructional",
+      "abandoned houses",
+      "industrial"
+    ]
+  },
+  "tags": [
+    "gray",
+    "green",
+    "abandoned building",
+    "architecture",
+    "rural",
+    "interiors",
+    "mold",
+    "fungus",
+    "grit",
+    "dirt",
+    "concrete",
+    "floor",
+    "old",
+    "moldy",
+    "damaged",
+    "rough",
+    "damp",
+    "discolored",
+    "peeling",
+    "stained",
+    "weathered"
+  ],
+  "texelDensity": 8192,
+  "texture_type": "basic",
+  "ue_plugin_archives": [
+    {
+      "contentLength": 305872034,
+      "gltfVersion": "2.0",
+      "tier": 0,
+      "type": "gltf",
+      "uri": "ue_plugin_archives/tier_0/ulumfbnlw_tier_0.zip",
+      "version": 1
+    },
+    {
+      "contentLength": 100444359,
+      "gltfVersion": "2.0",
+      "tier": 1,
+      "type": "gltf",
+      "uri": "ue_plugin_archives/tier_1/ulumfbnlw_tier_1.zip",
+      "version": 1
+    },
+    {
+      "contentLength": 24875708,
+      "gltfVersion": "2.0",
+      "tier": 2,
+      "type": "gltf",
+      "uri": "ue_plugin_archives/tier_2/ulumfbnlw_tier_2.zip",
+      "version": 1
+    },
+    {
+      "contentLength": 2269087,
+      "gltfVersion": "2.0",
+      "tier": 3,
+      "type": "gltf",
+      "uri": "ue_plugin_archives/tier_3/ulumfbnlw_tier_3.zip",
+      "version": 1
+    }
+  ],
+  "version": 2
+}

@@ -17,5 +17,5 @@ MonoBehaviour:
   Agility: 6
   PostureMax: 50
   MaxDurability: 100
-  Archetype: 0
+  Archetype: 2
   IsStaggerImmune: 0

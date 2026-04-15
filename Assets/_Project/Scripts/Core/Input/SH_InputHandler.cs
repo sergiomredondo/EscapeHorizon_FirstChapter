@@ -98,6 +98,13 @@ namespace Core.Input
         /// </summary>
         public bool SurgePressed { get; private set; }
 
+        /// <summary>
+        /// True for the single frame the Scan button transitions to pressed. Used by SH_ScanController
+        /// to initiate a scan action when the player presses the scan button. This flag should be consumed
+        /// by calling ConsumeScanPressed() after processing the scan action to reset the state for future scan inputs.
+        /// </summary>
+        public bool ScanPressed { get; private set; }
+
         #endregion
 
         #region Consume API
@@ -122,6 +129,13 @@ namespace Core.Input
         /// Resets the surge pressed state to indicate that the surge action is no longer active.
         /// </summary>
         public void ConsumeSurgePressed() => SurgePressed = false;
+
+        /// <summary>
+        /// Resets the scan pressed state to indicate that a scan action has been handled.
+        /// </summary>
+        /// <remarks>Call this method after processing a scan event to clear the scan pressed flag. This
+        /// allows subsequent scan actions to be detected correctly.</remarks>
+        public void ConsumeScanPressed() => ScanPressed = false;
 
         #endregion
 
@@ -228,8 +242,17 @@ namespace Core.Input
             }
         }
 
-        /// <summary> Scan action — reserved for 5.3 enemy detection cone. </summary>
-        public void OnScan(InputAction.CallbackContext context) { }
+        /// <summary>
+        /// Handles the scan input action event and updates the scan state when the action is started.
+        /// </summary>
+        /// <remarks>Call this method from an input system event handler to process scan input. Typically
+        /// used in response to user input in gameplay or UI scenarios.</remarks>
+        /// <param name="context">The callback context containing information about the input action event.</param>
+        public void OnScan(InputAction.CallbackContext context)
+        {
+            if (context.phase == InputActionPhase.Started)
+                ScanPressed = true;
+        }
 
         /// <summary> Menu action — reserved for UI system. </summary>
         public void OnMenu(InputAction.CallbackContext context) { }

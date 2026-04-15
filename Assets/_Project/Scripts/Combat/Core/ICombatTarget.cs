@@ -13,8 +13,8 @@ namespace Game.Combat.Core
     ///                                SH_CaptiveCore extended (destroy-on-hit path).
     ///
     /// Terminology mapping:
-    ///   Daño Cinético        → payload.EffectiveDamage applied to Durability
-    ///   Daño de Postura (DP) → payload.PostureDamage applied to PostureValue
+    ///   Kinetic Damage       → payload.EffectiveDamage applied to Durability
+    ///   Posture Damage  (DP) → payload.PostureDamage applied to PostureValue
     ///   Stagger              → IsStaggered property
     ///   Parry window         → IsInParryWindow property (set externally by AI/player state)
     ///   Block                → IsBlocking property
