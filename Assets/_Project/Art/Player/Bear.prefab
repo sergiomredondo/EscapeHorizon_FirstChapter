@@ -1222,9 +1222,9 @@ GameObject:
   - component: {fileID: 4372430390264156233}
   - component: {fileID: 1581139657060493155}
   - component: {fileID: 6652721551161587675}
+  - component: {fileID: 13729479286958514}
   - component: {fileID: 5858435840893225390}
   - component: {fileID: 7418908401079733832}
-  - component: {fileID: 13729479286958514}
   - component: {fileID: 3742225185680679745}
   - component: {fileID: 2919933158002722599}
   m_Layer: 7
@@ -1509,6 +1509,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Core.SH_PlayerCombatController
   _lightAttackAction: {fileID: 11400000, guid: 64fab2549f8d0f347960276a610b1450, type: 2}
   _heavyAttackAction: {fileID: 11400000, guid: 563a61b551dce7243b6d49a9306a1e34, type: 2}
+--- !u!114 &13729479286958514
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5108201429992033946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecaf4437c6a86764897fe52234695c54, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Core.SH_DifficultyManager
+  _activeDifficulty: 1
+  _hpScalingPerZone: 0.1
+  _currentZone: 1
+  _dynamicLoopInterval: 60
+  _rdirDominantThreshold: 3
+  _rdirStruggleThreshold: 1
+  _serDominantThreshold: 0.8
+  _serStruggleThreshold: 0.4
+  _maxAIDeviation: 0.2
 --- !u!114 &5858435840893225390
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1538,27 +1559,6 @@ MonoBehaviour:
   _drainRatePerSecond: 0.1
   _passiveDecayRate: 0.005
   _activationThreshold: 0.8
---- !u!114 &13729479286958514
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5108201429992033946}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ecaf4437c6a86764897fe52234695c54, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Core.SH_DifficultyManager
-  _activeDifficulty: 1
-  _hpScalingPerZone: 0.1
-  _currentZone: 1
-  _dynamicLoopInterval: 60
-  _rdirDominantThreshold: 3
-  _rdirStruggleThreshold: 1
-  _serDominantThreshold: 0.8
-  _serStruggleThreshold: 0.4
-  _maxAIDeviation: 0.2
 --- !u!114 &3742225185680679745
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1610,14 +1610,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83b52f9be48506b4aadde4bb02f6f527, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DebugTools.SH_PhysicsDebugger
-  showPhysicsPanel: 0
-  showAnimationPanel: 0
-  showEconomyPanel: 0
+  showPhysicsPanel: 1
+  showAnimationPanel: 1
+  showEconomyPanel: 1
   showInteractionPanel: 1
-  showPerceptionPanel: 0
-  showCombatPanel: 0
-  showEnemyPanel: 0
-  showSurgePanel: 0
+  showPerceptionPanel: 1
+  showCombatPanel: 1
+  showEnemyPanel: 1
+  showSurgePanel: 1
   showGizmos: 1
   stabilityThreshold: 1.2
   col1X: 25

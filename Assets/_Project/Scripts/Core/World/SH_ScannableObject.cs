@@ -1,3 +1,4 @@
+using Game.Interaction;
 using UnityEngine;
 
 namespace Game.World
@@ -18,16 +19,24 @@ namespace Game.World
         [Tooltip("Reference to the SH_ScannerController on Bear. " +
                  "Assign in Inspector or leave empty to auto-find on Start.")]
         [SerializeField] private SH_ScannerController _scanner;
+        
         [Header("Materials")]
         [Tooltip("Material applied when this object is detected by the scan pulse.")]
         [SerializeField] private Material _detectedMaterial;
         [Tooltip("Renderer to swap materials on when detected. " +
                  "If empty, will attempt to find a MeshRenderer in children.")]
         [SerializeField] private Renderer[] _targetRenderers;
+        
         [Header("Detection Settings")]
         [Tooltip("Margin added to the scan radius for detection. " +
                  "Objects within this margin will be detected even if they are slightly outside the scan radius.")]
         [Min(0.05f)][SerializeField] private float _detectionMargin = 0.2f;
+
+        [Header("Interactable Settings")]
+        [Tooltip("Layer assigned to interactable objects.")]
+        [SerializeField] private LayerMask _interactableLayer;
+        [Tooltip("Duration the highlight persists for interactable objects after a scan.")]
+        [SerializeField] private float _interactablePersistence = 10f;
 
         [Header("Audio")]
         [Tooltip("AudioClip played once when first detected by the pulse.")]
@@ -35,10 +44,13 @@ namespace Game.World
         [Tooltip("AudioClip played once when the detected highlight fades out.")]
         [SerializeField] private AudioClip _dismissClip;
         
-        [Header("Reset Settings")]
+        [Header("Time Settings")]
         [Tooltip("Seconds the detected highlight persists after the pulse passes. " +
                  "Set to 0 to use twice the scan duration automatically.")]
         [Min(0.01f)][SerializeField] private float _resetDelay = 0.01f;
+        [Tooltip("Frequency of the detection reveal effect. " +
+                 "Lower values result in a slower reveal, higher values result in a faster reveal.")]
+        [Range(0f, 1f)][SerializeField] private float _detectionFrequency = 0.5f;
 
         #endregion
 
@@ -47,9 +59,77 @@ namespace Game.World
         private Material[] _baseMaterials;
         private bool _detected;
         private float _resetTimer;
+        private float _detectionTimer;
+        bool lastChange = false;
         private float _resolvedResetDelay;
         private AudioSource _audioSource;
         private bool _hasTargetRenderer;
+        private bool _isRevealed;
+        protected SH_InteractableObject _interactableObject;
+
+        #endregion
+
+        #region Public API
+
+        public bool IsDetected => _detected;
+
+        /// <summary>
+        /// Swaps the target renderers' materials between the base material and the detected material.
+        /// </summary>
+        /// <param name="toBaseMaterial">If true, sets the materials to the base materials; otherwise, sets them to the detected material.</param>
+        public void ChangeMaterial(bool toBaseMaterial)
+        {
+            if (_hasTargetRenderer)
+            {
+                if (toBaseMaterial)
+                {
+                    for (int i = 0; i < _targetRenderers.Length; i++)
+                    {
+                        if (_targetRenderers[i] != null && _baseMaterials[i] != null)
+                            _targetRenderers[i].material = _baseMaterials[i];
+                    }
+                }
+                else
+                {
+                    foreach (var r in _targetRenderers)
+                    {
+                        if (r != null)
+                        {
+                            if (_interactableObject != null && _interactableObject.IsFocused)
+                            {
+                                r.material = _interactableObject.FocusMaterial;
+                            }
+                            else
+                            {
+                                r.material = _detectedMaterial;
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+
+        /// <summary>
+        /// Performs an alternate detection action at a specified frequency when detection and reveal conditions are
+        /// met.
+        /// </summary>
+        /// <remarks>This method should be called regularly, such as within an update loop, to ensure
+        /// detection timing is handled correctly. The detection action alternates state at each interval defined by the
+        /// detection frequency.</remarks>
+        public void AlternateDetection()
+        {
+            if (_detected && _isRevealed && _interactableObject != null)
+            {
+                _detectionTimer += Time.deltaTime;
+                if (_detectionTimer >= _detectionFrequency)
+                {
+                    lastChange = !lastChange;
+                    ChangeMaterial(lastChange);
+                    _detectionTimer = 0f;
+                }
+            }
+        }
 
         #endregion
 
@@ -73,7 +153,7 @@ namespace Game.World
                     _baseMaterials[i] = _targetRenderers[i].sharedMaterial;
                 }
             }
-
+            _interactableObject = GetComponent<SH_InteractableObject>();
             _audioSource = GetComponent<AudioSource>();
         }
 
@@ -90,6 +170,7 @@ namespace Game.World
 
                 if (!_detected && dist <= _scanner.ScanRadius && dist >= _scanner.ScanRadius - 1.5f)
                     OnDetected();
+                    lastChange = false;
             }
 
             // Reset timer when not in scan and detected.
@@ -97,7 +178,13 @@ namespace Game.World
             {
                 _resetTimer += Time.deltaTime;
                 if (_resetTimer >= _resolvedResetDelay)
+                {
                     OnReset();
+                }
+                else
+                {
+                    AlternateDetection();
+                }
             }
         }
 
@@ -108,15 +195,16 @@ namespace Game.World
         private void OnDetected()
         {
             _detected = true;
+            _isRevealed = true;
             _resetTimer = 0f;
-            _resolvedResetDelay = _resetDelay;
 
+            _resolvedResetDelay = ((1 << gameObject.layer) & _interactableLayer) != 0
+                ? _interactablePersistence
+                : _resetDelay;
+            
             if (_hasTargetRenderer && _detectedMaterial != null)
             {
-                foreach (var r in _targetRenderers)
-                {
-                    if (r != null) r.material = _detectedMaterial;
-                }
+                ChangeMaterial(false);
             }
 
             PlayFeedbackAudio(_detectedClip);
@@ -127,14 +215,7 @@ namespace Game.World
             _detected = false;
             _resetTimer = 0f;
 
-            if (_hasTargetRenderer)
-            {
-                for (int i = 0; i < _targetRenderers.Length; i++)
-                {
-                    if (_targetRenderers[i] != null && _baseMaterials[i] != null)
-                        _targetRenderers[i].material = _baseMaterials[i];
-                }
-            }
+            ChangeMaterial(true);
 
             PlayFeedbackAudio(_dismissClip);
         }

@@ -1,6 +1,7 @@
 using Core;
 using Core.Input;
 using Game.Interaction.Data;
+using Game.World;
 using System;
 using UnityEditor.ShaderKeywordFilter;
 using UnityEngine;
@@ -54,6 +55,8 @@ namespace Game.Interaction
 
         /// <summary> Whether a hold interaction is currently in progress. </summary>
         private bool _isHolding;
+
+        protected SH_ScannableObject _scannable;
 
         /// <summary>
         /// Required hold duration for the current target.
@@ -227,6 +230,12 @@ namespace Game.Interaction
             {
                 var interactable = _overlapBuffer[i].GetComponent<IInteractable>();
                 if (interactable == null || !interactable.IsAvailable) continue;
+                
+                _scannable = _overlapBuffer[i].GetComponent<SH_ScannableObject>();
+                if (_scannable != null)
+                {
+                    _scannable.AlternateDetection();
+                }
 
                 float dist = Vector3.Distance(transform.position, interactable.WorldPosition);
                 if (dist < closestDist)

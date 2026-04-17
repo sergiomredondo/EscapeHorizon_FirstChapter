@@ -1,7 +1,8 @@
-using UnityEngine;
-using System;
 using Core;
 using Game.Interaction.Data;
+using Game.World;
+using System;
+using UnityEngine;
 
 namespace Game.Interaction
 {
@@ -40,6 +41,10 @@ namespace Game.Interaction
                  "Override in concrete classes with a fixed default.")]
         [SerializeField] protected InteractionType interactionType = InteractionType.Hold;
 
+        [Header("Proximity Highlight")]
+        [Tooltip("Material applied when Bear is within interaction range.")]
+        [SerializeField] protected Material _focusMaterial;
+
         #endregion
 
         #region Runtime State
@@ -56,11 +61,20 @@ namespace Game.Interaction
         /// </summary>
         protected bool _isDirty = false;
 
+
         /// <summary>
         /// Whether this object is currently focused by SH_InteractionController.
         /// Guards against redundant OnFocusEnter/Exit calls.
         /// </summary>
         private bool _isFocused = false;
+
+        private SH_ScannableObject _scannable;
+
+        #endregion
+
+        #region State Management API
+        public bool IsFocused => _isFocused;
+        public Material FocusMaterial => _focusMaterial;
 
         #endregion
 
@@ -90,19 +104,34 @@ namespace Game.Interaction
         public abstract void Interact(SH_PlayerContext context);
 
         /// <inheritdoc/>
-        public void OnFocusEnter()
+        public virtual void OnFocusEnter()
         {
-            if (_isFocused) return;
             _isFocused = true;
-            OnFocusEnterInternal();
+            
+            if (_scannable == null) return;
+            
+            if (_focusMaterial != null && _scannable.IsDetected == true)
+            {
+                _scannable.ChangeMaterial(false);
+            }
         }
 
         /// <inheritdoc/>
-        public void OnFocusExit()
+        public virtual void OnFocusExit()
         {
-            if (!_isFocused) return;
             _isFocused = false;
-            OnFocusExitInternal();
+
+            if (_scannable == null) return;
+
+            if (_scannable.IsDetected == true)
+            {
+                _scannable.ChangeMaterial(false);
+            }
+            else
+            {
+                _scannable.ChangeMaterial(true);
+            }
+            
         }
 
         /// <inheritdoc/>
@@ -121,7 +150,7 @@ namespace Game.Interaction
         /// </summary>
         protected virtual void OnFocusEnterInternal()
         {
-            // Base: no-op. Override in concrete types for visual feedback.
+            
         }
 
         /// <summary>
@@ -130,7 +159,7 @@ namespace Game.Interaction
         /// </summary>
         protected virtual void OnFocusExitInternal()
         {
-            // Base: no-op. Override in concrete types.
+            
         }
 
         /// <summary>
@@ -225,6 +254,11 @@ namespace Game.Interaction
                                  $"persistent ID assigned. Persistence will not work correctly. " +
                                  $"Assign a unique ID in the Inspector (GDD §5.2.4).");
             }
+        }
+
+        protected virtual void Start()
+        {
+            _scannable = GetComponent<SH_ScannableObject>();
         }
 
         #endregion

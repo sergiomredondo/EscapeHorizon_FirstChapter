@@ -314,12 +314,6 @@ namespace Game.Enemy
                 Die();
                 return;
             }
-#if UNITY_EDITOR
-            Debug.Log($"[SH_EnemyController] {_data?.DisplayName ?? gameObject.name} " +
-                      $"hit: -{payload.EffectiveDamage:F1} HP ({_currentHP:F1} remaining), " +
-                      $"posture {_currentPosture:F1}, " +
-                      $"critical={payload.IsCritical}, blocked={payload.WasBlocked}.");
-#endif
         }
 
         #endregion
