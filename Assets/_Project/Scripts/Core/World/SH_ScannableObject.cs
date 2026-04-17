@@ -14,40 +14,42 @@ namespace Game.World
     public class SH_ScannableObject : MonoBehaviour
     {
         #region Inspector
-
+        [Header("Scanner Reference")]
         [Tooltip("Reference to the SH_ScannerController on Bear. " +
                  "Assign in Inspector or leave empty to auto-find on Start.")]
         [SerializeField] private SH_ScannerController _scanner;
-
         [Header("Materials")]
         [Tooltip("Material applied when this object is detected by the scan pulse.")]
         [SerializeField] private Material _detectedMaterial;
-
-        [Tooltip("Renderer whose material will be swapped. " +
-                 "Leave empty to use the first MeshRenderer on this GameObject.")]
-        [SerializeField] private Renderer _targetRenderer;
+        [Tooltip("Renderer to swap materials on when detected. " +
+                 "If empty, will attempt to find a MeshRenderer in children.")]
+        [SerializeField] private Renderer[] _targetRenderers;
+        [Header("Detection Settings")]
+        [Tooltip("Margin added to the scan radius for detection. " +
+                 "Objects within this margin will be detected even if they are slightly outside the scan radius.")]
+        [Min(0.05f)][SerializeField] private float _detectionMargin = 0.2f;
 
         [Header("Audio")]
         [Tooltip("AudioClip played once when first detected by the pulse.")]
         [SerializeField] private AudioClip _detectedClip;
-
         [Tooltip("AudioClip played once when the detected highlight fades out.")]
         [SerializeField] private AudioClip _dismissClip;
-
+        
+        [Header("Reset Settings")]
         [Tooltip("Seconds the detected highlight persists after the pulse passes. " +
                  "Set to 0 to use twice the scan duration automatically.")]
-        [Min(0f)]
-        [SerializeField] private float _resetDelay = 0f;
+        [Min(0.01f)][SerializeField] private float _resetDelay = 0.01f;
 
         #endregion
 
         #region Runtime State
 
-        private Material _baseMaterial;
+        private Material[] _baseMaterials;
         private bool _detected;
         private float _resetTimer;
         private float _resolvedResetDelay;
         private AudioSource _audioSource;
+        private bool _hasTargetRenderer;
 
         #endregion
 
@@ -58,24 +60,35 @@ namespace Game.World
             if (_scanner == null)
                 _scanner = FindFirstObjectByType<SH_ScannerController>();
 
-            if (_targetRenderer == null)
-                _targetRenderer = GetComponentInChildren<MeshRenderer>();
+            if (_targetRenderers == null || _targetRenderers.Length == 0)
+                _targetRenderers = GetComponentsInChildren<Renderer>();
 
-            if (_targetRenderer != null)
-                _baseMaterial = _targetRenderer.sharedMaterial;
+            _hasTargetRenderer = _targetRenderers != null && _targetRenderers.Length > 0;
+
+            if (_hasTargetRenderer)
+            {
+                _baseMaterials = new Material[_targetRenderers.Length];
+                for (int i = 0; i < _targetRenderers.Length; i++)
+                {
+                    _baseMaterials[i] = _targetRenderers[i].sharedMaterial;
+                }
+            }
 
             _audioSource = GetComponent<AudioSource>();
         }
 
         private void Update()
         {
-            if (_scanner == null) return;
+            if (_scanner == null || !_hasTargetRenderer) return;
 
             // Detection check during active pulse.
             if (_scanner.IsScanActive)
             {
-                float dist = Vector3.Distance(transform.position, _scanner.ScanOrigin);
-                if (!_detected && dist < _scanner.ScanRadius - 0.5f)
+                Vector3 flatOrigin = new Vector3(_scanner.ScanOrigin.x, 0, _scanner.ScanOrigin.z);
+                Vector3 flatPos = new Vector3(transform.position.x, 0, transform.position.z);
+                float dist = Vector3.Distance(flatPos, flatOrigin);
+
+                if (!_detected && dist <= _scanner.ScanRadius && dist >= _scanner.ScanRadius - 1.5f)
                     OnDetected();
             }
 
@@ -96,20 +109,17 @@ namespace Game.World
         {
             _detected = true;
             _resetTimer = 0f;
-            _resolvedResetDelay = _resetDelay > 0f
-                ? _resetDelay
-                : _scanner.ScanDuration * 2f;
+            _resolvedResetDelay = _resetDelay;
 
-            if (_targetRenderer != null && _detectedMaterial != null)
-                _targetRenderer.material = _detectedMaterial;
-
-            if (_detectedClip != null)
+            if (_hasTargetRenderer && _detectedMaterial != null)
             {
-                if (_audioSource != null)
-                    _audioSource.PlayOneShot(_detectedClip);
-                else
-                    AudioSource.PlayClipAtPoint(_detectedClip, transform.position);
+                foreach (var r in _targetRenderers)
+                {
+                    if (r != null) r.material = _detectedMaterial;
+                }
             }
+
+            PlayFeedbackAudio(_detectedClip);
         }
 
         private void OnReset()
@@ -117,16 +127,26 @@ namespace Game.World
             _detected = false;
             _resetTimer = 0f;
 
-            if (_targetRenderer != null && _baseMaterial != null)
-                _targetRenderer.material = _baseMaterial;
-
-            if (_dismissClip != null)
+            if (_hasTargetRenderer)
             {
-                if (_audioSource != null)
-                    _audioSource.PlayOneShot(_dismissClip);
-                else
-                    AudioSource.PlayClipAtPoint(_dismissClip, transform.position);
+                for (int i = 0; i < _targetRenderers.Length; i++)
+                {
+                    if (_targetRenderers[i] != null && _baseMaterials[i] != null)
+                        _targetRenderers[i].material = _baseMaterials[i];
+                }
             }
+
+            PlayFeedbackAudio(_dismissClip);
+        }
+
+        private void PlayFeedbackAudio(AudioClip clip)
+        {
+            if (clip == null) return;
+
+            if (_audioSource != null)
+                _audioSource.PlayOneShot(clip);
+            else
+                AudioSource.PlayClipAtPoint(clip, transform.position);
         }
 
         #endregion

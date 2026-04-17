@@ -4,47 +4,62 @@ using UnityEngine;
 namespace Game.World
 {
     /// <summary>
-    /// Wraps the Terrain Scanner asset (SensorDetector pattern) and integrates
-    /// it with SH_InputHandler instead of Unity's legacy Input system.
+    /// Drives the scanner post-process effect for URP.
+    /// No dependency on TerrainScanner.CameraEffect — visibility is controlled
+    /// by setting _ScanRadius to -1 on the shared material when inactive.
     ///
-    /// Place on Bear. Assign the CameraEffect, sensor material and audio source
-    /// from the Terrain Scanner asset setup in the Inspector.
-    ///
-    /// Exposes IsScanActive, ScanOrigin and ScanRadius so SH_ScannableObject
-    /// instances can react without any direct coupling to this component.
+    /// Place on Bear. Assign the shared scanner material (Hidden/ScannerWorld)
+    /// and the SH_InputHandler in the Inspector.
     /// </summary>
     [DisallowMultipleComponent]
     public class SH_ScannerController : MonoBehaviour
     {
-        #region Inspector References
+        #region Inspector
 
-        [Header("Terrain Scanner Asset References")]
-        [Tooltip("CameraEffect component from the Terrain Scanner asset. " +
-                 "Add it to the Main Camera and assign here.")]
-        [SerializeField] private TerrainScanner.CameraEffect _cameraEffect;
+        [Header("Scanner Material")]
+        [Tooltip("Shared material using the Hidden/ScannerWorld shader. " +
+                 "Must also be assigned to the ScannerRenderFeature on the URP Renderer.")]
+        [SerializeField] private Material _scannerMaterial;
+        [Tooltip("Optional: Texture used for the scanner grid effect. " +
+                 "Assign a texture to create a grid pattern on the scanner ring.")]
+        [SerializeField] private Texture2D _gridTexture;
+        [Tooltip("Optional: Texture used for noise effect on the scanner ring. " +
+                 "Assign a texture to create a noise pattern on the scanner ring.")]
+        [SerializeField] private Texture2D _noiseTexture;
 
-        [Tooltip("Sensor material from the Terrain Scanner asset (e.g. RevealPost.mat).")]
-        [SerializeField] private Material _sensorMaterial;
+        [Header("Scanner Visual Parameters")]
+        [Tooltip("Width of the scanner ring in world units (Shader parameter _ScanWidth). " +
+                 "Controls the thickness of the visual effect.")]
+        [Min(0.05f)][SerializeField] private float _scanWidth = 0.5f;
+        [Tooltip("Density of the scanner ring effect (Shader parameter _Intensity). " +
+                 "Controls how solid or transparent the effect appears.")]
+        [Range(0.05f, 1f)][SerializeField] private float _waveDensity = 0.7f;
+        [Tooltip("Scale of the scanner grid effect (Shader parameter _GridScale). " +
+                 "Controls the size of the grid pattern on the scanner ring.")]
+        [Range(0.01f, 1f)][SerializeField] private float _gridScale = 0.1f;
+        [Tooltip("Color of the scanner ring (Shader parameter _ScanColor). " +
+                 "Controls the visual color of the effect.")]
+        [SerializeField] private Color _scanColor = Color.cyan;
 
-        [Header("Scanner Parameters")]
-        [Tooltip("Maximum radius the scan pulse reaches before stopping.")]
-        [Min(1f)]
-        [SerializeField] private float _maxDistance = 25f;
-
-        [Tooltip("Expansion speed of the pulse in units per second.")]
-        [Min(1f)]
-        [SerializeField] private float _expansionSpeed = 12f;
-
-        [Tooltip("Time in seconds for the emission to fade out after the pulse finishes.")]
-        [Min(0.1f)]
-        [SerializeField] private float _killTime = 0.8f;
+        [Header("Scanner Expansion Parameters")]
+        [Tooltip("Maximum distance the scanner ring can reach in world units (Shader parameter _maxDistance). " +
+                 "Controls how far the effect expands before fading out.")]
+        [Min(1f)][SerializeField] private float _maxDistance = 1f;
+        [Tooltip("Speed at which the scanner ring expands in world units per second. " +
+                 "Controls how quickly the effect grows to its maximum distance.")]
+        [Min(1f)][SerializeField] private float _expansionSpeed = 1f;
+        [Tooltip("Duration of the kill phase in seconds. " +
+                 "Controls how long the effect takes to fade out after reaching max distance.")]
+        [Min(0.1f)][SerializeField] private float _killTime = 0.8f;
+        [Tooltip("Rate at which the scanner ring fades out during the kill phase (Shader parameter _ScanRadius). " +
+                 "Controls how quickly the effect disappears after reaching max distance.")]
+        [Range(0f, 1f)][SerializeField] private float _fadeDecrement = 0.5f;
+        
 
         [Header("Audio")]
-        [Tooltip("AudioSource on this GameObject for the scan start sound.")]
         [SerializeField] private AudioSource _audioSource;
 
         [Header("Input")]
-        [Tooltip("SH_InputHandler on this GameObject or a parent.")]
         [SerializeField] private SH_InputHandler _inputHandler;
 
         #endregion
@@ -65,6 +80,15 @@ namespace Game.World
         public float ScanRadius => _currentRadius;
         public float ScanDuration => _scanDuration;
 
+        private static readonly int PropScanRadius = Shader.PropertyToID("_ScanRadius");
+        private static readonly int PropScanWidth = Shader.PropertyToID("_ScanWidth");
+        private static readonly int PropScanCenter = Shader.PropertyToID("_ScannerCenter");
+        private static readonly int PropScanColor = Shader.PropertyToID("_ScanColor");
+        private static readonly int PropMaxDistance = Shader.PropertyToID("_maxDistance");
+        private static readonly int PropIntensity = Shader.PropertyToID("_Intensity");
+        private static readonly int PropGridScale = Shader.PropertyToID("_GridScale");
+        private static readonly int PropFadeDec = Shader.PropertyToID("_FadeDecrement");
+
         #endregion
 
         #region Unity Lifecycle
@@ -73,25 +97,12 @@ namespace Game.World
         {
             if (_inputHandler == null)
                 _inputHandler = GetComponentInParent<SH_InputHandler>();
-
-            if (_sensorMaterial != null)
-            {
-                _cachedEmission = _sensorMaterial.GetFloat("_OverlayEmission");
-                _sensorMaterial.SetFloat("_Radius", 0f);
-            }
-
-            if (_cameraEffect != null)
-            {
-                _cameraEffect.material = _sensorMaterial;
-                _cameraEffect.enabled = false;
-            }
+            ResetMaterial();
         }
 
         private void OnDisable()
         {
-            if (_sensorMaterial == null) return;
-            _sensorMaterial.SetFloat("_Radius", 0f);
-            _sensorMaterial.SetFloat("_OverlayEmission", _cachedEmission);
+            ResetMaterial();
         }
 
         private void Update()
@@ -107,9 +118,7 @@ namespace Game.World
 
         private void ReadInput()
         {
-            if (_inputHandler == null) return;
-            if (!_inputHandler.ScanPressed) return;
-
+            if (_inputHandler == null || !_inputHandler.ScanPressed) return;
             _inputHandler.ConsumeScanPressed();
             TriggerScan();
         }
@@ -118,20 +127,32 @@ namespace Game.World
 
         #region Scan Logic
 
+        private void ResetMaterial()
+        {
+            if (_scannerMaterial == null) return;
+            _scannerMaterial.SetFloat(PropScanRadius, -1f);
+            _scannerMaterial.SetFloat(PropFadeDec, 1f);
+            _scannerMaterial.SetFloat(PropScanWidth, _scanWidth);
+            _scannerMaterial.SetColor(PropScanColor, _scanColor);
+            _scannerMaterial.SetFloat(PropMaxDistance, _maxDistance);
+        }
+
         private void TriggerScan()
         {
-            if (_scanActive || _killPhase) return;
-            if (_sensorMaterial == null) return;
+            if (_scanActive || _killPhase || _scannerMaterial == null) return;
 
             _scanDuration = _maxDistance / _expansionSpeed;
             _scanTimer = 0f;
             _currentRadius = 0f;
             _scanOrigin = transform.position;
 
-            _cachedEmission = _sensorMaterial.GetFloat("_OverlayEmission");
-            _sensorMaterial.SetVector("_RevealOrigin", _scanOrigin);
+            _scannerMaterial.SetVector(PropScanCenter,
+                new Vector4(_scanOrigin.x, _scanOrigin.y, _scanOrigin.z, 0f));
+            _scannerMaterial.SetTexture("_GridTex", _gridTexture);
+            _scannerMaterial.SetFloat("_GridScale", _gridScale);
+            _scannerMaterial.SetTexture("_NoiseTex", _noiseTexture);
+            _scannerMaterial.SetFloat(PropMaxDistance, _maxDistance);
 
-            if (_cameraEffect != null) _cameraEffect.enabled = true;
             if (_audioSource != null) _audioSource.Play();
 
             _scanActive = true;
@@ -143,14 +164,23 @@ namespace Game.World
 
             _scanTimer += Time.deltaTime;
             _currentRadius = Mathf.Min(_expansionSpeed * _scanTimer, _maxDistance);
-            _sensorMaterial.SetFloat("_Radius", _currentRadius);
+
+            _scannerMaterial.SetFloat(PropScanRadius, _currentRadius);
+            _scannerMaterial.SetFloat(PropScanWidth, _waveDensity);
+            _scannerMaterial.SetFloat(PropScanWidth, _scanWidth);
+            _scannerMaterial.SetColor(PropScanColor, _scanColor);
+            _scannerMaterial.SetFloat(PropGridScale, _gridScale);
+            _scannerMaterial.SetFloat(PropFadeDec, 1.0f);
+
+            float intensity = Mathf.Lerp(1.5f, 0.8f, _scanTimer / _scanDuration);
+            _scannerMaterial.SetFloat(PropIntensity, intensity);
 
             if (_scanTimer >= _scanDuration)
             {
+                _cachedEmission = _currentRadius;
                 _scanTimer = 0f;
                 _scanActive = false;
                 _killPhase = true;
-                _currentRadius = 0f;
             }
         }
 
@@ -162,16 +192,20 @@ namespace Game.World
             {
                 _killTimer = 0f;
                 _killPhase = false;
-                _sensorMaterial.SetFloat("_Radius", 0f);
-                _sensorMaterial.SetFloat("_OverlayEmission", _cachedEmission);
-                if (_cameraEffect != null) _cameraEffect.enabled = false;
+                _currentRadius = 0f;
+                _scannerMaterial.SetFloat(PropScanRadius, -1f);
                 return;
             }
 
-            float t = _killTimer / _killTime;
-            _sensorMaterial.SetFloat("_OverlayEmission",
-                Mathf.Lerp(_cachedEmission, 0f, t));
+            // Fade the ring out by shrinking it toward the edge.
             _killTimer += Time.deltaTime;
+            float t = _killTimer / _killTime;
+            float killIntensity = Mathf.Lerp(0.8f, 0f, t);
+            _scannerMaterial.SetFloat(PropFadeDec, Mathf.Lerp(1.0f, _fadeDecrement, t));
+            _scannerMaterial.SetFloat(PropIntensity, Mathf.Lerp(0.8f, 0f, t));
+            _scannerMaterial.SetFloat(PropScanRadius, Mathf.Lerp(_cachedEmission, _maxDistance + 0.5f, t));
+
+
         }
 
         #endregion
