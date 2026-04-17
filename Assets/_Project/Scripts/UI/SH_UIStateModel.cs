@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace UI
 {
@@ -160,9 +161,16 @@ namespace UI
         /// Consumed by: SH_HUDController → surge-indicator VisualElement CSS classes.
         /// </summary>
         public event Action<bool, bool> OnSurgeStateChanged;
+        public event Action<bool, string> OnInteractionFocusChanged;
+        public event Action<float> OnInteractionProgressChanged;
 
         private bool _isSurgeActive;
         private bool _isInSurgeCooldown;
+        private bool _isInteractionVisible;
+        private string _interactionTargetName;
+        private float _interactionProgress;
+        private Vector3 _targetWorldPosition;
+        public Vector3 TargetWorldPosition => _targetWorldPosition;
 
         /// <summary>
         /// True while the Energy Surge state is active and boosting combat attributes.
@@ -188,6 +196,26 @@ namespace UI
             _isSurgeActive = surgeActive;
             _isInSurgeCooldown = inCooldown;
             OnSurgeStateChanged?.Invoke(_isSurgeActive, _isInSurgeCooldown);
+        }
+
+        public void SetInteractionFocus(bool isVisible, string targetName)
+        {
+            if (_isInteractionVisible == isVisible && _interactionTargetName == targetName) return;
+            _isInteractionVisible = isVisible;
+            _interactionTargetName = targetName;
+            OnInteractionFocusChanged?.Invoke(_isInteractionVisible, _interactionTargetName);
+        }
+
+        public void SetInteractionProgress(float progress)
+        {
+            if (Approximately(_interactionProgress, progress)) return;
+            _interactionProgress = progress;
+            OnInteractionProgressChanged?.Invoke(_interactionProgress);
+        }
+
+        public void UpdateTargetPosition(Vector3 position)
+        {
+            _targetWorldPosition = position;
         }
 
         #endregion

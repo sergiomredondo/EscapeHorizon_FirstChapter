@@ -1,9 +1,11 @@
-using System;
 using Core;
 using Core.StateMachine;
 using Game.Combat.Core;
 using Game.Economy;
 using Game.Economy.Data;
+using Game.Interaction;
+using Game.World;
+using System;
 using UnityEngine;
 
 namespace UI
@@ -207,6 +209,23 @@ namespace UI
             // separate lambda allocations.
             _onResourceChangedHandler = OnResourceChanged;
             _context.Resources.OnResourceChanged += _onResourceChangedHandler;
+            _context.Interaction.OnFocusChanged += OnFocusChanged;
+            _context.Interaction.OnHoldProgress += (progress) =>
+            {
+                var target = _context.Interaction.FocusedTarget;
+                var scannable = (target as MonoBehaviour)?.GetComponent<SH_ScannableObject>();
+
+                if (scannable != null && scannable.IsRevealed)
+                {
+                    _model.SetInteractionProgress(progress);
+                }
+                else
+                {
+                    _model.SetInteractionProgress(0f);
+                }
+            };
+            _context.Interaction.OnHoldInterrupted += OnInteractionReset;
+            _context.Interaction.OnInteractionCompleted += OnInteractionCompleted;
         }
 
         private void Unsubscribe()
@@ -224,6 +243,10 @@ namespace UI
             if (_onResourceChangedHandler != null)
             {
                 _context.Resources.OnResourceChanged -= _onResourceChangedHandler;
+                _context.Interaction.OnFocusChanged -= OnFocusChanged;
+                _context.Interaction.OnHoldProgress -= _model.SetInteractionProgress;
+                _context.Interaction.OnHoldInterrupted -= OnInteractionReset;
+                _context.Interaction.OnInteractionCompleted -= OnInteractionCompleted;
                 _onResourceChangedHandler = null;
             }
         }
@@ -283,15 +306,13 @@ namespace UI
         /// </summary>
         private void PollSurgeState()
         {
+            UpdateFocusUIOnStateChange();
+
             if (_context?.CombatController == null) return;
 
             bool currentSurgeActive = _context.CombatController.IsSurgeActive;
             bool currentSurgeInCooldown = _context.CombatController.IsInSurgeCooldown;
 
-            // Only call SetSurgeState when a flag actually changed.
-            // The model has its own equality check, but avoiding the call entirely
-            // removes one method invocation per frame when Surge is inactive,
-            // which is the vast majority of gameplay time.
             if (currentSurgeActive != _lastSurgeActive ||
                 currentSurgeInCooldown != _lastSurgeInCooldown)
             {
@@ -299,6 +320,39 @@ namespace UI
                 _lastSurgeInCooldown = currentSurgeInCooldown;
                 _model.SetSurgeState(currentSurgeActive, currentSurgeInCooldown);
             }
+
+            var target = _context.Interaction.FocusedTarget;
+            if (target != null)
+            {
+                var scannable = (target as MonoBehaviour)?.GetComponent<SH_ScannableObject>();
+                bool isRevealed = scannable != null && scannable.IsRevealed;
+
+                if (isRevealed)
+                {
+                    _model.SetInteractionFocus(true, target.ToString());
+                    _model.UpdateTargetPosition(target.WorldPosition);
+                }
+                else
+                {
+                    _model.SetInteractionFocus(false, string.Empty);
+                }
+            }
+            else
+            {
+                _model.SetInteractionFocus(false, string.Empty);
+                _model.SetInteractionProgress(0f);
+            }
+        }
+
+        private void UpdateFocusUIOnStateChange()
+        {
+            var target = _context?.Interaction.FocusedTarget;
+            if (target == null) return;
+
+            var scannable = (target as MonoBehaviour)?.GetComponent<SH_ScannableObject>();
+            if (scannable == null) return;
+
+            OnFocusChanged(target);
         }
 
         #endregion
@@ -335,6 +389,41 @@ namespace UI
             _lastSurgeActive = _context.CombatController.IsSurgeActive;
             _lastSurgeInCooldown = _context.CombatController.IsInSurgeCooldown;
             _model.SetSurgeState(_lastSurgeActive, _lastSurgeInCooldown);
+        }
+
+        #endregion
+
+        #region Interaction Event Handlers
+
+        private void OnFocusChanged(IInteractable target)
+        {
+            bool hasTarget = target != null && target.IsAvailable;
+            bool shouldShowUI = false;
+            string targetName = string.Empty;
+
+            if (hasTarget)
+            {
+                var scannable = (target as MonoBehaviour)?.GetComponent<SH_ScannableObject>();
+                if (scannable != null && scannable.IsRevealed)
+                {
+                    shouldShowUI = true;
+                    targetName = target.ToString();
+                }
+            }
+
+            _model.SetInteractionFocus(shouldShowUI, shouldShowUI ? targetName : string.Empty);
+            if (!shouldShowUI) _model.SetInteractionProgress(0f);
+        }
+
+        private void OnInteractionReset()
+        {
+            _model.SetInteractionProgress(0f);
+        }
+
+        private void OnInteractionCompleted(IInteractable target)
+        {
+            _model.SetInteractionProgress(0f);
+            _model.SetInteractionFocus(false, string.Empty);
         }
 
         #endregion

@@ -1,193 +1,107 @@
-﻿/*
- * HUD.uss — Escape Horizon: Chapter One
- *
- * Stylesheet for HUD.uxml.
- * Assigned via the UIDocument PanelSettings asset on the [UI] GameObject.
- *
- * Design system (GDD §9.1.2 and §7.6.1):
- *   Cyan    #00FFFF — Reason / functional systems / positive state.
- *   Magenta #FF00FF — Corruption / surge / danger / negative state.
- *   Orange  #FF6400 — Mechanical power / thermal warning / surge cooldown.
- *   Yellow  #FFCC00 — Scrap resource / secondary economy indicator.
- *   White   #E0E0E0 — Neutral text and inactive elements.
- *   Dark    #111111 — Panel backgrounds and bar tracks.
- *
- * Typography (GDD §9.1.2):
- *   All text uses a monospace font to reinforce the engineering-terminal
- *   aesthetic. Font file must be imported at Assets/UI/Fonts/RobotoMono-Regular.ttf
- *   and assigned to the PanelSettings asset as the default font.
- *
- * Layout zones (GDD §9.2.2):
- *   Zone A — center-anchor   : Crosshair. Cooldown rings added in Step 2.
- *   Zone B — vitality-panel  : HP and Energy bars. 100% opacity always.
- *   Zone B — resources-panel : SC, IC, Surge indicator. 100% opacity always.
- *   Zone C — mission-panel   : Mission log. Low opacity during combat.
- *   Zone C — minimap-panel   : Minimap placeholder. Low opacity during combat.
- *
- * Prototype scope (Step 1):
- *   Functional colors and layout only. Glow effects, scan-line overlays,
- *   glitch animations, and icon assets are deferred to the visual pass in Step 5.
- */
-
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   CUSTOM PROPERTIES (CSS Variables)
-   Defined on :root so all selectors below can reference them.
-   Changing a value here propagates to every element that uses the variable.
-   UI Toolkit supports var() since Unity 2022 LTS.
-══════════════════════════════════════════════════════════════════════════ */
-
 :root {
-    --color-cyan:           rgb(0, 255, 255);
-    --color-magenta:        rgb(255, 0, 255);
-    --color-orange:         rgb(255, 100, 0);
-    --color-yellow:         rgb(255, 204, 0);
-    --color-hp-fill:        rgb(210, 45, 45);
-    --color-white:          rgb(224, 224, 224);
-    --color-panel-bg:       rgba(10, 10, 10, 0.72);
-    --color-bar-track:      rgba(30, 30, 30, 0.90);
-    --color-border:         rgba(0, 255, 255, 0.30);
-    --color-placeholder:    rgba(80, 80, 80, 0.60);
-
-    --font-size-normal:     13px;
-    --font-size-small:      11px;
-    --font-size-large:      16px;
-
-    --bar-height:           10px;
-    --bar-width:            220px;
-    --bar-border-radius:    2px;
-
-    --panel-padding:        10px;
-    --panel-margin:         16px;
-    --panel-border-width:   1px;
-    --panel-border-radius:  3px;
-
-    --row-spacing:          6px;
-    --icon-label-width:     28px;
-
-    --surge-dot-size:       12px;
-    --crosshair-size:       6px;
-
-    --opacity-zone-c:       0.55;
-    --transition-duration:  0.15s;
+    --color-cyan: rgb(0, 255, 255);
+    --color-magenta: rgb(255, 0, 255);
+    --color-orange: rgb(255, 100, 0);
+    --color-yellow: rgb(255, 204, 0);
+    --color-hp-fill: rgb(210, 45, 45);
+    --color-white: rgb(224, 224, 224);
+    --color-panel-bg: rgba(10, 10, 10, 0.72);
+    --color-bar-track: rgba(30, 30, 30, 0.9);
+    --color-border: rgba(0, 255, 255, 0.3);
+    --color-placeholder: rgba(80, 80, 80, 0.6);
+    --font-size-normal: 13px;
+    --font-size-small: 11px;
+    --font-size-large: 16px;
+    --bar-height: 10px;
+    --bar-width: 220px;
+    --bar-border-radius: 2px;
+    --panel-padding: 10px;
+    --panel-margin: 16px;
+    --panel-border-width: 1px;
+    --panel-border-radius: 3px;
+    --row-spacing: 6px;
+    --icon-label-width: 28px;
+    --surge-dot-size: 12px;
+    --crosshair-size: 6px;
+    --opacity-zone-c: 0.55;
+    --transition-duration: 0.15s;
 }
 
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   ROOT CONTAINER
-   Full-screen, transparent, pointer-events ignored so mouse clicks
-   pass through to the game viewport.
-══════════════════════════════════════════════════════════════════════════ */
-
 .hud-root {
-    position:         absolute;
-    left:             0;
-    top:              0;
-    right:            0;
-    bottom:           0;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
     background-color: rgba(0, 0, 0, 0);
-
-    /* Prevent the HUD from capturing pointer events. */
     -unity-overflow-clip-box: content-box;
 }
 
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   CORNER PANEL — BASE
-   Shared base style for all four corner panels (Zone B and Zone C).
-   Each panel adds a positional modifier class on top of this base.
-══════════════════════════════════════════════════════════════════════════ */
-
 .corner-panel {
-    position:         absolute;
+    position: absolute;
     background-color: var(--color-panel-bg);
-    border-color:     var(--color-border);
-    border-width:     var(--panel-border-width);
-    border-radius:    var(--panel-border-radius);
-    padding:          var(--panel-padding);
-    min-width:        180px;
+    border-color: var(--color-border);
+    border-width: var(--panel-border-width);
+    border-radius: var(--panel-border-radius);
+    padding: var(--panel-padding);
+    min-width: 260px;
 }
 
-/* Zone B — always full opacity (GDD §9.2.2: barras de Salud y Sobrecarga
-   mantienen 100% de opacidad). These two panels do not fade during combat. */
 .corner-panel--bottom-left {
-    left:   var(--panel-margin);
+    left: var(--panel-margin);
     bottom: var(--panel-margin);
 }
 
 .corner-panel--bottom-right {
-    right:  var(--panel-margin);
+    right: var(--panel-margin);
     bottom: var(--panel-margin);
 }
 
-/* Zone C — reduced opacity to avoid competing with combat action.
-   GDD §9.2.2: Nivel 3 information is semitransparent during gameplay. */
 .corner-panel--top-left {
-    left:    var(--panel-margin);
-    top:     var(--panel-margin);
+    left: var(--panel-margin);
+    top: var(--panel-margin);
     opacity: var(--opacity-zone-c);
 }
 
 .corner-panel--top-right {
-    right:   var(--panel-margin);
-    top:     var(--panel-margin);
+    right: var(--panel-margin);
+    top: var(--panel-margin);
     opacity: var(--opacity-zone-c);
 }
 
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   ZONE A — CENTER ANCHOR AND CROSSHAIR
-   The crosshair is a minimal dot centered on the viewport.
-   Absolute centering via left/top 50% with negative margin equal to
-   half the element size is the UI Toolkit equivalent of CSS translate(-50%).
-   Cooldown rings will be added as siblings inside center-anchor in Step 2.
-══════════════════════════════════════════════════════════════════════════ */
-
 .center-anchor {
     position: absolute;
-    left:     50%;
-    top:      50%;
-    width:    0;
-    height:   0;
+    left: 50%;
+    top: 50%;
+    width: 0;
+    height: 0;
 }
 
 .crosshair {
-    position:         absolute;
-    width:            var(--crosshair-size);
-    height:           var(--crosshair-size);
-
-    /* Center the dot on the anchor point by shifting back by half its size. */
-    left:             -3px;
-    top:              -3px;
-
-    border-radius:    50%;
-    background-color: rgba(0, 255, 255, 0.70);
-    border-color:     rgba(0, 255, 255, 0.40);
-    border-width:     1px;
+    position: absolute;
+    width: var(--crosshair-size);
+    height: var(--crosshair-size);
+    left: -3px;
+    top: -3px;
+    border-radius: 50%;
+    background-color: rgba(0, 255, 255, 0.7);
+    border-color: rgba(0, 255, 255, 0.4);
+    border-width: 1px;
 }
-
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   ZONE B — BAR ROWS (HP and Energy)
-   Each bar row is a horizontal flex container holding an icon label
-   on the left and the ProgressBar on the right.
-══════════════════════════════════════════════════════════════════════════ */
 
 .bar-row {
-    flex-direction:  row;
-    align-items:     center;
-    margin-bottom:   var(--row-spacing);
-    width:           100%;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: var(--row-spacing);
+    width: 100%;
 }
 
-/* Short prefix label acting as a text icon ("HP", "EN").
-   Replaced by a proper icon sprite in Step 2. */
 .bar-icon-label {
-    width:          var(--icon-label-width);
-    font-size:      var(--font-size-small);
+    width: var(--icon-label-width);
+    font-size: var(--font-size-small);
     -unity-text-align: middle-left;
-    flex-shrink:    0;
-    margin-right:   6px;
+    flex-shrink: 0;
+    margin-right: 6px;
 }
 
 .bar-icon-label--hp {
@@ -198,202 +112,127 @@
     color: var(--color-cyan);
 }
 
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   PROGRESS BARS — CONTAINER
-   The .unity-progress-bar class is the root generated by UI Toolkit for
-   ProgressBar elements. Selectors that start with .unity-progress-bar__
-   target the internal generated children.
-══════════════════════════════════════════════════════════════════════════ */
-
 .resource-bar {
-    flex-grow:    1;
-    height:       var(--bar-height);
+    flex-grow: 1;
+    height: var(--bar-height);
     border-width: 0;
     border-radius: var(--bar-border-radius);
-    /* Remove the default title label area that ProgressBar generates.
-       The title="" attribute in UXML suppresses the text, but we also
-       remove the reserved height so the bar fills the row cleanly. */
-    -unity-slice-top:    0;
+    -unity-slice-top: 0;
     -unity-slice-bottom: 0;
 }
 
-/* Track (background) — the unfilled portion of the bar. */
 .resource-bar > .unity-progress-bar__background {
     background-color: var(--color-bar-track);
-    border-radius:    var(--bar-border-radius);
-    border-width:     1px;
-    border-color:     rgba(255, 255, 255, 0.08);
+    border-radius: var(--bar-border-radius);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.08);
 }
 
-/* Fill (progress) — the filled portion driven by SH_HUDController.value. */
 .resource-bar > .unity-progress-bar__progress {
     border-radius: var(--bar-border-radius);
-    /* Transition smooths rapid value changes (e.g. energy regen tick).
-       Duration matches the --transition-duration variable. */
-    transition:    width var(--transition-duration) ease-out;
+    transition: width var(--transition-duration) ease-out;
 }
-
-
-/* ─── HP Bar Colors ────────────────────────────────────────────────── */
 
 .resource-bar--hp > .unity-progress-bar__progress {
     background-color: var(--color-hp-fill);
 }
 
-/* Critical state: HP bar fill shifts to a brighter red pulse.
-   Applied by SH_HUDController in Step 2 when HP < 25%.
-   Defined here so the class is ready to use without stylesheet changes. */
 .resource-bar--hp.bar--critical > .unity-progress-bar__progress {
     background-color: rgb(255, 60, 60);
 }
-
-
-/* ─── Energy Bar Colors ────────────────────────────────────────────── */
 
 .resource-bar--energy > .unity-progress-bar__progress {
     background-color: var(--color-cyan);
 }
 
-/* Surge active: energy bar fill shifts to Magenta to signal the boosted state.
-   Toggled by SH_HUDController.OnSurgeStateChanged via the surge-active class
-   on the resources-panel. The child selector reaches into the energy bar from
-   the panel level because the class is applied on the panel container,
-   not on the bar itself. */
 .corner-panel--bottom-right.surge-active #energy-bar > .unity-progress-bar__progress {
     background-color: var(--color-magenta);
 }
 
-/* Surge cooldown: energy bar fill shifts to Orange during penalty window. */
 .corner-panel--bottom-right.surge-cooldown #energy-bar > .unity-progress-bar__progress {
     background-color: var(--color-orange);
 }
 
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   ZONE B — RESOURCE ROWS (Scrap and Identity Cores)
-══════════════════════════════════════════════════════════════════════════ */
-
 .resource-row {
     flex-direction: row;
-    align-items:    center;
-    margin-bottom:  var(--row-spacing);
+    align-items: center;
+    margin-bottom: var(--row-spacing);
 }
 
 .resource-label {
-    font-size:         var(--font-size-normal);
+    font-size: var(--font-size-normal);
     -unity-text-align: middle-left;
 }
 
-/* Scrap — Yellow tint (GDD §9.2.3: Amarillo / Recurso / Moneda). */
 .resource-label--scrap {
     color: var(--color-yellow);
 }
 
-/* Identity Cores — Cyan tint (GDD §9.2.3: Cían / Razón / Vínculo). */
 .resource-label--ic {
     color: var(--color-cyan);
 }
 
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   SURGE INDICATOR
-   A small geometric dot with an inline state label.
-   Three visual states driven by CSS classes toggled in SH_HUDController:
-     (no class)        → transparent background, label hidden.
-     .surge-active     → Magenta fill, label visible.
-     .surge-cooldown   → Orange fill, label visible.
-══════════════════════════════════════════════════════════════════════════ */
-
 .surge-indicator {
-    flex-direction:   row;
-    align-items:      center;
-    width:            var(--surge-dot-size);
-    height:           var(--surge-dot-size);
-    border-radius:    2px;
+    flex-direction: row;
+    align-items: center;
+    width: var(--surge-dot-size);
+    height: var(--surge-dot-size);
+    border-radius: 2px;
     background-color: rgba(0, 0, 0, 0);
-    border-width:     1px;
-    border-color:     rgba(255, 255, 255, 0.15);
-
-    /* Smooth color transitions between states. */
-    transition:       background-color var(--transition-duration) ease-out,
-                      border-color var(--transition-duration) ease-out,
-                      width var(--transition-duration) ease-out;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.15);
+    transition: background-color var(--transition-duration) ease-out, border-color var(--transition-duration) ease-out, width var(--transition-duration) ease-out;
 }
 
-/* Surge active — Magenta fill, expand to show label. */
 .surge-indicator.surge-active {
     background-color: var(--color-magenta);
-    border-color:     rgb(255, 100, 255);
-    width:            72px;
+    border-color: rgb(255, 100, 255);
+    width: 72px;
 }
 
-/* Surge cooldown — Orange fill, expand to show label. */
 .surge-indicator.surge-cooldown {
     background-color: var(--color-orange);
-    border-color:     rgb(255, 160, 80);
-    width:            72px;
+    border-color: rgb(255, 160, 80);
+    width: 72px;
 }
 
-/* State label inside the surge indicator dot.
-   Hidden by default (opacity 0 instead of display:none so the
-   transition animates correctly when the indicator expands). */
 .surge-state-label {
-    font-size:         var(--font-size-small);
-    color:             rgb(240, 240, 240);
+    font-size: var(--font-size-small);
+    color: rgb(240, 240, 240);
     -unity-text-align: middle-center;
-    opacity:           0;
-    flex-grow:         1;
-    overflow:          hidden;
-    transition:        opacity var(--transition-duration) ease-out;
+    opacity: 0;
+    flex-grow: 1;
+    overflow: hidden;
+    transition: opacity var(--transition-duration) ease-out;
 }
 
-/* Label becomes visible when either active state class is present. */
-.surge-indicator.surge-active   > .surge-state-label,
+.surge-indicator.surge-active > .surge-state-label,
 .surge-indicator.surge-cooldown > .surge-state-label {
     opacity: 1;
 }
 
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   ZONE C — MISSION PANEL (Top Left)
-══════════════════════════════════════════════════════════════════════════ */
-
 .mission-label {
-    font-size:         var(--font-size-normal);
-    color:             var(--color-white);
+    font-size: var(--font-size-normal);
+    color: var(--color-white);
     -unity-text-align: upper-left;
-    white-space:       normal;
+    white-space: normal;
 }
 
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   ZONE C — MINIMAP PANEL (Top Right)
-══════════════════════════════════════════════════════════════════════════ */
-
 .minimap-panel {
-    min-width:  80px;
+    min-width: 80px;
     min-height: 80px;
 }
 
 .placeholder-label {
-    font-size:         var(--font-size-small);
-    color:             var(--color-placeholder);
+    font-size: var(--font-size-small);
+    color: var(--color-placeholder);
     -unity-text-align: middle-center;
-    flex-grow:         1;
+    flex-grow: 1;
 }
 
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   UTILITY — SEPARATOR
-   Thin horizontal line used between sections inside panels.
-   Not currently referenced in HUD.uxml but available for Step 2 panels
-   that add more rows (cooldown section, posture bar, etc.).
-══════════════════════════════════════════════════════════════════════════ */
-
 .separator {
-    height:           1px;
+    height: 1px;
     background-color: rgba(0, 255, 255, 0.12);
-    margin-top:       4px;
-    margin-bottom:    4px;
+    margin-top: 4px;
+    margin-bottom: 4px;
 }

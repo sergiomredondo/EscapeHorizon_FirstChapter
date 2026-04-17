@@ -80,6 +80,10 @@ namespace UI
         private Label _scrapLabel;
         private Label _icLabel;
         private VisualElement _surgeIndicator;
+        private VisualElement _interactionContainer;
+        private Label _interactionLabel;
+        private ProgressBar _interactionProgress;
+        private bool _isInteractionActive;
 
         /// <summary>
         /// The state model injected by SH_UIBridge before OnEnable() fires.
@@ -175,6 +179,8 @@ namespace UI
             _model.OnScrapChanged += OnScrapChanged;
             _model.OnIdentityCoresChanged += OnIdentityCoresChanged;
             _model.OnSurgeStateChanged += OnSurgeStateChanged;
+            _model.OnInteractionFocusChanged += OnInteractionFocusChanged;
+            _model.OnInteractionProgressChanged += OnInteractionProgressChanged;
 
             // Sync the HUD to whatever values the model already holds.
             // Without this, all bars show their default UXML values until
@@ -224,6 +230,9 @@ namespace UI
             _scrapLabel = root.Q<Label>(ElementScrapLabel);
             _icLabel = root.Q<Label>(ElementICLabel);
             _surgeIndicator = root.Q<VisualElement>(ElementSurgeIndicator);
+            _interactionContainer = root.Q<VisualElement>("interaction-container");
+            _interactionLabel = root.Q<Label>("interaction-label");
+            _interactionProgress = root.Q<ProgressBar>("interaction-progress");
 
             bool allFound = true;
 
@@ -347,6 +356,31 @@ namespace UI
             OnScrapChanged(_model.CurrentScrap);
             OnIdentityCoresChanged(_model.CurrentIdentityCores);
             OnSurgeStateChanged(_model.IsSurgeActive, _model.IsInSurgeCooldown);
+        }
+
+        private void LateUpdate()
+        {
+            if (!_isInteractionActive || _interactionContainer == null) return;
+
+            Vector2 screenPos = RuntimePanelUtils.CameraTransformWorldToPanel(
+                _interactionContainer.panel,
+                _model.TargetWorldPosition + Vector3.up * 1.5f,
+                Camera.main);
+
+            _interactionContainer.style.left = screenPos.x - (_interactionContainer.layout.width / 2);
+            _interactionContainer.style.top = screenPos.y - (_interactionContainer.layout.height / 2);
+        }
+
+        private void OnInteractionFocusChanged(bool isVisible, string targetName)
+        {
+            _isInteractionActive = isVisible;
+            _interactionContainer.style.display = isVisible ? DisplayStyle.Flex : DisplayStyle.None;
+            if (isVisible) _interactionLabel.text = targetName;
+        }
+
+        private void OnInteractionProgressChanged(float progress)
+        {
+            if (_interactionProgress != null) _interactionProgress.value = progress * 100f;
         }
 
         #endregion

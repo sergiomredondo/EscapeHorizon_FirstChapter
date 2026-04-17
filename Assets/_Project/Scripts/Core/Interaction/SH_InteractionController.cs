@@ -103,6 +103,10 @@ namespace Game.Interaction
         /// </summary>
         public event Action<IInteractable> OnInteractionCompleted;
 
+        /// <summary>
+        /// Fired when the focused target changes (focus lost or new target gained).
+        /// </summary>
+        public event Action<IInteractable> OnFocusChanged;
         #endregion
 
         #region Initialization
@@ -267,6 +271,7 @@ namespace Game.Interaction
             {
                 _focusedTarget.OnFocusEnter();
                 OnTargetFocused?.Invoke(_focusedTarget);
+                OnFocusChanged?.Invoke(_focusedTarget);
             }
         }
 

@@ -193,6 +193,8 @@ namespace Game.Interaction
             // Deactivate collider to prevent re-detection by the overlap scan.
             var col = GetComponent<Collider>();
             if (col != null) col.enabled = false;
+
+            if (_scannable != null) _scannable.enabled = false;
         }
 
         /// <summary>
@@ -227,8 +229,11 @@ namespace Game.Interaction
             _isAvailable = isAvailable;
             _isDirty = false;
 
+
             var col = GetComponent<Collider>();
             if (col != null) col.enabled = isAvailable;
+
+            if (_scannable != null) _scannable.enabled = isAvailable;
 
             if (!isAvailable)
             {

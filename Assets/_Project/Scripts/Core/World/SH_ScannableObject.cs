@@ -72,6 +72,7 @@ namespace Game.World
         #region Public API
 
         public bool IsDetected => _detected;
+        public bool IsRevealed => _isRevealed;
 
         /// <summary>
         /// Swaps the target renderers' materials between the base material and the detected material.

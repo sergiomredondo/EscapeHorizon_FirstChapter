@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6d78a3bc9ab587419944e1d6791eaa1, type: 3}
   m_Name: InteractionSettings
   m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.Data.SH_InteractionSettings
-  detectionRadius: 3
+  detectionRadius: 5
   interactableLayer:
     serializedVersion: 2
     m_Bits: 8

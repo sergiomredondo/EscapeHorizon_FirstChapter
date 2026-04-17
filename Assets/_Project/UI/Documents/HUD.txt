@@ -35,23 +35,6 @@
         name="hud-root"
         class="hud-root">
 
-        <ui:VisualElement
-        name="interaction-container"
-        class="interaction-container"
-        style="display: none; position: absolute;">
-        <ui:Label
-             name="interaction-label"
-             class="interaction-label"
-             text="INTERACTAR"/>
-
-         <ui:ProgressBar
-             name="interaction-progress"
-             class="interaction-progress"
-             low-value="0"
-             high-value="100"/>
-
-     </ui:VisualElement>
-
         <!-- ═══════════════════════════════════════════════════════════════════
              ZONE C — TOP LEFT: Mission log and narrative notifications.
              Low opacity during combat (GDD §9.2.2 — Nivel 3 information).

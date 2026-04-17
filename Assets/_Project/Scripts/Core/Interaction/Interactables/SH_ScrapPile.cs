@@ -111,9 +111,8 @@ namespace Game.Interaction
             }
 
             MarkConsumed();
+            OnDestroyVisualOnLoad();
             OnLooted?.Invoke(persistentID, finalScrap);
-
-            //Debug.Log($"[SH_ScrapPile] '{persistentID}' looted: {finalScrap:F1} SC delivered.");
         }
 
         #endregion
