@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: ecc0749a90a1b1c4cb335134906003ce
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309131
+  packageName: Pulsar Neuton Star for URP
+  packageVersion: 1.0
+  assetPath: Assets/Pulsar Neutron Star/Shaders/HLSL/ClassicNoise3D.hlsl
+  uploadId: 727944

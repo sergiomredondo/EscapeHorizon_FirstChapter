@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: c134d7da33cb58a4cba3eda1425da655
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309131
+  packageName: Pulsar Neuton Star for URP
+  packageVersion: 1.0
+  assetPath: Assets/Pulsar Neutron Star/Materials/StarCore.mat
+  uploadId: 727944

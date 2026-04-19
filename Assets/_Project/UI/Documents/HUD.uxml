@@ -1,231 +1,41 @@
-﻿<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEngine.UIElements.Experimental">
-<Style src="project://database/Assets/_Project/UI/Styles/HUD.uss?fileID=7433441132597879392&amp;guid=46c5f35131f48844c985b28afd300693&amp;type=3#HUD"/>
-    <!--
-        HUD.uxml — Escape Horizon: Chapter One
-        
-        Root document for the in-game heads-up display.
-        Loaded by the UIDocument component on the [UI] GameObject.
-        Stylesheet: HUD.uss (assigned in the UIDocument PanelSettings asset).
-        
-        Layout follows the three-zone structure defined in GDD §9.2.2:
-          Zone A — Center     : Crosshair anchor (reserved for Step 2 cooldown rings).
-          Zone B — Bottom     : Vitality panel (HP, Energy) and Resources panel (SC, IC, Surge).
-          Zone C — Top corners: Mission log (left) and minimap placeholder (right).
-        
-        All element names match the constants in SH_HUDController exactly:
-          "hp-bar"           ProgressBar — Mecha durability fill.
-          "energy-bar"       ProgressBar — Energy pool fill.
-          "scrap-label"      Label       — Scrap (SC) counter.
-          "ic-label"         Label       — Identity Core (IC) counter.
-          "surge-indicator"  VisualElement — Surge state color dot.
-        
-        Prototype scope (Step 1):
-          All layout is functional but unstyled beyond what HUD.uss provides.
-          Icon assets, radial cooldown rings, damage numbers, and the interaction
-          prompt overlay are deferred to Step 2.
-    -->
-
-    <!-- ═══════════════════════════════════════════════════════════════════════
-         ROOT — Full-screen transparent container.
-         Absolute positioning is used throughout so gameplay is never obscured
-         by layout flow. Pointer events are set to none so the HUD does not
-         intercept mouse clicks intended for the game viewport.
-    ════════════════════════════════════════════════════════════════════════ -->
-    <ui:VisualElement
-        name="hud-root"
-        class="hud-root">
-
-        <ui:VisualElement
-        name="interaction-container"
-        class="interaction-container"
-        style="display: none; position: absolute;">
-        <ui:Label
-             name="interaction-label"
-             class="interaction-label"
-             text="INTERACTAR"/>
-
-         <ui:ProgressBar
-             name="interaction-progress"
-             class="interaction-progress"
-             low-value="0"
-             high-value="100"/>
-
-     </ui:VisualElement>
-
-        <!-- ═══════════════════════════════════════════════════════════════════
-             ZONE C — TOP LEFT: Mission log and narrative notifications.
-             Low opacity during combat (GDD §9.2.2 — Nivel 3 information).
-             Content is empty in Step 1; populated by the notification system
-             in a later step.
-        ════════════════════════════════════════════════════════════════════ -->
-        <ui:VisualElement
-            name="mission-panel"
-            class="corner-panel corner-panel--top-left">
-
-            <ui:Label
-                name="mission-label"
-                class="mission-label"
-                text=""/>
-
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEngine.UIElements.Experimental" editor-extension-mode="False">
+    <Style src="project://database/Assets/_Project/UI/Styles/HUD.uss?fileID=7433441132597879392&amp;guid=46c5f35131f48844c985b28afd300693&amp;type=3#HUD"/>
+    <ui:VisualElement name="hud-root" class="hud-root">
+        <ui:VisualElement name="interaction-container" class="interaction-container" style="display: none; position: absolute;">
+            <ui:Label name="interaction-label" text="INTERACTAR" class="interaction-label" style="font-size: 20px; -unity-font-definition: url(&quot;project://database/Assets/_Project/UI/Fonts/Tektur-VariableFont_wdth,wght.ttf?fileID=12800000&amp;guid=4f1027b2edfe59f4ebdd0bc0d3defbdb&amp;type=3#Tektur-VariableFont_wdth,wght&quot;); -unity-font-style: bold; color: rgb(229, 229, 229);"/>
+            <ui:ProgressBar name="interaction-progress" low-value="0" high-value="100" class="interaction-progress"/>
         </ui:VisualElement>
-
-        <!-- ═══════════════════════════════════════════════════════════════════
-             ZONE C — TOP RIGHT: Minimap placeholder.
-             Empty in Step 1. The minimap render texture and compass
-             are wired in a later step once scene navigation is in place.
-        ════════════════════════════════════════════════════════════════════ -->
-        <ui:VisualElement
-            name="minimap-panel"
-            class="corner-panel corner-panel--top-right">
-
-            <ui:Label
-                name="minimap-placeholder-label"
-                class="placeholder-label"
-                text="MAP"/>
-
+        <ui:VisualElement name="mission-panel" class="corner-panel corner-panel--top-left">
+            <ui:Label name="mission-label" text="" class="mission-label"/>
         </ui:VisualElement>
-
-        <!-- ═══════════════════════════════════════════════════════════════════
-             ZONE A — CENTER: Crosshair anchor.
-             The crosshair dot is a minimal visual cue for the axonometric
-             camera. Cooldown rings for Dash and Surge are attached here
-             in Step 2 as children of this container.
-        ════════════════════════════════════════════════════════════════════ -->
-        <ui:VisualElement
-            name="center-anchor"
-            class="center-anchor">
-
-            <ui:VisualElement
-                name="crosshair"
-                class="crosshair"/>
-
+        <ui:VisualElement name="minimap-panel" class="corner-panel corner-panel--top-right">
+            <ui:Label name="minimap-placeholder-label" text="MAP" class="placeholder-label"/>
         </ui:VisualElement>
-
-        <!-- ═══════════════════════════════════════════════════════════════════
-             ZONE B — BOTTOM LEFT: Vitality panel.
-             Contains HP and Energy bars — the two highest-priority pieces
-             of information during combat (GDD §9.1.3 — Nivel 1).
-             Maintained at 100% opacity at all times (GDD §9.2.2).
-        ════════════════════════════════════════════════════════════════════ -->
-        <ui:VisualElement
-            name="vitality-panel"
-            class="corner-panel corner-panel--bottom-left">
-
-            <!-- HP bar: Mecha structural integrity (Durabilidad).
-                 low-value="0" high-value="1" so SH_HUDController can assign
-                 the normalized fraction directly without extra arithmetic.
-                 The title attribute is intentionally empty — the label
-                 role is served by the icon added in Step 2. -->
-            <ui:VisualElement
-                name="hp-row"
-                class="bar-row">
-
-                <ui:Label
-                    name="hp-icon-label"
-                    class="bar-icon-label bar-icon-label--hp"
-                    text="HP"/>
-
-                <ui:ProgressBar
-                    name="hp-bar"
-                    class="resource-bar resource-bar--hp"
-                    low-value="0"
-                    high-value="1"
-                    value="1"
-                    title=""/>
-
-            </ui:VisualElement>
-
-            <!-- Energy bar: Energy Core pool (EC).
-                 Same normalized value convention as the HP bar.
-                 Color transitions from Cían (normal) to Magenta (surge active)
-                 are driven by CSS classes toggled in SH_HUDController,
-                 not by a second bar element. -->
-            <ui:VisualElement
-                name="energy-row"
-                class="bar-row">
-
-                <ui:Label
-                    name="energy-icon-label"
-                    class="bar-icon-label bar-icon-label--energy"
-                    text="EN"/>
-
-                <ui:ProgressBar
-                    name="energy-bar"
-                    class="resource-bar resource-bar--energy"
-                    low-value="0"
-                    high-value="1"
-                    value="1"
-                    title=""/>
-
-            </ui:VisualElement>
-
+        <ui:VisualElement name="center-anchor" class="center-anchor">
+            <ui:VisualElement name="crosshair" class="crosshair"/>
         </ui:VisualElement>
-
-        <!-- ═══════════════════════════════════════════════════════════════════
-             ZONE B — BOTTOM RIGHT: Economy resources panel.
-             Contains Scrap counter, Identity Core counter, and the Surge
-             state indicator. Lower priority than the vitality panel but
-             still maintained at full opacity (GDD §9.2.2 — Zona B).
-        ════════════════════════════════════════════════════════════════════ -->
-        <ui:VisualElement
-            name="resources-panel"
-            class="corner-panel corner-panel--bottom-right">
-
-            <!-- Scrap counter (SC).
-                 Text format "SC: 0" is set by SH_HUDController.OnScrapChanged.
-                 Yellow tint defined in HUD.uss (GDD §9.2.3 — Amarillo / Recurso). -->
-            <ui:VisualElement
-                name="scrap-row"
-                class="resource-row">
-
-                <ui:Label
-                    name="scrap-label"
-                    class="resource-label resource-label--scrap"
-                    text="SC: 0"/>
-
+        <ui:VisualElement name="vitality-panel" class="corner-panel corner-panel--bottom-left">
+            <ui:VisualElement name="hp-row" class="bar-row">
+                <ui:Label name="hp-icon-label" text="HP" class="bar-icon-label bar-icon-label--hp"/>
+                <ui:ProgressBar name="hp-bar" low-value="0" high-value="1" value="1" title="" class="resource-bar resource-bar--hp"/>
             </ui:VisualElement>
-
-            <!-- Identity Core counter (IC).
-                 Text format "IC: 0" is set by SH_HUDController.OnIdentityCoresChanged.
-                 Cían tint defined in HUD.uss (GDD §9.2.3 — Cían / Razón). -->
-            <ui:VisualElement
-                name="ic-row"
-                class="resource-row">
-
-                <ui:Label
-                    name="ic-label"
-                    class="resource-label resource-label--ic"
-                    text="IC: 0"/>
-
+            <ui:VisualElement name="energy-row" class="bar-row">
+                <ui:Label name="energy-icon-label" text="EN" class="bar-icon-label bar-icon-label--energy"/>
+                <ui:ProgressBar name="energy-bar" low-value="0" high-value="1" value="1" title="" class="resource-bar resource-bar--energy"/>
             </ui:VisualElement>
-
-            <!-- Surge state indicator.
-                 A small geometric dot whose background color reflects the
-                 current Surge state via CSS classes toggled by SH_HUDController:
-                   No class        → transparent (Surge inactive and not in cooldown).
-                   "surge-active"  → Magenta     (Surge boost is running).
-                   "surge-cooldown"→ Orange      (post-Surge penalty window).
-                 The label "SURGE" is visible only when a state is active,
-                 controlled by the opacity rules in HUD.uss. -->
-            <ui:VisualElement
-                name="surge-row"
-                class="resource-row">
-
-                <ui:VisualElement
-                    name="surge-indicator"
-                    class="surge-indicator">
-
-                    <ui:Label
-                        name="surge-state-label"
-                        class="surge-state-label"
-                        text="SURGE"/>
-
+        </ui:VisualElement>
+        <ui:VisualElement name="resources-panel" class="corner-panel corner-panel--bottom-right">
+            <ui:VisualElement name="scrap-row" class="resource-row">
+                <ui:Label name="scrap-label" text="SC: 0" class="resource-label resource-label--scrap"/>
+            </ui:VisualElement>
+            <ui:VisualElement name="ic-row" class="resource-row">
+                <ui:Label name="ic-label" text="IC: 0" class="resource-label resource-label--ic"/>
+            </ui:VisualElement>
+            <ui:VisualElement name="surge-row" class="resource-row">
+                <ui:VisualElement name="surge-indicator" class="surge-indicator">
+                    <ui:Label name="surge-state-label" text="SURGE" class="surge-state-label"/>
                 </ui:VisualElement>
-
             </ui:VisualElement>
-
         </ui:VisualElement>
-
     </ui:VisualElement>
-
 </ui:UXML>

@@ -9,6 +9,9 @@ EditorBuildSettings:
     path: Assets/_Project/Scenes/Level_0_Title/SCN_0_Title.unity
     guid: 48e0fb0fb65b99046a4131575dc5f467
   - enabled: 1
+    path: Assets/_Project/Scenes/Level_1_Prologue/SCN_1_Prototype.unity
+    guid: df65a5228b4673949bb80a71e1383fa7
+  - enabled: 1
     path: Assets/_Project/Scenes/Main_Level_Prototype/Main_Level_Prototype.unity
     guid: 99c9720ab356a0642a771bea13969a05
   m_configObjects:
