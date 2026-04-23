@@ -1,11 +1,8 @@
 using Game.Economy.Data;
 using Unity.VisualScripting;
-using UnityEditor.ShaderGraph;
-using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.ProBuilder.Shapes;
 using UnityEngine.UIElements;
-using static UnityEditor.ShaderData;
 using static UnityEngine.EventSystems.EventTrigger;
 
 namespace Game.Economy.Data

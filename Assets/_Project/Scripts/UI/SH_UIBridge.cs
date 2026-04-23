@@ -7,6 +7,7 @@ using Game.Interaction;
 using Game.World;
 using System;
 using UnityEngine;
+using UnityEngine.Experimental.GlobalIllumination;
 
 namespace UI
 {
@@ -99,6 +100,7 @@ namespace UI
         private bool _lastSurgeActive;
         private bool _lastSurgeInCooldown;
 
+
         #endregion
 
         // ─────────────────────────────────────────────────────────────────────
@@ -118,7 +120,6 @@ namespace UI
                                  "before the controller subscribes in OnEnable().");
                 return;
             }
-
             _hudController.InjectModel(_model);
         }
 

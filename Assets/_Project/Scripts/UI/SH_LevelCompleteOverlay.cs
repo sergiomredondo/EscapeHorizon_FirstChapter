@@ -20,6 +20,10 @@ namespace Game.UI
         private const string TitleSceneName = "SCN_0_Title";
         private const string PrototypeSceneName = "SCN_1_Prototype";
 
+        [Header("UI References")]
+        [Tooltip("Root GameObject of the UI Canvas. This is disabled when the overlay is shown.")]
+        [SerializeField] private GameObject _uiObject;
+
         [Header("Overlay Visuals")]
         [Tooltip("Root GameObject of the overlay Canvas. " +
                  "This is enabled/disabled to show or hide the overlay.")]
@@ -47,6 +51,9 @@ namespace Game.UI
 
         private void Awake()
         {
+            if (_uiObject == null)
+                _uiObject = GameObject.Find("UI");
+
             if (_overlayRoot != null)
                 _overlayRoot.SetActive(false);
 
@@ -67,6 +74,9 @@ namespace Game.UI
 
         public void Show()
         {
+            if (_uiObject != null)
+                _uiObject.SetActive(false);
+
             if (_isVisible) return;
             _isVisible = true;
             _autoDismissTimer = 0f;

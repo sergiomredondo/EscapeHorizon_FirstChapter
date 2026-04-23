@@ -3,7 +3,6 @@ using Core.Input;
 using Game.Interaction.Data;
 using Game.World;
 using System;
-using UnityEditor.ShaderKeywordFilter;
 using UnityEngine;
 
 namespace Game.Interaction

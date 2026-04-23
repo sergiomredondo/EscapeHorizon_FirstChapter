@@ -185,6 +185,16 @@ namespace Core.StateMachine.States
         {
             _context.CombatController?.ActivateSurge();
             _surgeActivated = true;
+
+            if (_actionData.activationEffectPrefab != null)
+            {
+                GameObject fx = UnityEngine.Object.Instantiate(
+                    _actionData.activationEffectPrefab,
+                    _context.Transform.position,
+                    _context.Transform.rotation);
+
+                UnityEngine.Object.Destroy(fx, _actionData.effectAutoDestroyTime);
+            }
         }
 
         private void HandleActionComplete()

@@ -1,5 +1,6 @@
 using Game.Enemy;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Core.StateMachine.States
 {
@@ -26,6 +27,8 @@ namespace Core.StateMachine.States
         private Vector3 _cameraOriginPosition;
         private Quaternion _cameraOriginRotation;
         private bool _cameraRestored;
+
+        private const string PrototypeSceneName = "SCN_1_Prototype";
 
         public SH_DeathSequenceState(
             SH_PlayerContext context,
@@ -102,35 +105,37 @@ namespace Core.StateMachine.States
 
         private void ResetGame()
         {
-            // Restore camera before transition.
-            if (_mainCameraTransform != null)
-            {
-                _mainCameraTransform.position = _cameraOriginPosition;
-                _mainCameraTransform.rotation = _cameraOriginRotation;
-            }
-            _cameraRestored = true;
+            
+            SceneManager.LoadScene(PrototypeSceneName);
+            //// Restore camera before transition.
+            //if (_mainCameraTransform != null)
+            //{
+            //    _mainCameraTransform.position = _cameraOriginPosition;
+            //    _mainCameraTransform.rotation = _cameraOriginRotation;
+            //}
+            //_cameraRestored = true;
 
-            // Reposition player.
-            Vector3 resetPosition = _spawnPoint != null
-                ? _spawnPoint.position
-                : Vector3.zero;
+            //// Reposition player.
+            //Vector3 resetPosition = _spawnPoint != null
+            //    ? _spawnPoint.position
+            //    : Vector3.zero;
 
-            _context.Transform.position = resetPosition;
-            _context.Physics.CancelHorizontalVelocity();
+            //_context.Transform.position = resetPosition;
+            //_context.Physics.CancelHorizontalVelocity();
 
-            // Restore health and apply defeat resource penalty (already called by
-            // SH_ResourceSystem subscription — only reset health here).
-            _context.Health.ResetToFull();
+            //// Restore health and apply defeat resource penalty (already called by
+            //// SH_ResourceSystem subscription — only reset health here).
+            //_context.Health.ResetToFull();
 
-            // Reset all enemies in scene.
-            var enemies = Object.FindObjectsByType<SH_EnemyController>(
-                FindObjectsSortMode.None);
-            foreach (var enemy in enemies)
-                enemy.ResetEnemy(_context);
+            //// Reset all enemies in scene.
+            //var enemies = Object.FindObjectsByType<SH_EnemyController>(
+            //    FindObjectsSortMode.None);
+            //foreach (var enemy in enemies)
+            //    enemy.ResetEnemy(_context);
 
-            SH_EnemyController.ResetSharedAlert();
+            //SH_EnemyController.ResetSharedAlert();
 
-            _stateMachine.ChangeState(new SH_IdleState(_context, _stateMachine));
+            //_stateMachine.ChangeState(new SH_IdleState(_context, _stateMachine));
         }
     }
 }
