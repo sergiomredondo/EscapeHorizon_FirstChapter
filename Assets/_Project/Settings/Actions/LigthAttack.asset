@@ -16,7 +16,7 @@ MonoBehaviour:
   activeTime: 0.15
   recoveryTime: 0.2
   cancelWindowStart: 0.25
-  coolDownTime: 0.5
+  coolDownTime: 0.3
   impulseMagnitude: 1000
   impulseDuration: 0.05
   directionMode: 0
@@ -27,7 +27,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   damage: 20
-  staggerImpulse: 250
+  staggerImpulse: 150
   hitstopDuration: 0.05
   priority: 2
   staminaCost: 2
@@ -35,6 +35,6 @@ MonoBehaviour:
   locksMovement: 1
   useRootMotion: 0
   grantsInvulnerability: 0
-  activationEffectPrefab: {fileID: 0}
-  hitEffectPrefab: {fileID: 2504214343621411470, guid: 3ed0d324122d7b24eaec75c55c74aafc, type: 3}
+  activationEffectPrefab: {fileID: 5545173171955001552, guid: 7ac879c2caac1ca41b6c438e77d8b25d, type: 3}
+  hitEffectPrefab: {fileID: 4021103657954561961, guid: 5c755f9bc5253ea418e919994537dcc7, type: 3}
   effectAutoDestroyTime: 2

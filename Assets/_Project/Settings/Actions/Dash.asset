@@ -21,13 +21,13 @@ MonoBehaviour:
   impulseDuration: 0
   directionMode: 0
   customDirection: {x: 0, y: 0, z: 1}
-  hitboxRadius: 6
-  hitboxOffset: {x: 0, y: 0, z: 0}
+  hitboxRadius: 4
+  hitboxOffset: {x: -1, y: 0.3, z: -1}
   targetLayers:
     serializedVersion: 2
-    m_Bits: 4294967295
-  damage: 10
-  staggerImpulse: 250
+    m_Bits: 64
+  damage: 30
+  staggerImpulse: 350
   hitstopDuration: 0.05
   priority: 8
   staminaCost: 5
@@ -35,6 +35,6 @@ MonoBehaviour:
   locksMovement: 1
   useRootMotion: 0
   grantsInvulnerability: 1
-  activationEffectPrefab: {fileID: 0}
-  hitEffectPrefab: {fileID: 3432958286849152088, guid: 87ee7299dd44ed747af24dbb91bcd33b, type: 3}
+  activationEffectPrefab: {fileID: 2060418090655630911, guid: 4fb7673fa1cb7e34ea16f350b1e1fba9, type: 3}
+  hitEffectPrefab: {fileID: 4021103657954561961, guid: 5c755f9bc5253ea418e919994537dcc7, type: 3}
   effectAutoDestroyTime: 2

@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7dffbe7da71ff1a4dac74db81084be02, type: 3}
   m_Name: PlayerFeedbackData
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Data.SH_PlayerFeedbackData
-  hitEffectPrefab: {fileID: 1429954232896169633, guid: 83036083a4ebcd34f98131bd3cf6f4d2, type: 3}
-  hitAudioClip: {fileID: 8300000, guid: ef572d4a0a206874a859f8acd5cd6fe5, type: 3}
+  hitEffectPrefab: {fileID: 2708598583397607911, guid: 6398d43fe79ea0140913dc5530c646af, type: 3}
+  hitAudioClip: {fileID: 8300000, guid: 0fe1f70a291775d4584a39296fa1425f, type: 3}
   effectAutoDestroyTime: 1

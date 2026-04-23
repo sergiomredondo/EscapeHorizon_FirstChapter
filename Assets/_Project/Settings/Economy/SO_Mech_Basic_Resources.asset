@@ -16,5 +16,5 @@ MonoBehaviour:
   scrapVariance: 5
   identityCoresOnRescue: 1
   scrapOnRescue: 5
-  energyOnInteraction: 10
+  energyOnInteraction: 20
   energyVariance: 2

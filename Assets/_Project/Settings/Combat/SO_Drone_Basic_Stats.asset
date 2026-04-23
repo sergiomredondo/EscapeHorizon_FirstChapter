@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a78743f917a27b24b8dca052eff5210f, type: 3}
   m_Name: SO_Drone_Basic_Stats
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Data.SH_CombatStats
-  Strength: 10
-  Defense: 10
+  Strength: 5
+  Defense: 5
   Agility: 6
-  PostureMax: 50
-  MaxDurability: 100
+  PostureMax: 20
+  MaxDurability: 50
   Archetype: 2
   IsStaggerImmune: 0

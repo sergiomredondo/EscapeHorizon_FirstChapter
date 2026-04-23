@@ -21,20 +21,20 @@ MonoBehaviour:
   impulseDuration: 0
   directionMode: 0
   customDirection: {x: 0, y: 0, z: 1}
-  hitboxRadius: 0
-  hitboxOffset: {x: 0, y: 0, z: 1.2}
+  hitboxRadius: 15
+  hitboxOffset: {x: 0, y: 0, z: 0}
   targetLayers:
     serializedVersion: 2
-    m_Bits: 0
-  damage: 10
-  staggerImpulse: 1000
-  hitstopDuration: 0.05
+    m_Bits: 64
+  damage: 50
+  staggerImpulse: 0
+  hitstopDuration: 1
   priority: 4
   staminaCost: 0
   animationTrigger: Action_Base
   locksMovement: 1
   useRootMotion: 0
   grantsInvulnerability: 0
-  activationEffectPrefab: {fileID: 0}
+  activationEffectPrefab: {fileID: 9027514048236820045, guid: effb650189dc5714e9e9801b1cfb3991, type: 3}
   hitEffectPrefab: {fileID: 1590415177872986601, guid: acdb90624a404aa438447006f1026065, type: 3}
   effectAutoDestroyTime: 2

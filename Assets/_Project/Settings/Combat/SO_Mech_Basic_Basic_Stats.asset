@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a78743f917a27b24b8dca052eff5210f, type: 3}
   m_Name: SO_Mech_Basic_Basic_Stats
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Data.SH_CombatStats
-  Strength: 10
-  Defense: 10
-  Agility: 6
-  PostureMax: 100
-  MaxDurability: 100
+  Strength: 7
+  Defense: 7
+  Agility: 3
+  PostureMax: 80
+  MaxDurability: 50
   Archetype: 0
   IsStaggerImmune: 0

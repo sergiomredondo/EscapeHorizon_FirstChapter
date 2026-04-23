@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1953259897 &8574412962073106934
+TerrainLayer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: LY_Desert_Western_Ground_Mud_Coarse_02_vemqaeb_1K
+  m_DiffuseTexture: {fileID: 2800000, guid: 246723fc0589e3448b9175430ba03b1f, type: 3}
+  m_NormalMapTexture: {fileID: 2800000, guid: ae89d04ca02892a43a2ca4c5322cdbf7, type: 3}
+  m_MaskMapTexture: {fileID: 2800000, guid: 84ea4af51cdb14d48a4035595e151c85, type: 3}
+  m_TileSize: {x: 20, y: 20}
+  m_TileOffset: {x: 0, y: 0}
+  m_Specular: {r: 0.1, g: 0.1, b: 0.1, a: 1}
+  m_Metallic: 0
+  m_Smoothness: 0
+  m_NormalScale: 2
+  m_DiffuseRemapMin: {x: 0, y: 0, z: 0, w: 0}
+  m_DiffuseRemapMax: {x: 1, y: 0.74934596, z: 0.555, w: 1}
+  m_MaskMapRemapMin: {x: 0, y: 0, z: 0, w: 0}
+  m_MaskMapRemapMax: {x: 1, y: 1, z: 1, w: 0}
+  m_SmoothnessSource: 1
