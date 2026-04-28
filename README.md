@@ -1,7 +1,7 @@
-# Scape Horizon
+# Escape Horizon
 
 ## Overview
-**Scape Horizon** is an Action Roguelite with Hack and Slash gameplay featuring an isometric perspective. Developed in **Unity 6.3**, the project focuses on high-precision combat, fluid locomotion, and a distinct engineering-driven aesthetic. The game integrates deep narrative systems with responsive gameplay loops, centering on the protagonist, Luisa, and her interaction with advanced mecha technology.
+**Escape Horizon** is an Action Roguelite with Hack and Slash gameplay featuring an isometric perspective. Developed in **Unity 6.3**, the project focuses on high-precision combat, fluid locomotion, and a distinct engineering-driven aesthetic. The game integrates deep narrative systems with responsive gameplay loops, centering on the protagonist, Luisa, and her interaction with advanced mecha technology.
 
 ## Core Features
 * **Dynamic Combat & Locomotion:** Implementation of advanced Blend Trees for seamless movement transitions and responsive Input System handling.
@@ -43,7 +43,7 @@
 * **Version Control:** Managed via Git with strict commit standards and resource disposal (`Dispose()`, `OnDisable()` unsubscriptions).
 
 ## Setup & Installation
-1.  **Clone the repository:** `git clone https://github.com/UderoGames/Scape-Horizon.git`
+1.  **Clone the repository:** `git clone https://github.com/sergiomredondo/ScapeHorizon_FirstChapter.git`
 2.  **Unity Version:** Open the project using **Unity 6.3.0f1** or higher.
 3.  **Dependencies:** Ensure **Universal RP** and **UI Toolkit** packages are updated in the Package Manager.
 4.  **Fonts:** Verify the `Tektur` font asset is correctly assigned in the Global Settings.
