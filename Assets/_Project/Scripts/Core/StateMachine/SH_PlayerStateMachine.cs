@@ -13,6 +13,7 @@ using Game.Economy;
 using Game.Economy.Data;
 using Game.Interaction;
 using Game.Interaction.Data;
+using Game.Progression;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -143,6 +144,10 @@ namespace Core.StateMachine
                  "Add SH_EnergySurgeSystem component to Bear.")]
         [SerializeField] private SH_EnergySurgeSystem _surgeSystem;
 
+        [Tooltip("Build system for the Analysis Tree " +
+         "Add SH_BuildSystem component to Bear.")]
+        [SerializeField] private SH_BuildSystem _buildSystem;
+
         [Tooltip("Difficulty manager. Applies zone scaling to registered enemies and " +
                  "runs the 60-second dynamic AI aggressiveness loop (GDD §5.3.6). " +
                  "Add SH_DifficultyManager component to Bear (or a persistent manager object).")]
@@ -200,8 +205,9 @@ namespace Core.StateMachine
                 _combatSettings,
                 _playerCombatStats,
                 _playerFeedbackData,
-                _surgeSystem,          // Stage B
-                _difficultyManager     // Stage B
+                _surgeSystem,
+                _buildSystem,
+                _difficultyManager
             );
 
             _context.Health.OnDefeated += HandlePlayerDefeated;
@@ -329,6 +335,7 @@ namespace Core.StateMachine
             _actionCooldowns[actionData] = Time.time;
         }
 
+
         #endregion
 
         #region Debug API
@@ -370,6 +377,7 @@ namespace Core.StateMachine
 
             // Combat Stage B
             if (_surgeSystem == null) Debug.LogError($"[SH_PlayerStateMachine] SH_EnergySurgeSystem not assigned on {gameObject.name}. Add component to Bear.");
+            if (_buildSystem == null) Debug.LogWarning($"[SH_PlayerStateMachine] SH_BuildSystem not assigned on {gameObject.name}. ");
             if (_difficultyManager == null) Debug.LogError($"[SH_PlayerStateMachine] SH_DifficultyManager not assigned on {gameObject.name}.");
 
             if (_spawnPoint == null)

@@ -1,4 +1,5 @@
 using System;
+using Game.Progression.Data;
 using UI;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -9,32 +10,18 @@ namespace UI
     /// Subscribes to SH_UIStateModel events and translates state changes
     /// into visual updates on the UI Toolkit document defined in HUD.uxml.
     ///
-    /// Operates exclusively on the presentation layer: no gameplay logic,
-    /// no resource queries, no direct access to any gameplay MonoBehaviour.
-    /// All data arrives through the model injected by SH_UIBridge.
-    ///
-    /// Lifecycle contract with SH_UIBridge:
-    ///   SH_UIBridge.Awake() calls InjectModel() before this component's
-    ///   OnEnable() fires, so the model is always available when subscriptions
-    ///   are set up. If InjectModel() is called after OnEnable() (e.g. due to
-    ///   an unusual scene load order), the guard in InjectModel() re-subscribes
-    ///   immediately so no events are missed.
-    ///
-    /// UI Toolkit element names expected in HUD.uxml:
-    ///   "hp-bar"          — ProgressBar  : Mecha durability fill.
-    ///   "energy-bar"      — ProgressBar  : Energy pool fill.
-    ///   "scrap-label"     — Label        : Scrap (SC) numeric counter.
-    ///   "ic-label"        — Label        : Identity Core (IC) numeric counter.
-    ///   "surge-indicator" — VisualElement: Surge state color indicator.
-    ///
-    /// CSS classes managed at runtime (defined in HUD.uss):
-    ///   "surge-active"    — Applied to surge-indicator when Surge is active.
-    ///   "surge-cooldown"  — Applied to surge-indicator during post-Surge cooldown.
+    /// Extended with the Analysis Tree build menu (GDD §5.4.2):
+    ///   The overlay is shown/hidden via display flex/none driven by
+    ///   OnBuildMenuOpenChanged. Node and reanalysis button presses fire
+    ///   events consumed by SH_UIBridge, which owns the gameplay transaction.
+    ///   Time.timeScale is managed by SH_UIBridge, not here.
     ///
     /// Responsibility boundaries:
-    ///   OWNS: UI element queries, subscription lifecycle, visual updates.
+    ///   OWNS: UI element queries, subscription lifecycle, visual updates,
+    ///         button click event dispatch.
     ///   DOES NOT OWN: State values or change detection (SH_UIStateModel).
     ///   DOES NOT OWN: Gameplay event subscriptions (SH_UIBridge).
+    ///   DOES NOT OWN: Time.timeScale, BuildSystem transactions.
     /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(UIDocument))]
@@ -43,38 +30,77 @@ namespace UI
         // ─────────────────────────────────────────────────────────────────────
         #region CSS Class Name Constants
 
-        // Keeping class names as constants avoids allocation from repeated
-        // string literals and makes refactoring safe — change once, applies everywhere.
         private const string CssSurgeActive = "surge-active";
         private const string CssSurgeCooldown = "surge-cooldown";
+        private const string CssNodeActive = "build-node-btn--active";
+        private const string CssNodeNext = "build-node-btn--next";
+        private const string CssNodeUnavailable = "build-node-btn--unavailable";
 
         #endregion
 
         // ─────────────────────────────────────────────────────────────────────
-        #region UXML Element Name Constants
+        #region UXML Element Name Constants — HUD
 
         private const string ElementHPBar = "hp-bar";
         private const string ElementEnergyBar = "energy-bar";
         private const string ElementScrapLabel = "scrap-label";
         private const string ElementICLabel = "ic-label";
         private const string ElementSurgeIndicator = "surge-indicator";
+        private const string ElementInteractionContainer = "interaction-container";
+        private const string ElementInteractionLabel = "interaction-label";
+        private const string ElementInteractionProgress = "interaction-progress";
 
         #endregion
 
         // ─────────────────────────────────────────────────────────────────────
-        #region Runtime References
+        #region UXML Element Name Constants — Build Menu
+
+        private const string ElementBuildOverlay = "build-menu-overlay";
+        private const string ElementBuildLabelHP = "build-label-hp";
+        private const string ElementBuildLabelEnergy = "build-label-energy";
+        private const string ElementBuildLabelScrap = "build-label-scrap";
+        private const string ElementBuildLabelIC = "build-label-ic";
+        private const string ElementBuildLabelPD = "build-label-pd";
+        private const string ElementBuildReanalysisCost = "build-reanalysis-cost";
+        private const string ElementBuildNarrativePanel = "build-narrative-panel";
+        private const string ElementBuildNarrativeText = "build-narrative-text";
+        private const string ElementBuildCloseBtn = "build-close-btn";
+
+        // Node buttons: "node-{branch}-{index}" e.g. "node-attack-0"
+        private static readonly string[] BranchNames = { "attack", "defense", "agility" };
+
+        // Reanalysis buttons: "reanalysis-{branch}"
+        // Format: reanalysis-attack, reanalysis-defense, reanalysis-agility
+
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region Public Events — Build Menu Actions (consumed by SH_UIBridge)
 
         /// <summary>
-        /// The UIDocument component on this GameObject.
-        /// Queried in Awake() rather than serialized to avoid mismatches
-        /// between the assigned asset and the runtime component.
+        /// Fired when the player clicks a node button.
+        /// Parameters: (BuildBranch branch, int zeroBasedIndex).
         /// </summary>
+        public event Action<BuildBranch, int> OnBuildNodePressed;
+
+        /// <summary>
+        /// Fired when the player clicks a reanalysis button.
+        /// Parameter: (BuildBranch targetBranch).
+        /// </summary>
+        public event Action<BuildBranch> OnBuildReanalysisPressed;
+
+        /// <summary>
+        /// Fired when the player clicks the close button or Tab is detected
+        /// by SH_UIBridge while the menu is open.
+        /// </summary>
+        public event Action OnBuildMenuClosePressed;
+
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region Runtime References — HUD
+
         private UIDocument _document;
-
-        // ─── Cached visual elements ───────────────────────────────────────────
-        // Queried once in CacheElements() to avoid per-update Q<T> calls,
-        // which perform a tree walk each time they are called.
-
         private ProgressBar _hpBar;
         private ProgressBar _energyBar;
         private Label _scrapLabel;
@@ -85,16 +111,31 @@ namespace UI
         private ProgressBar _interactionProgress;
         private bool _isInteractionActive;
 
-        /// <summary>
-        /// The state model injected by SH_UIBridge before OnEnable() fires.
-        /// Null until InjectModel() is called.
-        /// </summary>
-        private SH_UIStateModel _model;
+        #endregion
 
-        /// <summary>
-        /// True once the model has been injected and subscriptions are active.
-        /// Guards all event handlers against firing before setup is complete.
-        /// </summary>
+        // ─────────────────────────────────────────────────────────────────────
+        #region Runtime References — Build Menu
+
+        private VisualElement _buildOverlay;
+        private Label _buildLabelHP;
+        private Label _buildLabelEnergy;
+        private Label _buildLabelScrap;
+        private Label _buildLabelIC;
+        private Label _buildLabelPD;
+        private Label _buildReanalysisCostLabel;
+        private VisualElement _buildNarrativePanel;
+        private Label _buildNarrativeText;
+
+        // [branch 0-2, node 0-4]
+        private readonly Button[,] _nodeButtons = new Button[3, 5];
+        private readonly Button[] _reanalysisButtons = new Button[3];
+
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region Model & Init State
+
+        private SH_UIStateModel _model;
         private bool _isInitialized;
 
         #endregion
@@ -113,9 +154,6 @@ namespace UI
 
         private void OnEnable()
         {
-            // If the model was already injected before this component enabled,
-            // subscribe immediately. Otherwise, InjectModel() will subscribe
-            // when it is called from SH_UIBridge.Awake().
             if (_model != null)
                 Subscribe();
         }
@@ -130,33 +168,19 @@ namespace UI
         // ─────────────────────────────────────────────────────────────────────
         #region Public API — Called by SH_UIBridge
 
-        /// <summary>
-        /// Injects the shared UIStateModel and activates the subscription.
-        /// Called by SH_UIBridge.Awake() before this component's OnEnable().
-        ///
-        /// If this method is called after OnEnable() (unusual load order),
-        /// it sets up subscriptions immediately so no events are dropped.
-        /// </summary>
-        /// <param name="model">
-        /// The model produced by SH_UIBridge. Must not be null.
-        /// </param>
         public void InjectModel(SH_UIStateModel model)
         {
             if (model == null)
             {
-                Debug.LogError("[SH_HUDController] InjectModel: model is null. " +
-                               "SH_UIBridge must create the model before calling InjectModel().");
+                Debug.LogError("[SH_HUDController] InjectModel: model is null.");
                 return;
             }
 
-            // Unsubscribe from a previous model if this is a hot-reload scenario.
             if (_model != null)
                 Unsubscribe();
 
             _model = model;
 
-            // If already enabled, subscribe now. If not yet enabled, OnEnable()
-            // will subscribe when it fires after Awake() completes.
             if (isActiveAndEnabled)
                 Subscribe();
         }
@@ -169,11 +193,9 @@ namespace UI
         private void Subscribe()
         {
             if (_model == null || _isInitialized) return;
-
-            // Cache element references once, before registering any callbacks
-            // that would try to use them.
             if (!CacheElements()) return;
 
+            // HUD events.
             _model.OnHPChanged += OnHPChanged;
             _model.OnEnergyChanged += OnEnergyChanged;
             _model.OnScrapChanged += OnScrapChanged;
@@ -182,11 +204,12 @@ namespace UI
             _model.OnInteractionFocusChanged += OnInteractionFocusChanged;
             _model.OnInteractionProgressChanged += OnInteractionProgressChanged;
 
-            // Sync the HUD to whatever values the model already holds.
-            // Without this, all bars show their default UXML values until
-            // the next gameplay event fires.
-            PushCurrentModelState();
+            // Build menu events.
+            _model.OnBuildMenuOpenChanged += OnBuildMenuOpenChanged;
+            _model.OnBuildTreeRefreshed += OnBuildTreeRefreshed;
+            _model.OnBuildNarrativeChanged += OnBuildNarrativeChanged;
 
+            PushCurrentModelState();
             _isInitialized = true;
         }
 
@@ -199,6 +222,12 @@ namespace UI
             _model.OnScrapChanged -= OnScrapChanged;
             _model.OnIdentityCoresChanged -= OnIdentityCoresChanged;
             _model.OnSurgeStateChanged -= OnSurgeStateChanged;
+            _model.OnInteractionFocusChanged -= OnInteractionFocusChanged;
+            _model.OnInteractionProgressChanged -= OnInteractionProgressChanged;
+
+            _model.OnBuildMenuOpenChanged -= OnBuildMenuOpenChanged;
+            _model.OnBuildTreeRefreshed -= OnBuildTreeRefreshed;
+            _model.OnBuildNarrativeChanged -= OnBuildNarrativeChanged;
 
             _isInitialized = false;
         }
@@ -208,59 +237,81 @@ namespace UI
         // ─────────────────────────────────────────────────────────────────────
         #region Element Caching
 
-        /// <summary>
-        /// Queries all required UXML elements by name and stores references.
-        /// Returns false if any critical element is missing, which prevents
-        /// subscriptions from being set up with broken references.
-        /// </summary>
         private bool CacheElements()
         {
             if (_document?.rootVisualElement == null)
             {
-                Debug.LogError("[SH_HUDController] UIDocument root is null. " +
-                               "Ensure HUD.uxml is assigned to the UIDocument component " +
-                               "and the document has fully loaded before Subscribe() runs.");
+                Debug.LogError("[SH_HUDController] UIDocument root is null.");
                 return false;
             }
 
             VisualElement root = _document.rootVisualElement;
 
+            // ── HUD elements ──────────────────────────────────────────────────
             _hpBar = root.Q<ProgressBar>(ElementHPBar);
             _energyBar = root.Q<ProgressBar>(ElementEnergyBar);
             _scrapLabel = root.Q<Label>(ElementScrapLabel);
             _icLabel = root.Q<Label>(ElementICLabel);
             _surgeIndicator = root.Q<VisualElement>(ElementSurgeIndicator);
-            _interactionContainer = root.Q<VisualElement>("interaction-container");
-            _interactionLabel = root.Q<Label>("interaction-label");
-            _interactionProgress = root.Q<ProgressBar>("interaction-progress");
+            _interactionContainer = root.Q<VisualElement>(ElementInteractionContainer);
+            _interactionLabel = root.Q<Label>(ElementInteractionLabel);
+            _interactionProgress = root.Q<ProgressBar>(ElementInteractionProgress);
 
             bool allFound = true;
+            if (_hpBar == null) { Debug.LogError($"[SH_HUDController] '{ElementHPBar}' not found."); allFound = false; }
+            if (_energyBar == null) { Debug.LogError($"[SH_HUDController] '{ElementEnergyBar}' not found."); allFound = false; }
+            if (_scrapLabel == null) { Debug.LogError($"[SH_HUDController] '{ElementScrapLabel}' not found."); allFound = false; }
+            if (_icLabel == null) { Debug.LogError($"[SH_HUDController] '{ElementICLabel}' not found."); allFound = false; }
+            if (_surgeIndicator == null) { Debug.LogError($"[SH_HUDController] '{ElementSurgeIndicator}' not found."); allFound = false; }
 
-            if (_hpBar == null)
+            // ── Build menu elements ───────────────────────────────────────────
+            _buildOverlay = root.Q<VisualElement>(ElementBuildOverlay);
+            _buildLabelHP = root.Q<Label>(ElementBuildLabelHP);
+            _buildLabelEnergy = root.Q<Label>(ElementBuildLabelEnergy);
+            _buildLabelScrap = root.Q<Label>(ElementBuildLabelScrap);
+            _buildLabelIC = root.Q<Label>(ElementBuildLabelIC);
+            _buildLabelPD = root.Q<Label>(ElementBuildLabelPD);
+            _buildReanalysisCostLabel = root.Q<Label>(ElementBuildReanalysisCost);
+            _buildNarrativePanel = root.Q<VisualElement>(ElementBuildNarrativePanel);
+            _buildNarrativeText = root.Q<Label>(ElementBuildNarrativeText);
+
+            if (_buildOverlay == null)
+                Debug.LogWarning($"[SH_HUDController] '{ElementBuildOverlay}' not found. " +
+                                 $"Build menu will not function.");
+
+            // Cache node buttons and register click callbacks.
+            for (int b = 0; b < 3; b++)
             {
-                Debug.LogError($"[SH_HUDController] Element '{ElementHPBar}' not found in HUD.uxml.");
-                allFound = false;
+                for (int n = 0; n < 5; n++)
+                {
+                    string btnName = $"node-{BranchNames[b]}-{n}";
+                    Button btn = root.Q<Button>(btnName);
+                    _nodeButtons[b, n] = btn;
+
+                    if (btn != null)
+                    {
+                        int capturedB = b;
+                        int capturedN = n;
+                        btn.RegisterCallback<ClickEvent>(_ =>
+                            OnBuildNodePressed?.Invoke((BuildBranch)capturedB, capturedN));
+                    }
+                }
+
+                string reaBtnName = $"reanalysis-{BranchNames[b]}";
+                Button reaBtn = root.Q<Button>(reaBtnName);
+                _reanalysisButtons[b] = reaBtn;
+
+                if (reaBtn != null)
+                {
+                    int capturedB = b;
+                    reaBtn.RegisterCallback<ClickEvent>(_ =>
+                        OnBuildReanalysisPressed?.Invoke((BuildBranch)capturedB));
+                }
             }
-            if (_energyBar == null)
-            {
-                Debug.LogError($"[SH_HUDController] Element '{ElementEnergyBar}' not found in HUD.uxml.");
-                allFound = false;
-            }
-            if (_scrapLabel == null)
-            {
-                Debug.LogError($"[SH_HUDController] Element '{ElementScrapLabel}' not found in HUD.uxml.");
-                allFound = false;
-            }
-            if (_icLabel == null)
-            {
-                Debug.LogError($"[SH_HUDController] Element '{ElementICLabel}' not found in HUD.uxml.");
-                allFound = false;
-            }
-            if (_surgeIndicator == null)
-            {
-                Debug.LogError($"[SH_HUDController] Element '{ElementSurgeIndicator}' not found in HUD.uxml.");
-                allFound = false;
-            }
+
+            Button closeBtn = root.Q<Button>(ElementBuildCloseBtn);
+            if (closeBtn != null)
+                closeBtn.RegisterCallback<ClickEvent>(_ => OnBuildMenuClosePressed?.Invoke());
 
             return allFound;
         }
@@ -268,71 +319,138 @@ namespace UI
         #endregion
 
         // ─────────────────────────────────────────────────────────────────────
-        #region Event Handlers
+        #region HUD Event Handlers
 
-        /// <summary>
-        /// Updates the HP progress bar fill.
-        /// ProgressBar.value in UI Toolkit represents a normalized fraction [0,1]
-        /// when lowValue = 0 and highValue = 1, which is the configuration in HUD.uxml.
-        /// </summary>
         private void OnHPChanged(float currentHP, float maxHP)
         {
             if (_hpBar == null) return;
             _hpBar.value = maxHP > 0f ? currentHP / maxHP : 0f;
         }
 
-        /// <summary>
-        /// Updates the Energy progress bar fill using the same normalized pattern.
-        /// The bar color shift from Cían (normal) to Magenta (surge) is handled
-        /// by OnSurgeStateChanged via CSS class toggling, not here.
-        /// </summary>
         private void OnEnergyChanged(float currentEnergy, float maxEnergy)
         {
             if (_energyBar == null) return;
             _energyBar.value = maxEnergy > 0f ? currentEnergy / maxEnergy : 0f;
         }
 
-        /// <summary>
-        /// Updates the Scrap counter label.
-        /// Format: "SC: 0" — prefix communicates resource type without an icon,
-        /// which is sufficient for this prototype step. The icon-based layout
-        /// is part of Step 2 (full HUD visual pass).
-        /// </summary>
         private void OnScrapChanged(float currentScrap)
         {
             if (_scrapLabel == null) return;
             _scrapLabel.text = $"SC: {Mathf.FloorToInt(currentScrap)}";
         }
 
-        /// <summary>
-        /// Updates the Identity Core counter label.
-        /// Format: "IC: 0" — same rationale as OnScrapChanged.
-        /// </summary>
         private void OnIdentityCoresChanged(int currentCores)
         {
             if (_icLabel == null) return;
             _icLabel.text = $"IC: {currentCores}";
         }
 
-        /// <summary>
-        /// Applies or removes CSS classes on the surge indicator element
-        /// to reflect the current Surge state.
-        ///
-        /// State matrix:
-        ///   surgeActive = true,  inCooldown = false → class "surge-active"   (Magenta)
-        ///   surgeActive = false, inCooldown = true  → class "surge-cooldown" (Orange)
-        ///   surgeActive = false, inCooldown = false → no class               (Transparent)
-        ///
-        /// CSS classes are defined in HUD.uss. Toggling via EnableInClassList
-        /// is the correct UI Toolkit pattern — it adds the class if the condition
-        /// is true, removes it if false, in a single call with no redundant DOM writes.
-        /// </summary>
         private void OnSurgeStateChanged(bool surgeActive, bool inCooldown)
         {
             if (_surgeIndicator == null) return;
-
             _surgeIndicator.EnableInClassList(CssSurgeActive, surgeActive);
             _surgeIndicator.EnableInClassList(CssSurgeCooldown, inCooldown && !surgeActive);
+        }
+
+        private void OnInteractionFocusChanged(bool isVisible, string targetName)
+        {
+            _isInteractionActive = isVisible;
+            if (_interactionContainer == null) return;
+            _interactionContainer.style.display = isVisible ? DisplayStyle.Flex : DisplayStyle.None;
+            if (isVisible && _interactionLabel != null)
+                _interactionLabel.text = targetName;
+        }
+
+        private void OnInteractionProgressChanged(float progress)
+        {
+            if (_interactionProgress != null)
+                _interactionProgress.value = progress * 100f;
+        }
+
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region Build Menu Event Handlers
+
+        private void OnBuildMenuOpenChanged(bool isOpen)
+        {
+            if (_buildOverlay == null) return;
+            _buildOverlay.style.display = isOpen ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        private void OnBuildTreeRefreshed()
+        {
+            if (_model == null) return;
+
+            // ── Resource chips ─────────────────────────────────────────────
+            if (_buildLabelHP != null)
+                _buildLabelHP.text = $"HP: {Mathf.FloorToInt(_model.CurrentHP)} / {Mathf.FloorToInt(_model.MaxHP)}";
+            if (_buildLabelEnergy != null)
+                _buildLabelEnergy.text = $"EN: {Mathf.FloorToInt(_model.CurrentEnergy)}";
+            if (_buildLabelScrap != null)
+                _buildLabelScrap.text = $"SC: {Mathf.FloorToInt(_model.CurrentScrap)}";
+            if (_buildLabelIC != null)
+                _buildLabelIC.text = $"IC: {_model.CurrentIdentityCores}";
+            if (_buildLabelPD != null)
+                _buildLabelPD.text = $"PD: {_model.BuildAvailablePD}";
+
+            // ── Node buttons ───────────────────────────────────────────────
+            for (int b = 0; b < 3; b++)
+            {
+                for (int n = 0; n < 5; n++)
+                {
+                    Button btn = _nodeButtons[b, n];
+                    if (btn == null) continue;
+
+                    SH_UIStateModel.BuildNodeDisplayData data =
+                        _model.GetNodeDisplay((BuildBranch)b, n);
+
+                    // Text.
+                    btn.text = data.State == SH_UIStateModel.BuildNodeDisplayState.Active
+                        ? $"✓  {data.NodeName}"
+                        : $"{data.NodeName}\n{data.CostLabel}";
+
+                    // CSS state classes — only one active at a time.
+                    btn.EnableInClassList(CssNodeActive,
+                        data.State == SH_UIStateModel.BuildNodeDisplayState.Active);
+                    btn.EnableInClassList(CssNodeNext,
+                        data.State == SH_UIStateModel.BuildNodeDisplayState.Next);
+                    btn.EnableInClassList(CssNodeUnavailable,
+                        data.State == SH_UIStateModel.BuildNodeDisplayState.Unavailable
+                     || data.State == SH_UIStateModel.BuildNodeDisplayState.Locked);
+
+                    // Interactable only when this is the next purchasable slot.
+                    btn.SetEnabled(data.State == SH_UIStateModel.BuildNodeDisplayState.Next);
+                }
+            }
+
+            // ── Reanalysis buttons ─────────────────────────────────────────
+            float reaCost = _model.BuildReanalysisCost;
+
+            if (_buildReanalysisCostLabel != null)
+                _buildReanalysisCostLabel.text = _model.BuildHasActiveBuild
+                    ? $"Reanalysis cost: {Mathf.FloorToInt(reaCost)} SC"
+                    : string.Empty;
+
+            for (int b = 0; b < 3; b++)
+            {
+                Button reaBtn = _reanalysisButtons[b];
+                if (reaBtn == null) continue;
+
+                bool canReanalyze = _model.BuildHasActiveBuild
+                                 && (int)_model.BuildActiveBranch != b
+                                 && _model.CurrentScrap >= reaCost;
+
+                reaBtn.SetEnabled(canReanalyze);
+            }
+        }
+
+        private void OnBuildNarrativeChanged(bool isVisible, string text)
+        {
+            if (_buildNarrativePanel == null) return;
+            _buildNarrativePanel.style.display = isVisible ? DisplayStyle.Flex : DisplayStyle.None;
+            if (_buildNarrativeText != null)
+                _buildNarrativeText.text = text ?? string.Empty;
         }
 
         #endregion
@@ -340,15 +458,6 @@ namespace UI
         // ─────────────────────────────────────────────────────────────────────
         #region Initial State Sync
 
-        /// <summary>
-        /// Reads the current values from the model and applies them to all
-        /// elements immediately after subscribing.
-        ///
-        /// This is necessary because the model may already hold non-zero values
-        /// (pushed by SH_UIBridge.PushInitialState()) before this controller
-        /// subscribes. Without this sync, the HUD would display stale default
-        /// values from UXML until the next gameplay event.
-        /// </summary>
         private void PushCurrentModelState()
         {
             OnHPChanged(_model.CurrentHP, _model.MaxHP);
@@ -356,7 +465,16 @@ namespace UI
             OnScrapChanged(_model.CurrentScrap);
             OnIdentityCoresChanged(_model.CurrentIdentityCores);
             OnSurgeStateChanged(_model.IsSurgeActive, _model.IsInSurgeCooldown);
+
+            // Build menu starts closed — no tree refresh needed at init.
+            if (_buildOverlay != null)
+                _buildOverlay.style.display = DisplayStyle.None;
         }
+
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region Interaction Position (LateUpdate)
 
         private void LateUpdate()
         {
@@ -367,20 +485,10 @@ namespace UI
                 _model.TargetWorldPosition + Vector3.up * 1.5f,
                 Camera.main);
 
-            _interactionContainer.style.left = screenPos.x - (_interactionContainer.layout.width / 2);
-            _interactionContainer.style.top = screenPos.y - (_interactionContainer.layout.height / 2);
-        }
-
-        private void OnInteractionFocusChanged(bool isVisible, string targetName)
-        {
-            _isInteractionActive = isVisible;
-            _interactionContainer.style.display = isVisible ? DisplayStyle.Flex : DisplayStyle.None;
-            if (isVisible) _interactionLabel.text = targetName;
-        }
-
-        private void OnInteractionProgressChanged(float progress)
-        {
-            if (_interactionProgress != null) _interactionProgress.value = progress * 100f;
+            _interactionContainer.style.left =
+                screenPos.x - (_interactionContainer.layout.width / 2f);
+            _interactionContainer.style.top =
+                screenPos.y - (_interactionContainer.layout.height / 2f);
         }
 
         #endregion

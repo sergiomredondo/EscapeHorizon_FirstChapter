@@ -59,6 +59,10 @@ Material:
         m_Texture: {fileID: 2800000, guid: fcfa0918a4007aa418a81188280d3c59, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Emissive_Tex:
+        m_Texture: {fileID: 2800000, guid: 84318ded3336de5479807c70e7bab34c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _HighColor_Tex:
         m_Texture: {fileID: 2800000, guid: 272ea476acc977a4981af8ea6f9a4daf, type: 3}
         m_Scale: {x: 1, y: 1}

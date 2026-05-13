@@ -114,7 +114,16 @@ namespace Core.StateMachine.States
             _impulseApplied = false;
 
             // --- Economic Gate ---
-            if (_actionData.staminaCost > 0f)
+            float finalCost = _actionData.staminaCost;
+
+            // Apply dash energy reduction from active build if this is a dash.
+            if (_actionData.staminaCost > 0f && _context.BuildSystem != null)
+            {
+                float reduction = _context.BuildSystem.GetCurrentDashCostReduction();
+                finalCost = _actionData.staminaCost * (1f - Mathf.Clamp01(reduction));
+            }
+
+            if (finalCost > 0f)
             {
                 SH_ResourceSystem resources = _context.Resources;
                 if (resources == null)
@@ -125,16 +134,13 @@ namespace Core.StateMachine.States
                 }
                 else
                 {
-                    bool consumed = resources.ConsumeResource(
-                        ResourceType.EnergyCore, _actionData.staminaCost);
-
+                    bool consumed = resources.ConsumeResource(ResourceType.EnergyCore, finalCost);
                     if (!consumed)
                     {
                         Debug.Log(
                             $"[SH_ActionState] '{_actionData.name}' aborted: " +
-                            $"need {_actionData.staminaCost:F1} EC, " +
+                            $"need {finalCost:F1} EC, " +
                             $"have {resources.CurrentEnergy:F1} EC.");
-
                         _abortedDueToInsufficientEnergy = true;
                         _context.HitboxController?.DeactivateHitDetection();
                         return;

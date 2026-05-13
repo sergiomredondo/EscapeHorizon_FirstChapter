@@ -46,9 +46,11 @@ Material:
     m_Ints: []
     m_Floats:
     - _HighColor_Power: 0.8
+    - _Use_BaseAs1st: 1
     m_Colors:
-    - _1st_ShadeColor: {r: 0.8235294, g: 0.60784316, b: 0.69248337, a: 1}
-    - _2nd_ShadeColor: {r: 0.13725491, g: 0.039215688, b: 0.06645613, a: 1}
-    - _HighColor: {r: 0.7019608, g: 0.23137257, b: 0.97647065, a: 1}
+    - _1st_ShadeColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
+    - _2nd_ShadeColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
+    - _Emissive_Color: {r: 7.9999995, g: 1.6335076, b: 7.9999995, a: 1}
+    - _HighColor: {r: 0.40789473, g: 0.25, b: 0.5, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

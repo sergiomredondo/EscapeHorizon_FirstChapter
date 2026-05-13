@@ -99,6 +99,12 @@ namespace Core.Input
         public bool SurgePressed { get; private set; }
 
         /// <summary>
+        /// True for the single frame the Menu button transitions to pressed. Reserved for future UI system integration.
+        /// Currently not consumed by any system, but can be checked by UI states to open menus when implemented.
+        /// </summary>
+        public bool MenuPressed { get; private set; }
+
+        /// <summary>
         /// True for the single frame the Scan button transitions to pressed. Used by SH_ScanController
         /// to initiate a scan action when the player presses the scan button. This flag should be consumed
         /// by calling ConsumeScanPressed() after processing the scan action to reset the state for future scan inputs.
@@ -136,6 +142,13 @@ namespace Core.Input
         /// <remarks>Call this method after processing a scan event to clear the scan pressed flag. This
         /// allows subsequent scan actions to be detected correctly.</remarks>
         public void ConsumeScanPressed() => ScanPressed = false;
+
+        /// <summary>
+        /// Resets the menu pressed state to indicate that the menu is no longer being pressed.
+        /// </summary>
+        /// <remarks>Call this method after handling a menu press event to clear the pressed state. This
+        /// allows subsequent menu press events to be detected correctly.</remarks>
+        public void ConsumeMenuPressed() => MenuPressed = false;
 
         #endregion
 
@@ -255,7 +268,11 @@ namespace Core.Input
         }
 
         /// <summary> Menu action — reserved for UI system. </summary>
-        public void OnMenu(InputAction.CallbackContext context) { }
+        public void OnMenu(InputAction.CallbackContext context)
+        {
+            if (context.phase == InputActionPhase.Started)
+                MenuPressed = true;
+        }
 
         #endregion
     }

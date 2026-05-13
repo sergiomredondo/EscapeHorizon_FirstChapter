@@ -1,3 +1,4 @@
+using Game.Progression.Data;
 using System;
 using UnityEngine;
 
@@ -216,6 +217,139 @@ namespace UI
         public void UpdateTargetPosition(Vector3 position)
         {
             _targetWorldPosition = position;
+        }
+
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region Build Menu
+
+        // ── Node display state ────────────────────────────────────────────────
+
+        /// <summary>
+        /// Represents the visual state of a single node button in the Analysis Tree.
+        /// </summary>
+        public enum BuildNodeDisplayState
+        {
+            /// <summary> Node is in the active branch and has been purchased. </summary>
+            Active,
+            /// <summary> Node is the next purchasable slot in the active (or unstarted) branch. </summary>
+            Next,
+            /// <summary> Node is in a non-active branch while another branch is active. </summary>
+            Unavailable,
+            /// <summary> Node requires a previous node to be purchased first. </summary>
+            Locked
+        }
+
+        /// <summary> Snapshot of display data for a single node button. </summary>
+        public struct BuildNodeDisplayData
+        {
+            public string NodeName;
+            public string CostLabel;
+            public BuildNodeDisplayState State;
+        }
+
+        // ── Events ────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Fired when the build menu overlay should appear or disappear.
+        /// Parameters: (bool isOpen).
+        /// </summary>
+        public event Action<bool> OnBuildMenuOpenChanged;
+
+        /// <summary>
+        /// Fired when any aspect of the tree state changes (node activated,
+        /// reanalysis performed, build deactivated). Controller reads all
+        /// public Build properties after receiving this event.
+        /// </summary>
+        public event Action OnBuildTreeRefreshed;
+
+        /// <summary>
+        /// Fired when the captive memory narrative panel should show or hide.
+        /// Parameters: (bool isVisible, string narrativeText).
+        /// </summary>
+        public event Action<bool, string> OnBuildNarrativeChanged;
+
+        // ── Backing fields ────────────────────────────────────────────────────
+
+        private bool _buildMenuOpen;
+        private BuildBranch _buildActiveBranch;
+        private int _buildActiveNodeCount;
+        private int _buildAvailablePD;
+        private float _buildReanalysisCost;
+        private bool _buildHasActiveBuild;
+
+        // Node display data — 3 branches × 5 nodes.
+        private readonly BuildNodeDisplayData[,] _nodeDisplayData =
+            new BuildNodeDisplayData[3, 5];
+
+        // ── Public read-only properties ───────────────────────────────────────
+
+        public bool BuildMenuOpen => _buildMenuOpen;
+        public BuildBranch BuildActiveBranch => _buildActiveBranch;
+        public int BuildActiveNodeCount => _buildActiveNodeCount;
+        public int BuildAvailablePD => _buildAvailablePD;
+        public float BuildReanalysisCost => _buildReanalysisCost;
+        public bool BuildHasActiveBuild => _buildHasActiveBuild;
+
+        /// <summary>
+        /// Returns the cached display data for the given branch and zero-based node index.
+        /// </summary>
+        public BuildNodeDisplayData GetNodeDisplay(BuildBranch branch, int index)
+        {
+            int b = (int)branch;
+            if (b < 0 || b > 2 || index < 0 || index > 4)
+                return default;
+            return _nodeDisplayData[b, index];
+        }
+
+        // ── Setters ───────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Opens or closes the build menu overlay.
+        /// Fires OnBuildMenuOpenChanged only on actual state transition.
+        /// </summary>
+        public void SetBuildMenuOpen(bool isOpen)
+        {
+            if (_buildMenuOpen == isOpen) return;
+            _buildMenuOpen = isOpen;
+            OnBuildMenuOpenChanged?.Invoke(_buildMenuOpen);
+        }
+
+        /// <summary>
+        /// Pushes a full snapshot of the Analysis Tree state to the model.
+        /// Called by SH_UIBridge whenever the build system reports any change.
+        /// Fires OnBuildTreeRefreshed unconditionally so the controller always
+        /// redraws after a transaction, even if aggregate values are unchanged.
+        /// </summary>
+        public void SetBuildTreeState(
+            BuildBranch activeBranch,
+            int activeNodeCount,
+            bool hasActiveBuild,
+            int availablePD,
+            float reanalysisCost,
+            BuildNodeDisplayData[,] nodeData)
+        {
+            _buildActiveBranch = activeBranch;
+            _buildActiveNodeCount = activeNodeCount;
+            _buildHasActiveBuild = hasActiveBuild;
+            _buildAvailablePD = availablePD;
+            _buildReanalysisCost = reanalysisCost;
+
+            // Copy node display data into the backing array.
+            for (int b = 0; b < 3; b++)
+                for (int n = 0; n < 5; n++)
+                    _nodeDisplayData[b, n] = nodeData[b, n];
+
+            OnBuildTreeRefreshed?.Invoke();
+        }
+
+        /// <summary>
+        /// Shows or hides the captive memory narrative panel.
+        /// </summary>
+        public void SetBuildNarrative(bool isVisible, string text)
+        {
+            OnBuildNarrativeChanged?.Invoke(isVisible, text);
         }
 
         #endregion

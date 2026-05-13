@@ -4,42 +4,30 @@ using Game.Combat.Core;
 using Game.Economy;
 using Game.Economy.Data;
 using Game.Interaction;
+using Game.Progression;
+using Game.Progression.Data;
 using Game.World;
 using System;
 using UnityEngine;
-using UnityEngine.Experimental.GlobalIllumination;
 
 namespace UI
 {
     /// <summary>
     /// The only coupling point between gameplay systems and the UI layer.
-    /// Subscribes to events from SH_HealthComponent, SH_ResourceSystem, and
-    /// SH_PlayerCombatController, then translates those events into setter calls
-    /// on the SH_UIStateModel so HUD controllers can update reactively.
     ///
-    /// Initialization order:
-    ///   1. SH_UIBridge.Awake()     — creates the SH_UIStateModel instance and
-    ///                                assigns it to the HUD controller.
-    ///   2. SH_PlayerStateMachine.Awake() — builds SH_PlayerContext and wires
-    ///                                      all gameplay subsystems.
-    ///   3. SH_UIBridge.Start()     — calls Initialize() which subscribes to the
-    ///                                now-ready context. Start() always runs after
-    ///                                all Awake() calls in the same frame, so the
-    ///                                context is guaranteed to exist by then.
+    /// Extended for the Analysis Tree build menu (GDD §5.4.2):
+    ///   Polls MenuPressed each frame alongside Surge state.
+    ///   Owns Time.timeScale management (0 when menu open, 1 when closed).
+    ///   Subscribes to SH_HUDController button events and translates them
+    ///   into SH_BuildSystem transactions, then pushes the resulting tree
+    ///   snapshot back to SH_UIStateModel.
+    ///   SH_BuildMenuController is removed — this bridge absorbs its role.
     ///
     /// Responsibility boundaries:
-    ///   OWNS: Subscription lifecycle (subscribe in Start, unsubscribe in OnDestroy).
-    ///   OWNS: Initial state push to the model after subscribing.
-    ///   OWNS: Per-frame Surge state polling (no event available from combat controller).
-    ///   DOES NOT OWN: How the model values are rendered (SH_HUDController).
-    ///   DOES NOT OWN: Any gameplay logic — read-only access to all systems.
-    ///
-    /// Scene setup:
-    ///   Add this component to a dedicated [UI] GameObject alongside SH_HUDController.
-    ///   Assign the SH_HUDController reference in the Inspector so Awake() can
-    ///   inject the model before OnEnable() fires on that controller.
-    ///   Leave _playerStateMachine unassigned; it is resolved automatically via
-    ///   FindFirstObjectByType in Start().
+    ///   OWNS: Subscription lifecycle, initial state push, Surge polling,
+    ///         Menu input polling, build menu open/close, build transactions.
+    ///   DOES NOT OWN: How values are rendered (SH_HUDController).
+    ///   DOES NOT OWN: State values (SH_UIStateModel).
     /// </summary>
     [DisallowMultipleComponent]
     public class SH_UIBridge : MonoBehaviour
@@ -48,15 +36,12 @@ namespace UI
         #region Inspector References
 
         [Header("UI Layer")]
-
-        [Tooltip("The HUD controller that will consume the UIStateModel produced by this bridge. " +
-                 "Assign in the Inspector so the model is injected before the controller enables.")]
+        [Tooltip("HUD controller on the [UI] GameObject. " +
+                 "Assign in Inspector so the model is injected before OnEnable().")]
         [SerializeField] private SH_HUDController _hudController;
 
         [Header("Optional Override")]
-
-        [Tooltip("Leave unassigned — resolved automatically via FindFirstObjectByType in Start(). " +
-                 "Assign manually only for prototype scenes where auto-resolution would be ambiguous.")]
+        [Tooltip("Leave unassigned — resolved via FindFirstObjectByType in Start().")]
         [SerializeField] private SH_PlayerStateMachine _playerStateMachine;
 
         #endregion
@@ -64,42 +49,19 @@ namespace UI
         // ─────────────────────────────────────────────────────────────────────
         #region Runtime State
 
-        /// <summary>
-        /// The model owned and populated by this bridge.
-        /// Created in Awake() and injected into SH_HUDController before
-        /// that controller's OnEnable() fires.
-        /// </summary>
         private SH_UIStateModel _model;
-
-        /// <summary>
-        /// Cached reference to the player context resolved in Start().
-        /// All gameplay event subscriptions are made through this reference.
-        /// </summary>
         private SH_PlayerContext _context;
-
-        /// <summary>
-        /// Guards Initialize() and Update() against executing before the
-        /// context has been successfully resolved and subscriptions set up.
-        /// </summary>
         private bool _isInitialized;
+        private bool _buildMenuOpen;
 
-        // ─── Stored delegate references ───────────────────────────────────────
-        // Storing delegates explicitly allows clean -= unsubscription in OnDestroy.
-        // Without stored references, lambda closures registered with += cannot be
-        // removed, causing the bridge to retain the context and prevent GC.
-
+        // ── Stored delegate references ─────────────────────────────────────
         private Action<float, float, float> _onDamageReceivedHandler;
         private Action<float, float, float> _onRepairedHandler;
         private Action<ResourceType, float> _onResourceChangedHandler;
 
-        // ─── Surge polling cache ──────────────────────────────────────────────
-        // SH_PlayerCombatController does not expose events for Surge state changes.
-        // We poll the two bool properties each frame and push to the model only
-        // when a transition is detected, keeping the model's change guard effective.
-
+        // ── Surge polling cache ────────────────────────────────────────────
         private bool _lastSurgeActive;
         private bool _lastSurgeInCooldown;
-
 
         #endregion
 
@@ -108,36 +70,28 @@ namespace UI
 
         private void Awake()
         {
-            // Create the model before any controller calls OnEnable().
-            // This guarantees that when SH_HUDController subscribes in its own
-            // OnEnable(), the model instance already exists.
             _model = new SH_UIStateModel();
 
             if (_hudController == null)
             {
-                Debug.LogWarning("[SH_UIBridge] SH_HUDController reference is not assigned. " +
-                                 "Assign it in the Inspector so the model can be injected " +
-                                 "before the controller subscribes in OnEnable().");
+                Debug.LogWarning("[SH_UIBridge] SH_HUDController not assigned.");
                 return;
             }
+
             _hudController.InjectModel(_model);
         }
 
         private void Start()
         {
-            // Resolve the StateMachine if not manually assigned.
             if (_playerStateMachine == null)
                 _playerStateMachine = FindFirstObjectByType<SH_PlayerStateMachine>();
 
             if (_playerStateMachine == null)
             {
-                Debug.LogError("[SH_UIBridge] SH_PlayerStateMachine not found in scene. " +
-                               "Add the component to the Bear GameObject or assign it manually.");
+                Debug.LogError("[SH_UIBridge] SH_PlayerStateMachine not found in scene.");
                 return;
             }
 
-            // The context is built inside SH_PlayerStateMachine.Awake(), which has
-            // already completed by the time Start() runs. Accessing it here is safe.
             Initialize(_playerStateMachine.GetContext());
         }
 
@@ -146,11 +100,16 @@ namespace UI
             if (!_isInitialized) return;
 
             PollSurgeState();
+            PollMenuInput();
         }
 
         private void OnDestroy()
         {
             Unsubscribe();
+
+            // Restore timescale in case the bridge is destroyed while menu is open.
+            if (_buildMenuOpen)
+                Time.timeScale = 1f;
         }
 
         #endregion
@@ -158,20 +117,11 @@ namespace UI
         // ─────────────────────────────────────────────────────────────────────
         #region Initialization
 
-        /// <summary>
-        /// Wires all gameplay event subscriptions and performs the initial state push.
-        /// Called from Start() once the context is confirmed to exist.
-        /// </summary>
-        /// <param name="context">
-        /// The player context built by SH_PlayerStateMachine. Must not be null.
-        /// </param>
         private void Initialize(SH_PlayerContext context)
         {
             if (context == null)
             {
-                Debug.LogError("[SH_UIBridge] Initialize: context is null. " +
-                               "Ensure SH_PlayerStateMachine.Awake() has run and GetContext() " +
-                               "returns a valid SH_PlayerContext before Start() fires.");
+                Debug.LogError("[SH_UIBridge] Initialize: context is null.");
                 return;
             }
 
@@ -190,43 +140,41 @@ namespace UI
 
         private void Subscribe()
         {
-            // ─── Health ───────────────────────────────────────────────────────
-            // OnDamageReceived: (newDurability, maxDurability, damageTaken)
+            // ── Health ────────────────────────────────────────────────────────
             _onDamageReceivedHandler = (newDurability, maxDurability, _) =>
                 _model.SetHP(newDurability, maxDurability);
 
-            _context.Health.OnDamageReceived += _onDamageReceivedHandler;
-
-            // OnRepaired: (newDurability, maxDurability, amountRepaired)
             _onRepairedHandler = (newDurability, maxDurability, _) =>
                 _model.SetHP(newDurability, maxDurability);
 
+            _context.Health.OnDamageReceived += _onDamageReceivedHandler;
             _context.Health.OnRepaired += _onRepairedHandler;
 
-            // ─── Resources ────────────────────────────────────────────────────
-            // OnResourceChanged: (ResourceType type, float newValue)
-            // A single handler routes all three resource types to their
-            // dedicated model setters with a type-switch, avoiding three
-            // separate lambda allocations.
+            // ── Resources ─────────────────────────────────────────────────────
             _onResourceChangedHandler = OnResourceChanged;
             _context.Resources.OnResourceChanged += _onResourceChangedHandler;
-            _context.Interaction.OnFocusChanged += OnFocusChanged;
-            _context.Interaction.OnHoldProgress += (progress) =>
-            {
-                var target = _context.Interaction.FocusedTarget;
-                var scannable = (target as MonoBehaviour)?.GetComponent<SH_ScannableObject>();
 
-                if (scannable != null && scannable.IsRevealed)
-                {
-                    _model.SetInteractionProgress(progress);
-                }
-                else
-                {
-                    _model.SetInteractionProgress(0f);
-                }
-            };
+            // ── Interaction ───────────────────────────────────────────────────
+            _context.Interaction.OnFocusChanged += OnFocusChanged;
+            _context.Interaction.OnHoldProgress += _model.SetInteractionProgress;
             _context.Interaction.OnHoldInterrupted += OnInteractionReset;
             _context.Interaction.OnInteractionCompleted += OnInteractionCompleted;
+
+            // ── Build system ──────────────────────────────────────────────────
+            if (_context.BuildSystem != null)
+            {
+                _context.BuildSystem.OnNodeActivated += OnBuildNodeActivated;
+                _context.BuildSystem.OnBuildDeactivated += OnBuildDeactivatedHandler;
+                _context.BuildSystem.OnActivationFailed += OnBuildActivationFailed;
+            }
+
+            // ── HUD controller button events ──────────────────────────────────
+            if (_hudController != null)
+            {
+                _hudController.OnBuildNodePressed += OnHUDBuildNodePressed;
+                _hudController.OnBuildReanalysisPressed += OnHUDBuildReanalysisPressed;
+                _hudController.OnBuildMenuClosePressed += CloseBuildMenu;
+            }
         }
 
         private void Unsubscribe()
@@ -244,36 +192,41 @@ namespace UI
             if (_onResourceChangedHandler != null)
             {
                 _context.Resources.OnResourceChanged -= _onResourceChangedHandler;
-                _context.Interaction.OnFocusChanged -= OnFocusChanged;
-                _context.Interaction.OnHoldProgress -= _model.SetInteractionProgress;
-                _context.Interaction.OnHoldInterrupted -= OnInteractionReset;
-                _context.Interaction.OnInteractionCompleted -= OnInteractionCompleted;
                 _onResourceChangedHandler = null;
+            }
+
+            _context.Interaction.OnFocusChanged -= OnFocusChanged;
+            _context.Interaction.OnHoldProgress -= _model.SetInteractionProgress;
+            _context.Interaction.OnHoldInterrupted -= OnInteractionReset;
+            _context.Interaction.OnInteractionCompleted -= OnInteractionCompleted;
+
+            if (_context.BuildSystem != null)
+            {
+                _context.BuildSystem.OnNodeActivated -= OnBuildNodeActivated;
+                _context.BuildSystem.OnBuildDeactivated -= OnBuildDeactivatedHandler;
+                _context.BuildSystem.OnActivationFailed -= OnBuildActivationFailed;
+            }
+
+            if (_hudController != null)
+            {
+                _hudController.OnBuildNodePressed -= OnHUDBuildNodePressed;
+                _hudController.OnBuildReanalysisPressed -= OnHUDBuildReanalysisPressed;
+                _hudController.OnBuildMenuClosePressed -= CloseBuildMenu;
             }
         }
 
         #endregion
 
         // ─────────────────────────────────────────────────────────────────────
-        #region Event Handlers
+        #region Event Handlers — Gameplay
 
-        /// <summary>
-        /// Routes incoming resource change notifications to the correct model setter.
-        /// Called by SH_ResourceSystem.OnResourceChanged for all three resource types.
-        /// The switch avoids per-type delegate allocations and keeps the routing logic
-        /// in one readable place.
-        /// </summary>
         private void OnResourceChanged(ResourceType type, float newValue)
         {
             switch (type)
             {
                 case ResourceType.EnergyCore:
-                    // Energy max comes from the settings asset, which never changes at runtime.
-                    // Reading it here on every regen tick (multiple times per second) is safe
-                    // because ScriptableObject field access has negligible cost.
                     float maxEnergy = _context.EconomySettings != null
-                        ? _context.EconomySettings.maxEnergy
-                        : 0f;
+                        ? _context.EconomySettings.maxEnergy : 0f;
                     _model.SetEnergy(newValue, maxEnergy);
                     break;
 
@@ -282,12 +235,189 @@ namespace UI
                     break;
 
                 case ResourceType.IdentityCore:
-                    // SH_ResourceSystem fires newValue as float for IC despite the
-                    // internal counter being an int (cast for interface uniformity).
-                    // We cast back to int here for the model, which stores it correctly.
                     _model.SetIdentityCores((int)newValue);
                     break;
             }
+
+            // If the menu is open, refresh resource chips on any resource change.
+            if (_buildMenuOpen)
+                PushBuildTreeState();
+        }
+
+        private void OnFocusChanged(IInteractable target)
+        {
+            bool hasTarget = target != null && target.IsAvailable;
+            bool shouldShowUI = false;
+            string targetName = string.Empty;
+
+            if (hasTarget)
+            {
+                var scannable = (target as UnityEngine.MonoBehaviour)
+                    ?.GetComponent<SH_ScannableObject>();
+                if (scannable != null && scannable.IsRevealed)
+                {
+                    shouldShowUI = true;
+                    targetName = target.ToString();
+                }
+            }
+
+            _model.SetInteractionFocus(shouldShowUI,
+                shouldShowUI ? targetName : string.Empty);
+            if (!shouldShowUI) _model.SetInteractionProgress(0f);
+        }
+
+        private void OnInteractionReset() => _model.SetInteractionProgress(0f);
+
+        private void OnInteractionCompleted(IInteractable _)
+        {
+            _model.SetInteractionProgress(0f);
+            _model.SetInteractionFocus(false, string.Empty);
+        }
+
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region Event Handlers — Build System
+
+        private void OnBuildNodeActivated(BuildBranch branch, int count)
+        {
+            PushBuildTreeState();
+        }
+
+        private void OnBuildDeactivatedHandler()
+        {
+            PushBuildTreeState();
+        }
+
+        private void OnBuildActivationFailed(BuildBranch branch, int index)
+        {
+            // Refresh so the UI reflects the unmet cost without any change.
+            PushBuildTreeState();
+        }
+
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region Event Handlers — HUD Controller Buttons
+
+        private void OnHUDBuildNodePressed(BuildBranch branch, int zeroBasedIndex)
+        {
+            if (_context?.BuildSystem == null) return;
+
+            bool activated = _context.BuildSystem.TryActivateNextNode(branch);
+
+            if (activated)
+            {
+                // Show captive memory narrative for the node just activated.
+                SH_BuildNodeData node =
+                    _context.BuildSystem.GetNode(branch, zeroBasedIndex);
+
+                if (node != null && !string.IsNullOrEmpty(node.captiveMemoryText))
+                    _model.SetBuildNarrative(true, node.captiveMemoryText);
+                else
+                    _model.SetBuildNarrative(false, string.Empty);
+            }
+
+            PushBuildTreeState();
+        }
+
+        private void OnHUDBuildReanalysisPressed(BuildBranch branch)
+        {
+            if (_context?.BuildSystem == null) return;
+            _context.BuildSystem.TryReanalyze(branch);
+            _model.SetBuildNarrative(false, string.Empty);
+            PushBuildTreeState();
+        }
+
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region Build Menu Open / Close
+
+        public void OpenBuildMenu()
+        {
+            if (_buildMenuOpen) return;
+            _buildMenuOpen = true;
+
+            Time.timeScale = 0f;
+
+            _model.SetBuildNarrative(false, string.Empty);
+            PushBuildTreeState();
+            _model.SetBuildMenuOpen(true);
+        }
+
+        public void CloseBuildMenu()
+        {
+            if (!_buildMenuOpen) return;
+            _buildMenuOpen = false;
+
+            Time.timeScale = 1f;
+
+            _model.SetBuildNarrative(false, string.Empty);
+            _model.SetBuildMenuOpen(false);
+        }
+
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region Build Tree State Push
+
+        private void PushBuildTreeState()
+        {
+            if (_context?.BuildSystem == null || _model == null) return;
+
+            SH_BuildSystem build = _context.BuildSystem;
+
+            SH_UIStateModel.BuildNodeDisplayData[,] nodeData =
+                new SH_UIStateModel.BuildNodeDisplayData[3, 5];
+
+            for (int b = 0; b < 3; b++)
+            {
+                BuildBranch branch = (BuildBranch)b;
+
+                for (int n = 0; n < 5; n++)
+                {
+                    SH_BuildNodeData node = build.GetNode(branch, n);
+
+                    SH_UIStateModel.BuildNodeDisplayState state;
+
+                    if (build.HasActiveBuild && branch != build.ActiveBranch)
+                    {
+                        state = SH_UIStateModel.BuildNodeDisplayState.Unavailable;
+                    }
+                    else if (n < build.ActiveNodeCount)
+                    {
+                        state = SH_UIStateModel.BuildNodeDisplayState.Active;
+                    }
+                    else if (n == build.ActiveNodeCount)
+                    {
+                        state = SH_UIStateModel.BuildNodeDisplayState.Next;
+                    }
+                    else
+                    {
+                        state = SH_UIStateModel.BuildNodeDisplayState.Locked;
+                    }
+
+                    string costLabel = string.Empty;
+                    if (node != null && state == SH_UIStateModel.BuildNodeDisplayState.Next)
+                        costLabel = $"{node.pdCost} PD  /  {node.scrapCost:F0} SC";
+
+                    nodeData[b, n] = new SH_UIStateModel.BuildNodeDisplayData
+                    {
+                        NodeName = node != null ? node.nodeName : $"Node {n + 1}",
+                        CostLabel = costLabel,
+                        State = state
+                    };
+                }
+            }
+
+            _model.SetBuildTreeState(
+                build.ActiveBranch,
+                build.ActiveNodeCount,
+                build.HasActiveBuild,
+                _context.Resources.AvailableDevelopmentPoints,
+                build.GetReanalysisCost(),
+                nodeData);
         }
 
         #endregion
@@ -295,16 +425,6 @@ namespace UI
         // ─────────────────────────────────────────────────────────────────────
         #region Per-Frame Polling
 
-        /// <summary>
-        /// Polls SH_PlayerCombatController for Surge state changes each frame.
-        /// Pushes to the model only when a transition is detected so the model's
-        /// internal equality guard prevents redundant event firing.
-        ///
-        /// This polling approach is used because SH_PlayerCombatController exposes
-        /// IsSurgeActive and IsInSurgeCooldown as read-only properties without
-        /// dedicated change events. Adding events to that system is deferred to
-        /// a later stage when the Surge bar accumulation system is implemented.
-        /// </summary>
         private void PollSurgeState()
         {
             UpdateFocusUIOnStateChange();
@@ -325,7 +445,8 @@ namespace UI
             var target = _context.Interaction.FocusedTarget;
             if (target != null)
             {
-                var scannable = (target as MonoBehaviour)?.GetComponent<SH_ScannableObject>();
+                var scannable = (target as UnityEngine.MonoBehaviour)
+                    ?.GetComponent<SH_ScannableObject>();
                 bool isRevealed = scannable != null && scannable.IsRevealed;
 
                 if (isRevealed)
@@ -345,12 +466,26 @@ namespace UI
             }
         }
 
+        private void PollMenuInput()
+        {
+            if (_context?.Input == null) return;
+
+            if (!_context.Input.MenuPressed) return;
+            _context.Input.ConsumeMenuPressed();
+
+            if (_buildMenuOpen)
+                CloseBuildMenu();
+            else
+                OpenBuildMenu();
+        }
+
         private void UpdateFocusUIOnStateChange()
         {
             var target = _context?.Interaction.FocusedTarget;
             if (target == null) return;
 
-            var scannable = (target as MonoBehaviour)?.GetComponent<SH_ScannableObject>();
+            var scannable = (target as UnityEngine.MonoBehaviour)
+                ?.GetComponent<SH_ScannableObject>();
             if (scannable == null) return;
 
             OnFocusChanged(target);
@@ -361,70 +496,31 @@ namespace UI
         // ─────────────────────────────────────────────────────────────────────
         #region Initial State Push
 
-        /// <summary>
-        /// Pushes the current gameplay state to the model immediately after subscribing.
-        /// Without this, the HUD would show zeroed values until the first event fires,
-        /// which could be several seconds into gameplay if the player does not take
-        /// damage or collect resources immediately.
-        /// </summary>
         private void PushInitialState()
         {
-            // HP
+            // HP.
             _model.SetHP(
                 _context.Health.CurrentDurability,
                 _context.Health.MaxDurability);
 
-            // Energy
+            // Energy.
             float maxEnergy = _context.EconomySettings != null
-                ? _context.EconomySettings.maxEnergy
-                : 0f;
+                ? _context.EconomySettings.maxEnergy : 0f;
             _model.SetEnergy(_context.Resources.CurrentEnergy, maxEnergy);
 
-            // Scrap
+            // Scrap.
             _model.SetScrap(_context.Resources.CurrentScrap);
 
-            // Identity Cores
+            // Identity Cores.
             _model.SetIdentityCores(_context.Resources.CurrentIdentityCores);
 
-            // Surge (cache initial values to avoid a false-positive on first PollSurgeState)
+            // Surge.
             _lastSurgeActive = _context.CombatController.IsSurgeActive;
             _lastSurgeInCooldown = _context.CombatController.IsInSurgeCooldown;
             _model.SetSurgeState(_lastSurgeActive, _lastSurgeInCooldown);
-        }
 
-        #endregion
-
-        #region Interaction Event Handlers
-
-        private void OnFocusChanged(IInteractable target)
-        {
-            bool hasTarget = target != null && target.IsAvailable;
-            bool shouldShowUI = false;
-            string targetName = string.Empty;
-
-            if (hasTarget)
-            {
-                var scannable = (target as MonoBehaviour)?.GetComponent<SH_ScannableObject>();
-                if (scannable != null && scannable.IsRevealed)
-                {
-                    shouldShowUI = true;
-                    targetName = target.ToString();
-                }
-            }
-
-            _model.SetInteractionFocus(shouldShowUI, shouldShowUI ? targetName : string.Empty);
-            if (!shouldShowUI) _model.SetInteractionProgress(0f);
-        }
-
-        private void OnInteractionReset()
-        {
-            _model.SetInteractionProgress(0f);
-        }
-
-        private void OnInteractionCompleted(IInteractable target)
-        {
-            _model.SetInteractionProgress(0f);
-            _model.SetInteractionFocus(false, string.Empty);
+            // Build menu — push initial tree state (menu stays closed).
+            PushBuildTreeState();
         }
 
         #endregion

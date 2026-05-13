@@ -97,7 +97,7 @@ Material:
     m_Floats:
     - _AlphaClip: 0
     - _AlphaToMask: 0
-    - _Animation_Speed: 0.2
+    - _Animation_Speed: 0.116
     - _Animation_Speed_2: -0.16
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
@@ -112,19 +112,19 @@ Material:
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
-    - _FinalBrightness: 1.5
+    - _FinalBrightness: 1.81
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _Metallic: 0
     - _NoisePow: 0.7
-    - _NoiseScale: 9.5
+    - _NoiseScale: 8
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
-    - _RimBrightness: 0.5
+    - _RimBrightness: 12
     - _RotationSpeed: 1
     - _Second_NoisePow: 1.51
     - _Second_NoiseScale: 15.59
@@ -141,8 +141,8 @@ Material:
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
-    - Color_85C936A7: {r: 1, g: 0.8440896, b: 0, a: 0}
-    - Color_A488C782: {r: 0.4716981, g: 0.04829874, b: 0, a: 0}
+    - Color_85C936A7: {r: 0.4320745, g: 2, b: 0, a: 0}
+    - Color_A488C782: {r: 0, g: 3.764706, b: 0.03201563, a: 0}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}

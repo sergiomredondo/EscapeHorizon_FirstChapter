@@ -43,6 +43,10 @@ namespace Game.Economy
         /// <summary> Total Development Points (DP) spent across all sessions. Drives cost curves. </summary>
         private int _totalDPSpent;
 
+        /// <summary> Total Development Points earned across all sessions. Used for UI display and analytics. </summary>
+        private int _totalDPEarned;
+        private int _dpSpentOnActiveBuild;
+
         /// <summary>
         /// Active multiplier on energy regeneration rate.
         /// Default is 1.0. Modified by SH_EconomicEventManager for Energy Flux events.
@@ -89,6 +93,10 @@ namespace Game.Economy
 
         /// <summary> Total Development Points spent. Used by SH_ProgressionCalculator. </summary>
         public int TotalDPSpent => _totalDPSpent;
+
+        /// <summary> Gets the total number of DP (Development Points) earned. </summary>
+        public int TotalDPEarned => _totalDPEarned;
+        public int AvailableDevelopmentPoints => _totalDPEarned - _dpSpentOnActiveBuild;
 
         /// <summary> Active energy regeneration modifier. Exposed for UI diagnostic display. </summary>
         public float EnergyRegenModifier => _energyRegenModifier;
@@ -329,6 +337,7 @@ namespace Game.Economy
 
                 _currentIdentityCores -= Mathf.CeilToInt(costForNextDP);
                 _totalDPSpent++;
+                _totalDPEarned++;
                 dpGained++;
             }
 
@@ -481,6 +490,17 @@ namespace Game.Economy
         private void Debug_PurgeCores()
         {
             PurgeCores();
+        }
+
+        public void SpendDevelopmentPoint(int amount)
+        {
+            _dpSpentOnActiveBuild = Mathf.Min(
+                _dpSpentOnActiveBuild + amount, _totalDPEarned);
+        }
+
+        public void ReturnDevelopmentPoints(int amount)
+        {
+            _dpSpentOnActiveBuild = Mathf.Max(0, _dpSpentOnActiveBuild - amount);
         }
 
         #endregion

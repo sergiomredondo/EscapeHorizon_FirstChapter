@@ -54,25 +54,25 @@ VisualEffect:
       - m_Value: 0.15
         m_Name: HaloBrightness
         m_Overridden: 1
-      - m_Value: 0.9
+      - m_Value: 1
         m_Name: AttenuationLimit
         m_Overridden: 1
-      - m_Value: 30
+      - m_Value: 1
         m_Name: Trail Spawn Raite
         m_Overridden: 1
       - m_Value: 4
         m_Name: PulsePeriod
         m_Overridden: 1
-      - m_Value: 3
+      - m_Value: 90
         m_Name: Trail Size
         m_Overridden: 1
-      - m_Value: 1.5
+      - m_Value: 0.3
         m_Name: Trail Life Time
         m_Overridden: 1
       - m_Value: 2
         m_Name: Trail radius
         m_Overridden: 1
-      - m_Value: 2.84
+      - m_Value: 2
         m_Name: HaloSize
         m_Overridden: 1
     m_Vector2f:
@@ -81,7 +81,7 @@ VisualEffect:
       m_Array: []
     m_Vector4f:
       m_Array:
-      - m_Value: {x: 2.908265, y: 3.3789673, z: 0.49409422, w: 0}
+      - m_Value: {x: 2.3658657, y: 13.515866, z: 1.9813834, w: 0}
         m_Name: HaloColor
         m_Overridden: 1
     m_Uint:
@@ -99,8 +99,8 @@ VisualEffect:
       m_Array:
       - m_Value:
           serializedVersion: 2
-          key0: {r: 1, g: 0.74434847, b: 0.35686278, a: 1}
-          key1: {r: 144.17291, g: 151.81358, b: 7.153515, a: 0.47058824}
+          key0: {r: 0, g: 4, b: 4, a: 1}
+          key1: {r: 2.1932802, g: 11.92, b: 11.92, a: 0.47058824}
           key2: {r: 0.4468572, g: 0.8063582, b: 0.99371064, a: 0}
           key3: {r: 0, g: 0, b: 0, a: 0}
           key4: {r: 0, g: 0, b: 0, a: 0}
@@ -263,7 +263,7 @@ MeshRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6296344258283898458}
   m_Enabled: 1
-  m_CastShadows: 1
+  m_CastShadows: 0
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0

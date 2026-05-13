@@ -12,6 +12,7 @@ using Game.Economy;
 using Game.Economy.Data;
 using Game.Interaction;
 using Game.Interaction.Data;
+using Game.Progression;
 using System;
 using UnityEngine;
 
@@ -83,6 +84,12 @@ namespace Core
         public SH_EnergySurgeSystem SurgeSystem { get; }
 
         /// <summary>
+        /// Manages build-based stat modifiers and special effects. 
+        /// GDD §5.3.4: 3 branches with 5 nodes each, providing stat bonuses and unique effects.
+        /// </summary>
+        public SH_BuildSystem BuildSystem { get; }
+
+        /// <summary>
         /// Manages zone-based difficulty scaling and the dynamic AI aggressiveness
         /// mini-loop (GDD §5.3.6). Tracks all active enemies.
         /// </summary>
@@ -127,6 +134,7 @@ namespace Core
             SH_CombatStats playerCombatStats,
             SH_PlayerFeedbackData playerFeedbackData,
             SH_EnergySurgeSystem surgeSystem,
+            SH_BuildSystem buildSystem,
             SH_DifficultyManager difficultyManager)
         {
             Transform = transform;
@@ -152,6 +160,7 @@ namespace Core
             PlayerCombatStats = playerCombatStats;
             FeedbackData = playerFeedbackData;
             SurgeSystem = surgeSystem;
+            BuildSystem = buildSystem;
             DifficultyManager = difficultyManager;
 
             ValidateDependencies();
@@ -181,6 +190,7 @@ namespace Core
             if (CombatSettings == null) Debug.LogError("[SH_PlayerContext] CombatSettings is missing.");
             if (PlayerCombatStats == null) Debug.LogError("[SH_PlayerContext] PlayerCombatStats is missing.");
             if (SurgeSystem == null) Debug.LogError("[SH_PlayerContext] SurgeSystem is missing.");
+            if (BuildSystem == null) Debug.LogWarning("[SH_PlayerContext] BuildSystem is missing. Progression tree will not function.");
             if (DifficultyManager == null) Debug.LogError("[SH_PlayerContext] DifficultyManager is missing.");
         }
 
@@ -215,6 +225,7 @@ namespace Core
             // Combat Stage B
             SurgeSystem.Initialize(this, CombatController);
             DifficultyManager.Initialize(this);
+            BuildSystem?.Initialize(this);
         }
 
         /// <summary>

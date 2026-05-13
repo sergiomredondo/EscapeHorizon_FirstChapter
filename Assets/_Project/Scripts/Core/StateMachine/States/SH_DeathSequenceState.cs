@@ -127,6 +127,9 @@ namespace Core.StateMachine.States
             //// SH_ResourceSystem subscription — only reset health here).
             //_context.Health.ResetToFull();
 
+            // Deactivate build — PD return to available pool, base stats restore.
+            _context.BuildSystem?.DeactivateBuild();
+
             //// Reset all enemies in scene.
             //var enemies = Object.FindObjectsByType<SH_EnemyController>(
             //    FindObjectsSortMode.None);
