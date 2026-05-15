@@ -74,7 +74,9 @@ namespace UI
 
             if (_hudController == null)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning("[SH_UIBridge] SH_HUDController not assigned.");
+#endif
                 return;
             }
 
@@ -88,7 +90,9 @@ namespace UI
 
             if (_playerStateMachine == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError("[SH_UIBridge] SH_PlayerStateMachine not found in scene.");
+#endif
                 return;
             }
 
@@ -121,7 +125,9 @@ namespace UI
         {
             if (context == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError("[SH_UIBridge] Initialize: context is null.");
+#endif
                 return;
             }
 

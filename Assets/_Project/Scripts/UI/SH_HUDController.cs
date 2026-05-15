@@ -148,8 +148,12 @@ namespace UI
             _document = GetComponent<UIDocument>();
 
             if (_document == null)
+            {
+#if UNITY_EDITOR
                 Debug.LogError("[SH_HUDController] UIDocument component not found. " +
                                "Add a UIDocument component to this GameObject and assign HUD.uxml.");
+#endif
+            }
         }
 
         private void OnEnable()
@@ -172,7 +176,9 @@ namespace UI
         {
             if (model == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError("[SH_HUDController] InjectModel: model is null.");
+#endif
                 return;
             }
 
@@ -241,7 +247,9 @@ namespace UI
         {
             if (_document?.rootVisualElement == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError("[SH_HUDController] UIDocument root is null.");
+#endif
                 return false;
             }
 
@@ -258,11 +266,41 @@ namespace UI
             _interactionProgress = root.Q<ProgressBar>(ElementInteractionProgress);
 
             bool allFound = true;
-            if (_hpBar == null) { Debug.LogError($"[SH_HUDController] '{ElementHPBar}' not found."); allFound = false; }
-            if (_energyBar == null) { Debug.LogError($"[SH_HUDController] '{ElementEnergyBar}' not found."); allFound = false; }
-            if (_scrapLabel == null) { Debug.LogError($"[SH_HUDController] '{ElementScrapLabel}' not found."); allFound = false; }
-            if (_icLabel == null) { Debug.LogError($"[SH_HUDController] '{ElementICLabel}' not found."); allFound = false; }
-            if (_surgeIndicator == null) { Debug.LogError($"[SH_HUDController] '{ElementSurgeIndicator}' not found."); allFound = false; }
+            if (_hpBar == null) 
+            {
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_HUDController] '{ElementHPBar}' not found.");
+#endif
+                allFound = false; 
+            }
+            if (_energyBar == null) 
+            {
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_HUDController] '{ElementEnergyBar}' not found.");
+#endif
+                allFound = false;
+            }
+            if (_scrapLabel == null) 
+            {
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_HUDController] '{ElementScrapLabel}' not found.");
+#endif
+                allFound = false;
+            }
+            if (_icLabel == null) 
+            {
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_HUDController] '{ElementICLabel}' not found.");
+#endif
+                allFound = false;
+            }
+            if (_surgeIndicator == null) 
+            {
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_HUDController] '{ElementSurgeIndicator}' not found.");
+#endif
+                allFound = false;
+            }
 
             // ── Build menu elements ───────────────────────────────────────────
             _buildOverlay = root.Q<VisualElement>(ElementBuildOverlay);
@@ -276,9 +314,12 @@ namespace UI
             _buildNarrativeText = root.Q<Label>(ElementBuildNarrativeText);
 
             if (_buildOverlay == null)
+            {
+#if UNITY_EDITOR
                 Debug.LogWarning($"[SH_HUDController] '{ElementBuildOverlay}' not found. " +
                                  $"Build menu will not function.");
-
+#endif
+            }
             // Cache node buttons and register click callbacks.
             for (int b = 0; b < 3; b++)
             {

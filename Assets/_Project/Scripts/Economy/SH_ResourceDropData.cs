@@ -160,8 +160,10 @@ namespace Game.Economy.Data
         {
             if (resourceSystem == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError("[SH_ResourceDropData] DeliverDestroyRewards: " +
                                "SH_ResourceSystem reference is null. No rewards delivered.");
+#endif
                 return;
             }
 
@@ -170,9 +172,10 @@ namespace Game.Economy.Data
 
             resourceSystem.AddResource(ResourceType.Scrap, scrap);
             resourceSystem.AddResource(ResourceType.EnergyCore, energy);
-
+#if UNITY_EDITOR
             Debug.Log($"[SH_ResourceDropData] Destroy rewards delivered from '{name}': " +
                       $"{scrap:F1} SC, {energy:F1} EC.");
+#endif
         }
 
         /// <summary>
@@ -190,8 +193,10 @@ namespace Game.Economy.Data
         {
             if (resourceSystem == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError("[SH_ResourceDropData] DeliverRescueRewards: " +
                                "SH_ResourceSystem reference is null. No rewards delivered.");
+#endif
                 return;
             }
 
@@ -201,9 +206,10 @@ namespace Game.Economy.Data
             resourceSystem.AddResource(ResourceType.IdentityCore, identityCoresOnRescue);
             resourceSystem.AddResource(ResourceType.Scrap, scrap);
             resourceSystem.AddResource(ResourceType.EnergyCore, energy);
-
+#if UNITY_EDITOR
             Debug.Log($"[SH_ResourceDropData] Rescue rewards delivered from '{name}': " +
                       $"{identityCoresOnRescue} IC, {scrap:F1} SC, {energy:F1} EC.");
+#endif
         }
 
         #endregion
@@ -223,10 +229,12 @@ namespace Game.Economy.Data
             // If it does, log a warning to alert the designer without blocking saving.
             if (scrapOnRescue > scrapOnDestroy && scrapOnDestroy > 0f)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning($"[SH_ResourceDropData] '{name}': scrapOnRescue " +
                                  $"({scrapOnRescue}) exceeds scrapOnDestroy ({scrapOnDestroy}). " +
                                  $"This undermines the ethical tradeoff. Consider reducing " +
                                  $"scrapOnRescue or increasing scrapOnDestroy.");
+#endif
             }
         }
 

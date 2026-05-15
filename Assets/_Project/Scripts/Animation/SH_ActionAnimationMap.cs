@@ -147,17 +147,21 @@ namespace Animation
             {
                 if (entry.actionData == null)
                 {
+#if UNITY_EDITOR
                     Debug.LogWarning($"[SH_ActionAnimationMap] '{name}': " +
                                      $"An entry has a null SH_ActionData reference. " +
                                      $"The entry will be skipped.");
+#endif
                     continue;
                 }
 
                 if (_cache.ContainsKey(entry.actionData))
                 {
+#if UNITY_EDITOR
                     Debug.LogWarning($"[SH_ActionAnimationMap] '{name}': " +
                                      $"Duplicate entry for action '{entry.actionData.name}'. " +
                                      $"Only the first entry will be used.");
+#endif
                     continue;
                 }
 

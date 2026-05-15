@@ -55,12 +55,16 @@ namespace Game.Interaction
 
                 if (_targetAnimator == null)
                 {
+#if UNITY_EDITOR
                     Debug.LogError($"[SH_ButtonAction] '{persistentID}': Target object has no Animator.");
+#endif
                 }
             }
             else
             {
+#if UNITY_EDITOR
                 Debug.LogWarning($"[SH_ButtonAction] '{persistentID}': No target object assigned.");
+#endif
             }
         }
 
@@ -72,19 +76,25 @@ namespace Game.Interaction
         {
             if (!_isAvailable)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning($"[SH_ButtonAction] '{persistentID}' already used.");
+#endif
                 return;
             }
 
             if (_targetAnimator == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_ButtonAction] '{persistentID}': Animator not available.");
+#endif
                 return;
             }
 
             if (string.IsNullOrEmpty(_parameterName))
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_ButtonAction] '{persistentID}': Parameter name is empty.");
+#endif
                 return;
             }
 
@@ -121,7 +131,9 @@ namespace Game.Interaction
                     break;
 
                 default:
+#if UNITY_EDITOR
                     Debug.LogError($"[SH_ButtonAction] Unsupported parameter type.");
+#endif
                     break;
             }
         }
@@ -137,7 +149,9 @@ namespace Game.Interaction
                 var animator = _targetObject.GetComponent<Animator>();
                 if (animator == null)
                 {
+#if UNITY_EDITOR
                     Debug.LogWarning($"[SH_ButtonAction] Assigned target has no Animator.");
+#endif
                 }
             }
         }

@@ -240,10 +240,14 @@ namespace Core.StateMachine
                 enemy.SetPlayerContext(_context);
 
             if (enemies.Length > 0)
+#if UNITY_EDITOR
                 Debug.Log($"[SH_PlayerStateMachine] Player context injected into {enemies.Length} enemy/enemies.");
+#endif
             else
+#if UNITY_EDITOR
                 Debug.LogWarning("[SH_PlayerStateMachine] No SH_EnemyController found in scene. " +
                                  "Place at least one enemy before pressing Play.");
+#endif
         }
 
         private void HandlePlayerDefeated()
@@ -278,8 +282,10 @@ namespace Core.StateMachine
         {
             if (newState == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_PlayerStateMachine] ChangeState: null state. " +
                                $"Current: {_currentState?.GetType().Name ?? "None"}");
+#endif
                 return;
             }
             _currentState?.Exit();
@@ -291,7 +297,9 @@ namespace Core.StateMachine
         {
             if (actionData == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError("[SH_PlayerStateMachine] RequestAction: null actionData.");
+#endif
                 return false;
             }
 
@@ -315,7 +323,9 @@ namespace Core.StateMachine
         {
             if (_settings.surgeAction == null)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning("[SH_PlayerStateMachine] RequestSurge: surgeAction is not assigned in SH_MovementSettings.");
+#endif
                 return false;
             }
 
@@ -349,6 +359,7 @@ namespace Core.StateMachine
 
         private void ValidateDependencies()
         {
+#if UNITY_EDITOR
             // Movement & Control
             if (_input == null) Debug.LogError($"[SH_PlayerStateMachine] SH_InputHandler not assigned on {gameObject.name}.");
             if (_perspective == null) Debug.LogError($"[SH_PlayerStateMachine] SH_PerspectiveController not assigned on {gameObject.name}.");
@@ -383,6 +394,7 @@ namespace Core.StateMachine
             if (_spawnPoint == null)
                 Debug.LogWarning($"[SH_PlayerStateMachine] No spawn point assigned on {gameObject.name}. " +
                                  $"Player will reset to origin on defeat.");
+#endif
         }
 
         #endregion

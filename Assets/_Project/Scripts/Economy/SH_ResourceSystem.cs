@@ -154,7 +154,13 @@ namespace Game.Economy
         /// </param>
         public void Initialize(SH_EconomySettings settings)
         {
-            if (settings == null) { Debug.LogError($"[SH_ResourceSystem] Initialization failed on {gameObject.name}: SH_EconomySettings reference is null. Ensure a valid EconomySettings asset is assigned."); return;}
+            if (settings == null) 
+            {
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_ResourceSystem] Initialization failed on {gameObject.name}: SH_EconomySettings reference is null. Ensure a valid EconomySettings asset is assigned.");
+#endif
+                return;
+            }
 
             _settings = settings;
             _currentEnergy = _settings.maxEnergy;
@@ -210,9 +216,20 @@ namespace Game.Economy
         /// <param name="amount"> The minimum amount required. Must be greater than zero. </param>
         public bool HasResource(ResourceType type, float amount)
         {
-            if (!_isInitialized) { Debug.LogWarning($"[SH_ResourceSystem] HasResource called before initialization."); return false;}
-            if (amount <= 0f) { Debug.LogWarning($"[SH_ResourceSystem] HasResource called with invalid amount ({amount}). Value must be greater than zero."); return false;}
-
+            if (!_isInitialized) 
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_ResourceSystem] HasResource called before initialization.");
+#endif
+                return false;
+            }
+            if (amount <= 0f) 
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_ResourceSystem] HasResource called with invalid amount ({amount}). Value must be greater than zero.");
+#endif
+                return false;
+            }
             return type switch
             {
                 ResourceType.IdentityCore => _currentIdentityCores >= (int)amount,
@@ -236,9 +253,21 @@ namespace Game.Economy
         /// <param name="amount"> Amount to add. Must be greater than zero. </param>
         public void AddResource(ResourceType type, float amount)
         {
-            if (!_isInitialized) { Debug.LogWarning($"[SH_ResourceSystem] AddResource called before initialization."); return;}
-            if (amount <= 0f) { Debug.LogWarning($"[SH_ResourceSystem] AddResource called with invalid amount ({amount}). Value must be greater than zero."); return;}
-
+            if (!_isInitialized) 
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_ResourceSystem] AddResource called before initialization.");
+#endif
+                return;
+            }
+            if (amount <= 0f) 
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_ResourceSystem] AddResource called with invalid amount ({amount}). Value must be greater than zero.");
+#endif
+                return;
+            } 
+            if (amount <= 1f)
             switch (type)
             {
                 case ResourceType.IdentityCore:
@@ -281,8 +310,20 @@ namespace Game.Economy
         /// <returns> True if the resource was successfully consumed. False otherwise. </returns>
         public bool ConsumeResource(ResourceType type, float amount)
         {
-            if (!_isInitialized) { Debug.LogWarning($"[SH_ResourceSystem] ConsumeResource called before initialization."); return false;}
-            if (amount <= 0f) { Debug.LogWarning($"[SH_ResourceSystem] ConsumeResource called with invalid amount ({amount}). Value must be greater than zero."); return false;}
+            if (!_isInitialized) 
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_ResourceSystem] ConsumeResource called before initialization.");
+#endif
+                return false;
+            }
+            if (amount <= 0f) 
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_ResourceSystem] ConsumeResource called with invalid amount ({amount}). Value must be greater than zero.");
+#endif
+                return false;
+            }
             if (!HasResource(type, amount))
                 return false;
 
@@ -321,9 +362,15 @@ namespace Game.Economy
         /// </summary>
         public void PurgeCores()
         {
-            if (!_isInitialized) { Debug.LogWarning($"[SH_ResourceSystem] PurgeCores called before initialization."); return;}
+            if (!_isInitialized) 
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_ResourceSystem] PurgeCores called before initialization.");
+#endif
+                return;
+            }
 
-            int dpGained = 0;
+                int dpGained = 0;
 
             // Iteratively convert IC to DP as long as the pilot has enough IC
             // to afford the next DP at the current progression level.
@@ -348,7 +395,9 @@ namespace Game.Economy
             }
             else
             {
+#if UNITY_EDITOR
                 Debug.Log($"[SH_ResourceSystem] Purge attempted but insufficient IC. Current IC: {_currentIdentityCores}. Cost for next DP: {SH_ProgressionCalculator.GetICCostForNextDP(_totalDPSpent, _settings):F1}.");
+#endif
             }
         }
 
@@ -364,14 +413,25 @@ namespace Game.Economy
         /// </returns>
         public bool RequestReconfiguration()
         {
-            if (!_isInitialized) { Debug.LogWarning($"[SH_ResourceSystem] RequestReconfiguration called before initialization."); return false;}
+            if (!_isInitialized) 
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_ResourceSystem] RequestReconfiguration called before initialization.");
+#endif
+                return false;
+            }
 
             float baseCost = SH_ProgressionCalculator.GetReconfigCost(
                 _totalDPSpent, _settings);
 
             float finalCost = baseCost * _reconfigCostModifier;
-
-            if (_currentScrap < finalCost) { Debug.Log($"[SH_ResourceSystem] Reconfiguration denied. Required Scrap: {finalCost:F1} (base: {baseCost:F1} x modifier: {_reconfigCostModifier:F2}). Current Scrap: {_currentScrap:F1}."); return false;}
+            if (_currentScrap < finalCost) 
+            {
+#if UNITY_EDITOR
+                Debug.Log($"[SH_ResourceSystem] Reconfiguration denied. Required Scrap: {finalCost:F1} (base: {baseCost:F1} x modifier: {_reconfigCostModifier:F2}). Current Scrap: {_currentScrap:F1}.");
+#endif
+                return false;
+            }
 
             _currentScrap -= finalCost;
             OnResourceChanged?.Invoke(ResourceType.Scrap, _currentScrap);
@@ -390,7 +450,13 @@ namespace Game.Economy
         /// </summary>
         public void ApplyDefeatPenalty()
         {
-            if (!_isInitialized) { Debug.LogWarning($"[SH_ResourceSystem] ApplyDefeatPenalty called before initialization."); return;}
+            if (!_isInitialized) 
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_ResourceSystem] ApplyDefeatPenalty called before initialization.");
+#endif
+                return;
+            }
 
             // IC penalty: retain only the defined fraction, lose the rest.
             int icBefore = _currentIdentityCores;
@@ -421,7 +487,13 @@ namespace Game.Economy
         /// <param name="modifier"> Multiplier for energyRegenPerSecond. Must be non-negative. </param>
         public void SetEnergyRegenModifier(float modifier)
         {
-            if (modifier < 0f) { Debug.LogWarning($"[SH_ResourceSystem] SetEnergyRegenModifier received negative value ({modifier}). Clamping to 0."); modifier = 0f;}
+            if (modifier < 0f) 
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_ResourceSystem] SetEnergyRegenModifier received negative value ({modifier}). Clamping to 0.");
+#endif
+                modifier = 0f;
+            }
 
             _energyRegenModifier = modifier;
         }
@@ -435,7 +507,13 @@ namespace Game.Economy
         /// <param name="modifier"> Multiplier for IC acquisition. Must be between 0 and 1. </param>
         public void SetICDropRateModifier(float modifier)
         {
-            if (modifier < 0f) { Debug.LogWarning($"[SH_ResourceSystem] SetICDropRateModifier received negative value ({modifier}). Clamping to 0."); modifier = 0f;}
+            if (modifier < 0f) 
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_ResourceSystem] SetICDropRateModifier received negative value ({modifier}). Clamping to 0.");
+#endif
+                modifier = 0f;
+            }
 
             _icDropRateModifier = modifier;
         }
@@ -449,7 +527,13 @@ namespace Game.Economy
         /// <param name="modifier"> Multiplier for reconfiguration Scrap cost. Must be >= 1. </param>
         public void SetReconfigCostModifier(float modifier)
         {
-            if (modifier < 1f) { Debug.LogWarning($"[SH_ResourceSystem] SetReconfigCostModifier received value below 1.0 ({modifier}). Clamping to 1.0. Reconfiguration cost modifiers cannot reduce base cost."); modifier = 1f;}
+            if (modifier < 1f) 
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_ResourceSystem] SetReconfigCostModifier received value below 1.0 ({modifier}). Clamping to 1.0. Reconfiguration cost modifiers cannot reduce base cost.");
+#endif
+                modifier = 1f;
+            }
 
             _reconfigCostModifier = modifier;
         }

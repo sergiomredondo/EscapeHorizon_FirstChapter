@@ -82,15 +82,20 @@ namespace Game.Interaction
         {
             if (!_isAvailable)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning($"[SH_ScrapPile] Interact called on already-consumed " +
                                  $"pile '{persistentID}'. Ignoring.");
+#endif
+
                 return;
             }
 
             if (context == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_ScrapPile] Interact called with null context on " +
                                $"'{persistentID}'. Cannot deliver rewards.");
+#endif
                 return;
             }
 
@@ -106,8 +111,10 @@ namespace Game.Interaction
             }
             else
             {
+#if UNITY_EDITOR
                 Debug.LogWarning($"[SH_ScrapPile] '{persistentID}': SH_ResourceSystem is null. " +
                                  $"Scrap not delivered.");
+#endif
             }
 
             MarkConsumed();
@@ -133,7 +140,10 @@ namespace Game.Interaction
 
         protected override void OnInterruptedInternal()
         {
+#if UNITY_EDITOR
             Debug.Log($"[SH_ScrapPile] '{persistentID}' hold interrupted. Loot reset.");
+#endif
+
         }
 
         protected override void OnDestroyVisualOnLoad()

@@ -44,14 +44,18 @@ namespace Game.UI
         public void OnResetConnection()
         {
             // Reserved — no action in prototype.
+#if UNITY_EDITOR
             Debug.Log("[SH_TitleScreenController] Reset Connection: not yet implemented.");
+#endif
         }
 
         /// <summary> Parameters button — reserved for future settings screen. </summary>
         public void OnParameters()
         {
             // Reserved — no action in prototype.
+#if UNITY_EDITOR
             Debug.Log("[SH_TitleScreenController] Parameters: not yet implemented.");
+#endif
         }
 
         /// <summary> Disconnection button — exits the application. </summary>

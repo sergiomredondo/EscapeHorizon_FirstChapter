@@ -27,7 +27,12 @@ namespace Core.Camera
         /// <summary> Initializes the perspective controller with necessary references. Ensures camera authority is established for input projection. </summary>
         private void Awake()
         {
-            if (_cameraTransform == null) Debug.LogError($"[SH_PerspectiveController] Falta referencia a la cámara en {gameObject.name}");
+            if (_cameraTransform == null) 
+            {
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_PerspectiveController] Falta referencia a la cámara en {gameObject.name}");
+#endif
+            }
         }
 
         /// <summary> Returns true if the system has an active target for orientation. </summary>
@@ -40,8 +45,13 @@ namespace Core.Camera
         /// <param name="camTransform">The camera transform to use as basis.</param>
         public void Initialize(SH_MovementSettings settings, Transform camTransform = null)
         {
-            if (settings == null) { Debug.LogError($"[SH_PerspectiveController] Initialization failed: MovementSettings data is null. Ensure that a valid SH_MovementSettings asset is assigned during initialization."); return; }
-            
+            if (settings == null) {
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_PerspectiveController] Initialization failed: MovementSettings data is null. Ensure that a valid SH_MovementSettings asset is assigned during initialization.");
+#endif
+                return;
+            }
+
             // Fallback to main camera if no specific transform is provided, ensuring the system always has a reference for orientation.
             if (camTransform != null)
             {
@@ -52,7 +62,9 @@ namespace Core.Camera
                 if (UnityEngine.Camera.main != null)
                     _cameraTransform = UnityEngine.Camera.main.transform;
                 else
+#if UNITY_EDITOR
                     Debug.LogWarning("[SH_PerspectiveController] No Camera found. Perspective logic will use local forward.");
+#endif
             }
         }
 

@@ -95,7 +95,11 @@ namespace Core.StateMachine.States
             : base(context, stateMachine)
         {
             if (actionData == null)
+            {
+#if UNITY_EDITOR
                 Debug.LogError("[SH_ActionState] actionData is null.");
+#endif
+            }
 
             _actionData = actionData;
             _animationMap = animationMap;
@@ -128,19 +132,23 @@ namespace Core.StateMachine.States
                 SH_ResourceSystem resources = _context.Resources;
                 if (resources == null)
                 {
+#if UNITY_EDITOR
                     Debug.LogWarning(
                         $"[SH_ActionState] SH_ResourceSystem is null — skipping energy " +
                         $"check for '{_actionData.name}'.");
+#endif
                 }
                 else
                 {
                     bool consumed = resources.ConsumeResource(ResourceType.EnergyCore, finalCost);
                     if (!consumed)
                     {
+#if UNITY_EDITOR
                         Debug.Log(
                             $"[SH_ActionState] '{_actionData.name}' aborted: " +
                             $"need {finalCost:F1} EC, " +
                             $"have {resources.CurrentEnergy:F1} EC.");
+#endif
                         _abortedDueToInsufficientEnergy = true;
                         _context.HitboxController?.DeactivateHitDetection();
                         return;
@@ -195,7 +203,9 @@ namespace Core.StateMachine.States
 
             if (dt <= 0f)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_ActionState] PhysicsUpdate: invalid dt ({dt}).");
+#endif
                 return;
             }
 
@@ -260,11 +270,13 @@ namespace Core.StateMachine.States
 
             if (clip == null)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning(
                     $"[SH_ActionState] No clip found for action '{_actionData.name}' " +
                     $"in the assigned SH_ActionAnimationMap. " +
                     $"Assign a clip or a fallback clip to the map asset. " +
                     $"Gameplay callbacks will still fire correctly.");
+#endif
             }
 
             // Subscribe to phase callbacks before PlayActionClip() so that
@@ -276,11 +288,11 @@ namespace Core.StateMachine.States
                 _actionData.TotalDuration,
                 _actionData.startupTime,
                 _actionData.activeTime);
-            /*
+#if UNITY_EDITOR
             Debug.Log($"[SH_ActionState] Dispatched action '{_actionData.name}'. " +
                       $"Clip: '{(clip != null ? clip.name : "none")}'. " +
                       $"Total duration: {_actionData.TotalDuration:F2}s.");
-            */
+#endif
         }
 
         #endregion

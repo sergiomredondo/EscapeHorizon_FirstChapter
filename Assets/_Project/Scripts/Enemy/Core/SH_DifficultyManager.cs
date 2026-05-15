@@ -145,7 +145,9 @@ namespace Game.Combat.Core
         {
             if (context == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_DifficultyManager] Initialize: null context on {gameObject.name}.");
+#endif
                 return;
             }
 
@@ -156,9 +158,10 @@ namespace Game.Combat.Core
                 _context.Health.OnDamageReceived += OnPlayerDamageReceived;
 
             _isInitialized = true;
-
+#if UNITY_EDITOR
             Debug.Log($"[SH_DifficultyManager] Initialized. " +
                       $"Difficulty: {_activeDifficulty}, Zone: {_currentZone}.");
+#endif
         }
 
         private void OnDestroy()
@@ -195,7 +198,9 @@ namespace Game.Combat.Core
         {
             _activeDifficulty = level;
             RescaleAllTrackedEnemies();
+#if UNITY_EDITOR
             Debug.Log($"[SH_DifficultyManager] Difficulty set to {level}.");
+#endif
         }
 
         /// <summary>
@@ -208,9 +213,10 @@ namespace Game.Combat.Core
             _currentZone = Mathf.Max(1, zoneIndex);
             RescaleAllTrackedEnemies();
             OnZoneChanged?.Invoke(_currentZone, CurrentZoneFactor);
-
+#if UNITY_EDITOR
             Debug.Log($"[SH_DifficultyManager] Zone {_currentZone} entered. " +
                       $"Zone factor: {CurrentZoneFactor:F2}.");
+#endif
         }
 
         /// <summary>
@@ -275,14 +281,18 @@ namespace Game.Combat.Core
             if (rdir > _rdirDominantThreshold && ser > _serDominantThreshold)
             {
                 CurrentAIMultiplier += 0.1f;
+#if UNITY_EDITOR
                 Debug.Log($"[SH_DifficultyManager] Player dominant (RDIR={rdir:F1}, SER={ser:F1}). " +
                           $"AI aggression +10%.");
+#endif
             }
             else if (rdir < _rdirStruggleThreshold && ser < _serStruggleThreshold)
             {
                 CurrentAIMultiplier -= 0.05f;
+#if UNITY_EDITOR
                 Debug.Log($"[SH_DifficultyManager] Player struggling (RDIR={rdir:F1}, SER={ser:F1}). " +
                           $"AI aggression -5%.");
+#endif
             }
 
             // Clamp within ±20% of base (1.0)

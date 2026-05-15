@@ -67,17 +67,23 @@ namespace Game.Combat.Core
         {
             if (context == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_HitboxController] Initialize: context is null on {gameObject.name}.");
+#endif
                 return;
             }
             if (combatSettings == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_HitboxController] Initialize: combatSettings is null on {gameObject.name}.");
+#endif
                 return;
             }
             if (playerStats == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_HitboxController] Initialize: playerStats is null on {gameObject.name}.");
+#endif
                 return;
             }
 
@@ -98,12 +104,16 @@ namespace Game.Combat.Core
         {
             if (!_isInitialized)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning("[SH_HitboxController] ActivateHitDetection called before initialization.");
+#endif
                 return;
             }
             if (action == null)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning("[SH_HitboxController] ActivateHitDetection: action is null.");
+#endif
                 return;
             }
 

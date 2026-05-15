@@ -169,6 +169,7 @@ namespace Core
 
         private void ValidateDependencies()
         {
+#if UNITY_EDITOR
             if (Transform == null) Debug.LogError("[SH_PlayerContext] Transform is missing.");
             if (Input == null) Debug.LogError("[SH_PlayerContext] InputHandler is missing.");
             if (Perspective == null) Debug.LogError("[SH_PlayerContext] PerspectiveController is missing.");
@@ -192,6 +193,7 @@ namespace Core
             if (SurgeSystem == null) Debug.LogError("[SH_PlayerContext] SurgeSystem is missing.");
             if (BuildSystem == null) Debug.LogWarning("[SH_PlayerContext] BuildSystem is missing. Progression tree will not function.");
             if (DifficultyManager == null) Debug.LogError("[SH_PlayerContext] DifficultyManager is missing.");
+#endif
         }
 
         private void OrchestrateSubsystems()

@@ -125,7 +125,9 @@ namespace Animation
         {
             if (animator == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError("[SH_AnimatorBridge] Initialize: Animator reference is null.");
+#endif
                 return;
             }
 
@@ -137,26 +139,30 @@ namespace Animation
             _actionLayerIndex = _animator.GetLayerIndex("Action");
             if (_actionLayerIndex < 0)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning("[SH_AnimatorBridge] 'Action' layer not found in Animator Controller. " +
                                  "Speed normalization will target layer 0 until the layer is created. " +
                                  "See implementation plan — Etapa 3.");
+#endif
                 _actionLayerIndex = 0;
             }
 
             var baseController = animator.runtimeAnimatorController;
             if (baseController == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError("[SH_AnimatorBridge] Animator has no RuntimeAnimatorController assigned. " +
                                "Assign an Animator Controller to the Animator component on this entity.");
+#endif
                 return;
             }
-
             _overrideController = new AnimatorOverrideController(baseController);
             _animator.runtimeAnimatorController = _overrideController;
-
+#if UNITY_EDITOR
             Debug.Log($"[SH_AnimatorBridge] Initialized on '{gameObject.name}'. " +
                       $"Override controller built from '{baseController.name}'. " +
                       $"Action layer index: {_actionLayerIndex}.");
+#endif
         }
 
         /// <summary>
@@ -283,9 +289,13 @@ namespace Animation
                 SetActionLayerSpeed(1f);
 
                 if (clip == null)
+                {
+#if UNITY_EDITOR
                     Debug.LogWarning("[SH_AnimatorBridge] PlayActionClip: no clip provided. " +
                                      "Phase timer will run but no animation will play. " +
                                      "Assign a clip in the SH_ActionAnimationMap asset.");
+#endif
+                }
             }
 
             StartPhaseTimer();
@@ -361,17 +371,21 @@ namespace Animation
         /// </summary>
         public void OnHitImpact()
         {
+#if UNITY_EDITOR
             Debug.Log("[SH_AnimatorBridge] Combat Debug OnHitImpact Animation Event fired.");
+#endif
             if (_hitImpactCallback != null)
             {
                 _hitImpactCallback.Invoke();
             }
             else
             {
+#if UNITY_EDITOR
                 Debug.LogWarning(
                     "[SH_AnimatorBridge] OnHitImpact Animation Event fired but no callback " +
                     "is registered. This is expected if SH_ActionState is now handling " +
                     "hitbox activation via the OnActiveBegin phase callback.");
+#endif
             }
         }
 

@@ -137,9 +137,11 @@ namespace Game.Interaction
 
             if (_dropData == null)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning($"[SH_CaptiveCore] '{gameObject.name}' has no " +
                                  $"SH_ResourceDropData assigned. No rewards will be " +
                                  $"delivered on interaction. Assign a drop data asset.");
+#endif
             }
         }
 
@@ -209,15 +211,19 @@ namespace Game.Interaction
         {
             if (!_isAvailable)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning($"[SH_CaptiveCore] Interact called on already-consumed " +
                                  $"core '{persistentID}'. Ignoring.");
+#endif
                 return;
             }
 
             if (context == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_CaptiveCore] Interact called with null context on " +
                                $"'{persistentID}'. Cannot deliver rewards.");
+#endif
                 return;
             }
 
@@ -227,8 +233,10 @@ namespace Game.Interaction
             }
             else
             {
+#if UNITY_EDITOR
                 Debug.LogWarning($"[SH_CaptiveCore] '{persistentID}': missing drop data " +
                                  $"or resource system. Rescue resolved with no rewards.");
+#endif
             }
 
             _wasRescued = true;
@@ -241,9 +249,10 @@ namespace Game.Interaction
 
             MarkConsumed();
             OnRescued?.Invoke(persistentID);
-
+#if UNITY_EDITOR
             Debug.Log($"[SH_CaptiveCore] '{persistentID}' RESCUED. " +
                       $"IC and residual Scrap delivered.");
+#endif
         }
 
         /// <summary>
@@ -260,15 +269,19 @@ namespace Game.Interaction
         {
             if (!_isAvailable)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning($"[SH_CaptiveCore] ForceDestroy called on already-consumed " +
                                  $"core '{persistentID}'. Ignoring.");
+#endif
                 return;
             }
 
             if (context == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_CaptiveCore] ForceDestroy called with null context on " +
                                $"'{persistentID}'. Cannot deliver rewards.");
+#endif
                 return;
             }
 
@@ -278,8 +291,10 @@ namespace Game.Interaction
             }
             else
             {
+#if UNITY_EDITOR
                 Debug.LogWarning($"[SH_CaptiveCore] '{persistentID}': missing drop data " +
                                  $"or resource system. Destroy resolved with no rewards.");
+#endif
             }
 
             _wasRescued = false;
@@ -292,9 +307,10 @@ namespace Game.Interaction
 
             MarkConsumed();
             OnDestroyed?.Invoke(persistentID);
-
+#if UNITY_EDITOR
             Debug.Log($"[SH_CaptiveCore] '{persistentID}' DESTROYED. " +
                       $"Scrap delivered. IC forfeited.");
+#endif
         }
 
         #endregion
@@ -319,8 +335,10 @@ namespace Game.Interaction
             if (_renderer != null)
                 _renderer.material.color = _focusColor;
 
+#if UNITY_EDITOR
             Debug.Log($"[SH_CaptiveCore] '{persistentID}' hold interrupted. " +
                       $"Rescue progress reset.");
+#endif
         }
 
         protected override void OnDestroyVisualOnLoad()
@@ -365,15 +383,19 @@ namespace Game.Interaction
         {
             if (!Application.isPlaying)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning("[SH_CaptiveCore] Debug actions only available in Play Mode.");
+#endif
                 return;
             }
             // Context-less debug: fires the event without delivering rewards.
             _wasRescued = true;
             MarkConsumed();
             OnRescued?.Invoke(persistentID);
+#if UNITY_EDITOR
             Debug.Log($"[SH_CaptiveCore] DEBUG: '{persistentID}' marked as rescued " +
                       $"(no rewards delivered — context not available in debug call).");
+#endif
         }
 
         [ContextMenu("Debug — Simulate Destroy")]
@@ -381,14 +403,18 @@ namespace Game.Interaction
         {
             if (!Application.isPlaying)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning("[SH_CaptiveCore] Debug actions only available in Play Mode.");
+#endif
                 return;
             }
             _wasRescued = false;
             MarkConsumed();
             OnDestroyed?.Invoke(persistentID);
+#if UNITY_EDITOR
             Debug.Log($"[SH_CaptiveCore] DEBUG: '{persistentID}' marked as destroyed " +
                       $"(no rewards delivered — context not available in debug call).");
+#endif
         }
 
         #endregion

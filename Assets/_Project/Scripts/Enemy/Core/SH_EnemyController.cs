@@ -346,7 +346,9 @@ namespace Game.Enemy
         {
             if (playerContext == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_EnemyController] Initialize: null playerContext on {gameObject.name}.");
+#endif
                 return;
             }
             _playerContext = playerContext;
@@ -365,7 +367,9 @@ namespace Game.Enemy
             
             if (_data == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_EnemyController] SH_EnemyData is not assigned on {gameObject.name}.");
+#endif
                 return;
             }
 
@@ -851,7 +855,9 @@ namespace Game.Enemy
                     _agent.isStopped = false;
                 OnStaggerChanged?.Invoke(false);
             }
+#if UNITY_EDITOR
             Debug.Log($"[SH_EnemyController] {_data.DisplayName} _isStaggered {_isStaggered}, _agent.isOnNavMesh: {_agent.isOnNavMesh}");
+#endif
         }
 
         private void TickPostureRegen()

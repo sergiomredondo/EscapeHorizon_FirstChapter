@@ -65,12 +65,16 @@ namespace Game.Progression
         {
             if (context == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_BuildSystem] Initialize: null context on {gameObject.name}.");
+#endif
                 return;
             }
             if (_buildTreeData == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_BuildSystem] BuildTreeData not assigned on {gameObject.name}.");
+#endif
                 return;
             }
 
@@ -86,7 +90,9 @@ namespace Game.Progression
             _basePostureMax = _baseStats.PostureMax;
 
             _isInitialized = true;
+#if UNITY_EDITOR
             Debug.Log("[SH_BuildSystem] Initialized.");
+#endif
         }
 
         #endregion
@@ -106,8 +112,10 @@ namespace Game.Progression
             // If switching branch, require reanalysis first.
             if (HasActiveBuild && branch != ActiveBranch)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning("[SH_BuildSystem] Cannot activate a different branch without " +
                                  "reanalysis. Call TryReanalyze() first.");
+#endif
                 OnActivationFailed?.Invoke(branch, 0);
                 return false;
             }
@@ -115,15 +123,19 @@ namespace Game.Progression
             int nextIndex = ActiveNodeCount; // 0-based index into the branch array.
             if (nextIndex >= 5)
             {
+#if UNITY_EDITOR
                 Debug.Log("[SH_BuildSystem] Branch fully activated.");
+#endif
                 return false;
             }
 
             SH_BuildNodeData node = nodes[nextIndex];
             if (node == null)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning($"[SH_BuildSystem] Node at index {nextIndex} in branch " +
                                  $"{branch} is not assigned in BuildTreeData.");
+#endif
                 return false;
             }
 
@@ -131,7 +143,9 @@ namespace Game.Progression
             int availablePD = _resources.AvailableDevelopmentPoints;
             if (availablePD < node.pdCost)
             {
+#if UNITY_EDITOR
                 Debug.Log($"[SH_BuildSystem] Not enough PD. Need {node.pdCost}, have {availablePD}.");
+#endif
                 OnActivationFailed?.Invoke(branch, nextIndex);
                 return false;
             }
@@ -139,8 +153,10 @@ namespace Game.Progression
             // Validate Scrap.
             if (_resources.CurrentScrap < node.scrapCost)
             {
+#if UNITY_EDITOR
                 Debug.Log($"[SH_BuildSystem] Not enough Scrap. Need {node.scrapCost:F0}, " +
                           $"have {_resources.CurrentScrap:F0}.");
+#endif
                 OnActivationFailed?.Invoke(branch, nextIndex);
                 return false;
             }
@@ -155,9 +171,10 @@ namespace Game.Progression
             ApplyBuildModifiers();
 
             OnNodeActivated?.Invoke(branch, ActiveNodeCount);
-
+#if UNITY_EDITOR
             Debug.Log($"[SH_BuildSystem] Node {ActiveNodeCount} activated in branch {branch}. " +
                       $"'{node.nodeName}'");
+#endif
             return true;
         }
 
@@ -169,7 +186,9 @@ namespace Game.Progression
             if (!_isInitialized) return false;
             if (newBranch == ActiveBranch && HasActiveBuild)
             {
+#if UNITY_EDITOR
                 Debug.Log("[SH_BuildSystem] Already on this branch.");
+#endif
                 return false;
             }
 
@@ -178,8 +197,10 @@ namespace Game.Progression
 
             if (_resources.CurrentScrap < reanalysisCost)
             {
+#if UNITY_EDITOR
                 Debug.Log($"[SH_BuildSystem] Not enough Scrap for reanalysis. " +
                           $"Need {reanalysisCost:F0}, have {_resources.CurrentScrap:F0}.");
+#endif
                 return false;
             }
 
@@ -187,9 +208,10 @@ namespace Game.Progression
             ResetActiveBuild();
             ActiveBranch = newBranch;
             ReanalysisCount++;
-
+#if UNITY_EDITOR
             Debug.Log($"[SH_BuildSystem] Reanalysis performed. New branch: {newBranch}. " +
                       $"Cost: {reanalysisCost:F0} Scrap.");
+#endif
             return true;
         }
 
@@ -202,7 +224,9 @@ namespace Game.Progression
             ResetActiveBuild();
             ReanalysisCount = 0;
             OnBuildDeactivated?.Invoke();
+#if UNITY_EDITOR
             Debug.Log("[SH_BuildSystem] Build deactivated on defeat. PD returned.");
+#endif
         }
 
         #endregion

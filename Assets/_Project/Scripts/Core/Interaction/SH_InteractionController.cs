@@ -119,20 +119,26 @@ namespace Game.Interaction
         {
             if (settings == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_InteractionController] Init failed on {gameObject.name}: " +
                                $"settings is null.");
+#endif
                 return;
             }
             if (context == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_InteractionController] Init failed on {gameObject.name}: " +
                                $"context is null.");
+#endif
                 return;
             }
             if (context.Input == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_InteractionController] Init failed on {gameObject.name}: " +
                                $"context.Input is null.");
+#endif
                 return;
             }
 

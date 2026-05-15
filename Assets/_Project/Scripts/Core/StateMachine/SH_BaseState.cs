@@ -39,8 +39,20 @@ namespace Core.StateMachine
         /// <param name="stateMachine">The owner machine managing this state's lifecycle.</param>
         protected SH_BaseState(SH_PlayerContext context, SH_PlayerStateMachine stateMachine)
         {
-            if (context == null) { Debug.LogError($"[SH_BaseState] Construction failed: SH_PlayerContext reference is null. Ensure that a valid context is passed when instantiating states."); return; }
-            if (stateMachine == null) { Debug.LogError($"[SH_BaseState] Construction failed: SH_PlayerStateMachine reference is null. Ensure that a valid state machine is passed when instantiating states."); return; }
+            if (context == null) 
+            {
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_BaseState] Construction failed: SH_PlayerContext reference is null. Ensure that a valid context is passed when instantiating states.");
+#endif
+                return; 
+            }
+            if (stateMachine == null) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_BaseState] Construction failed: SH_PlayerStateMachine reference is null. Ensure that a valid state machine is passed when instantiating states.");
+#endif
+                return; 
+            }
 
             _context = context;
             _stateMachine = stateMachine;
@@ -73,7 +85,12 @@ namespace Core.StateMachine
         /// <param name="dt">The fixed delta time injected by the StateMachine for deterministic physics.</param>
         public virtual void PhysicsUpdate(float dt) 
         {
-            if (dt <= 0) { Debug.LogError($"[SH_BaseState] PhysicsUpdate failed: Invalid delta time (dt={dt}). Ensure that a positive fixed delta time is passed when calling PhysicsUpdate."); return; }
+            if (dt <= 0) { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_BaseState] PhysicsUpdate failed: Invalid delta time (dt={dt}). Ensure that a positive fixed delta time is passed when calling PhysicsUpdate."); 
+#endif
+                return; 
+            }
         }
 
         /// <summary> 

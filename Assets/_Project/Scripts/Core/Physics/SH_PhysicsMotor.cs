@@ -56,10 +56,22 @@ namespace Core.Physics
         /// <param name="dt">Delta time (usually Time.fixedDeltaTime or Time.deltaTime).</param>
         public void Tick(SH_MovementSettings settings, float dt)
         {
-            if (settings == null) { Debug.LogError($"[SH_PhysicsMotor] Tick failed: Movement settings data is null. Ensure that valid SH_MovementSettings are passed when calling Tick."); return; }
-            if (dt <= 0) { Debug.LogError($"[SH_PhysicsMotor] Tick failed: Delta time must be greater than zero. Received dt={dt}. Ensure that the calling code provides a valid delta time."); return; }
+            if (settings == null) 
+            {
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_PhysicsMotor] Tick failed: Movement settings data is null. Ensure that valid SH_MovementSettings are passed when calling Tick.");
+#endif
+                return;
+            }
+            if (dt <= 0) 
+            {
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_PhysicsMotor] Tick failed: Delta time must be greater than zero. Received dt={dt}. Ensure that the calling code provides a valid delta time.");
+#endif
+                return; 
+            }
 
-            ApplyGravity(settings, dt);     // Integrates vertical acceleration and ensures grounding stability
+                ApplyGravity(settings, dt);     // Integrates vertical acceleration and ensures grounding stability
             ApplyActiveForce(settings, dt); // Integrates sustained external thrusts
             ApplyFriction(settings, dt);          // Integrates mass-based drag
             ClampHorizontalVelocity(settings);  // Enforces maximum speed limits based on settings
@@ -81,9 +93,27 @@ namespace Core.Physics
         /// <param name="duration">Duration in seconds for the force application.</param>
         public void ApplyForce(SH_MovementSettings settings, Vector3 force, float duration)
         {
-            if (settings == null) { Debug.LogError($"[SH_PhysicsMotor] ApplyForce failed: Movement settings data is null. Ensure that valid SH_MovementSettings are passed when calling ApplyForce."); return; }
-            if (force == null) { Debug.LogError($"[SH_PhysicsMotor] ApplyForce failed: Force vector is null. Ensure that a valid Vector3 force is provided when calling ApplyForce."); return; }
-            if (duration < 0) { Debug.LogError($"[SH_PhysicsMotor] ApplyForce failed: Duration cannot be negative. Received duration={duration}. Ensure that the calling code provides a valid duration."); return; }
+            if (settings == null) 
+            {
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_PhysicsMotor] ApplyForce failed: Movement settings data is null. Ensure that valid SH_MovementSettings are passed when calling ApplyForce."); 
+#endif
+                return; 
+            }
+            if (force == null) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_PhysicsMotor] ApplyForce failed: Force vector is null. Ensure that a valid Vector3 force is provided when calling ApplyForce."); 
+#endif
+                return; 
+            }
+            if (duration < 0) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_PhysicsMotor] ApplyForce failed: Duration cannot be negative. Received duration={duration}. Ensure that the calling code provides a valid duration."); 
+#endif
+                return; 
+            }
 
             if (duration <= 0f)
             {
@@ -103,9 +133,27 @@ namespace Core.Physics
         /// <param name="force">The force vector in Newtons.</param>
         public void ApplyImpulse(SH_MovementSettings settings, Vector3 force)
         {
-            if (settings == null) { Debug.LogError($"[SH_PhysicsMotor] ApplyImpulse failed: Movement settings data is null. Ensure that valid SH_MovementSettings are passed when calling ApplyImpulse."); return; }
-            if (force == null) { Debug.LogError($"[SH_PhysicsMotor] ApplyImpulse failed: Force vector is null. Ensure that a valid Vector3 force is provided when calling ApplyImpulse."); return; }
-            if (settings.mass <= 0) { Debug.LogError($"[SH_PhysicsMotor] ApplyImpulse failed: Mass must be greater than zero. Received mass={settings.mass}. Ensure that the SH_MovementSettings has a valid mass value."); return; }   
+            if (settings == null) 
+            {
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_PhysicsMotor] ApplyImpulse failed: Movement settings data is null. Ensure that valid SH_MovementSettings are passed when calling ApplyImpulse."); 
+#endif
+                return; 
+            }
+            if (force == null) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_PhysicsMotor] ApplyImpulse failed: Force vector is null. Ensure that a valid Vector3 force is provided when calling ApplyImpulse."); 
+#endif
+                return; 
+            }
+            if (settings.mass <= 0) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_PhysicsMotor] ApplyImpulse failed: Mass must be greater than zero. Received mass={settings.mass}. Ensure that the SH_MovementSettings has a valid mass value."); 
+#endif
+                return;   
+            }
 
             // F = m * a  =>  a = F / m
             Vector3 acceleration = force / settings.mass;
@@ -118,8 +166,20 @@ namespace Core.Physics
         /// </summary>
         private void ApplyActiveForce(SH_MovementSettings settings, float dt)
         {
-            if (settings == null) { Debug.LogError($"[SH_PhysicsMotor] ApplyActiveForce failed: Movement settings data is null. Ensure that valid SH_MovementSettings are passed when calling ApplyActiveForce."); return; }
-            if (dt <= 0) { Debug.LogError($"[SH_PhysicsMotor] ApplyActiveForce failed: Delta time must be greater than zero. Received dt={dt}. Ensure that the calling code provides a valid delta time."); return; }
+            if (settings == null) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_PhysicsMotor] ApplyActiveForce failed: Movement settings data is null. Ensure that valid SH_MovementSettings are passed when calling ApplyActiveForce."); 
+#endif
+                return; 
+            }
+            if (dt <= 0) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_PhysicsMotor] ApplyActiveForce failed: Delta time must be greater than zero. Received dt={dt}. Ensure that the calling code provides a valid delta time."); 
+#endif
+                return; 
+            }
 
             // No active force to apply or force duration has expired
             if (_forceTimer <= 0f)
@@ -128,6 +188,9 @@ namespace Core.Physics
             // If the applied force is below the static friction threshold, it should not cause movement.
             if (_activeForce.magnitude <= settings.muS * Mathf.Abs(settings.gravity) * settings.mass) 
             { 
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_PhysicsMotor] ApplyActiveForce: Applied force is below static friction threshold."); 
+#endif
                 _activeForce = Vector3.zero;
             }
 
@@ -153,8 +216,20 @@ namespace Core.Physics
         /// </summary>
         private void ApplyGravity(SH_MovementSettings settings, float dt)
         {
-            if (settings == null) { Debug.LogError($"[SH_PhysicsMotor] ApplyGravity failed: Movement settings data is null. Ensure that valid SH_MovementSettings are passed when calling ApplyGravity."); return; }
-            if (dt <= 0) { Debug.LogError($"[SH_PhysicsMotor] ApplyGravity failed: Delta time must be greater than zero. Received dt={dt}. Ensure that the calling code provides a valid delta time."); return; }
+            if (settings == null) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_PhysicsMotor] ApplyGravity failed: Movement settings data is null. Ensure that valid SH_MovementSettings are passed when calling ApplyGravity."); 
+#endif
+                return; 
+            }
+            if (dt <= 0) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_PhysicsMotor] ApplyGravity failed: Delta time must be greater than zero. Received dt={dt}. Ensure that the calling code provides a valid delta time."); 
+#endif
+                return; 
+            }
 
             if (_controller.isGrounded && _velocity.y < 0f)
             {
@@ -172,7 +247,13 @@ namespace Core.Physics
         /// </summary>
         public void SetFrictionMultiplier(float multiplier)
         {
-            if (multiplier < 0f) { Debug.LogError($"[SH_PhysicsMotor] SetFrictionMultiplier failed: Multiplier cannot be negative. Received multiplier={multiplier}. Ensure that the calling code provides a valid non-negative multiplier."); return; }
+            if (multiplier < 0f) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_PhysicsMotor] SetFrictionMultiplier failed: Multiplier cannot be negative. Received multiplier={multiplier}. Ensure that the calling code provides a valid non-negative multiplier."); 
+#endif
+                return; 
+            }
 
             _frictionMultiplier = Mathf.Max(0f, multiplier);
         }
@@ -182,7 +263,13 @@ namespace Core.Physics
         /// </summary>
         public void SetSpeedMultiplier(float multiplier)
         {
-            if (multiplier < 0f) { Debug.LogError($"[SH_PhysicsMotor] SetSpeedMultiplier failed: multiplier cannot be negative. Received multiplier={multiplier}."); return; }
+            if (multiplier < 0f) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_PhysicsMotor] SetSpeedMultiplier failed: multiplier cannot be negative. Received multiplier={multiplier}."); 
+#endif
+                return; 
+            }
             _speedMultiplier = Mathf.Max(0f, multiplier);
         }
 
@@ -192,8 +279,20 @@ namespace Core.Physics
         /// </summary>
         private void ApplyFriction(SH_MovementSettings settings, float dt)
         {
-            if (settings == null) { Debug.LogError($"[SH_PhysicsMotor] ApplyFriction failed: Movement settings data is null. Ensure that valid SH_MovementSettings are passed when calling ApplyFriction."); return; }
-            if (dt <= 0) { Debug.LogError($"[SH_PhysicsMotor] ApplyFriction failed: Delta time must be greater than zero. Received dt={dt}. Ensure that the calling code provides a valid delta time."); return; }
+            if (settings == null) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_PhysicsMotor] ApplyFriction failed: Movement settings data is null. Ensure that valid SH_MovementSettings are passed when calling ApplyFriction."); 
+#endif
+                return; 
+            }
+            if (dt <= 0) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_PhysicsMotor] ApplyFriction failed: Delta time must be greater than zero. Received dt={dt}. Ensure that the calling code provides a valid delta time."); 
+#endif
+                return; 
+            }
 
             // Friction only applies when grounded
             if (!_controller.isGrounded) return;
@@ -227,7 +326,13 @@ namespace Core.Physics
         /// </summary>
         public void SetHorizontalVelocity(Vector3 horizontalVel)
         {
-            if (horizontalVel == null) { Debug.LogError($"[SH_PhysicsMotor] SetHorizontalVelocity failed: Horizontal velocity vector is null. Ensure that a valid Vector3 is provided when calling SetHorizontalVelocity."); return; }
+            if (horizontalVel == null) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_PhysicsMotor] SetHorizontalVelocity failed: Horizontal velocity vector is null. Ensure that a valid Vector3 is provided when calling SetHorizontalVelocity."); 
+#endif
+                return; 
+            }
 
             _velocity.x = horizontalVel.x;
             _velocity.z = horizontalVel.z;
@@ -250,7 +355,13 @@ namespace Core.Physics
         /// </summary>
         public void AddHorizontalVelocity(Vector3 delta)
         {
-            if (delta == null) { Debug.LogError($"[SH_PhysicsMotor] AddHorizontalVelocity failed: Delta velocity vector is null. Ensure that a valid Vector3 is provided when calling AddHorizontalVelocity."); return; }
+            if (delta == null) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_PhysicsMotor] AddHorizontalVelocity failed: Delta velocity vector is null. Ensure that a valid Vector3 is provided when calling AddHorizontalVelocity."); 
+#endif
+                return; 
+            }
 
             _velocity.x += delta.x;
             _velocity.z += delta.z;
@@ -261,7 +372,13 @@ namespace Core.Physics
         /// </summary>
         private void ClampHorizontalVelocity(SH_MovementSettings settings)
         {
-            if (settings == null) { Debug.LogError($"[SH_PhysicsMotor] ClampHorizontalVelocity failed: Movement settings data is null. Ensure that valid SH_MovementSettings are passed when calling ClampHorizontalVelocity."); return; }
+            if (settings == null) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_PhysicsMotor] ClampHorizontalVelocity failed: Movement settings data is null. Ensure that valid SH_MovementSettings are passed when calling ClampHorizontalVelocity."); 
+#endif
+                return; 
+            }
 
             Vector2 horizontalVel = new Vector2(_velocity.x, _velocity.z);
 

@@ -40,10 +40,33 @@ namespace Core.Locomotion
         /// <param name="physic">Reference to the PhysicsMotor for applying forces.</param>
         public void Initialize(SH_InputHandler input, SH_MovementSettings settings, SH_PhysicsMotor physics, SH_PerspectiveController perspective)
         {
-            if (input == null) { Debug.LogError($"[SH_LocomotionController] Initialization failed: InputHandler reference is null. Ensure that a valid SH_InputHandler component is assigned during initialization."); return; }
-            if (settings == null) { Debug.LogError($"[SH_LocomotionController] Initialization failed: MovementSettings reference is null. Ensure that a valid SH_MovementSettings asset is assigned during initialization."); return; }
-            if (physics == null) { Debug.LogError($"[SH_LocomotionController] Initialization failed: PhysicsMotor reference is null. Ensure that a valid SH_PhysicsMotor component is assigned during initialization."); return; }
-            if (perspective == null) { Debug.LogError($"[SH_LocomotionController] Initialization failed: PerspectiveController reference is null. Ensure that a valid SH_PerspectiveController component is assigned during initialization."); return; }
+            if (input == null) 
+            {
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_LocomotionController] Initialization failed: InputHandler reference is null. Ensure that a valid SH_InputHandler component is assigned during initialization.");
+#endif
+                return; 
+            }
+            if (settings == null) 
+            {
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_LocomotionController] Initialization failed: MovementSettings reference is null. Ensure that a valid SH_MovementSettings asset is assigned during initialization.");
+#endif
+            return; 
+            }
+            if (physics == null) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_LocomotionController] Initialization failed: PhysicsMotor reference is null. Ensure that a valid SH_PhysicsMotor component is assigned during initialization.");
+#endif
+                return; 
+            }
+            if (perspective == null) { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_LocomotionController] Initialization failed: PerspectiveController reference is null. Ensure that a valid SH_PerspectiveController component is assigned during initialization.");
+#endif
+                return; 
+            }
 
             _input = input;
             _settings = settings;
@@ -65,7 +88,13 @@ namespace Core.Locomotion
         /// <param name="dt">Delta time for kinematic calculations.</param>
         public void Tick(float dt)
         {
-            if (dt <= 0) { Debug.LogError($"[SH_LocomotionController] Tick failed: Invalid delta time value ({dt}). Ensure that a positive, non-zero value is passed when calling Tick."); return; }
+            if (dt <= 0) 
+            {
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_LocomotionController] Tick failed: Invalid delta time value ({dt}). Ensure that a positive, non-zero value is passed when calling Tick.");
+#endif
+                return; 
+            }
 
             // 1. Process Input and determine intended movement direction in world space
             Vector2 input = _input.MoveInput;
@@ -92,8 +121,20 @@ namespace Core.Locomotion
         /// </summary>
         private void ApplyAcceleration(Vector3 direction, float dt)
         {
-            if (direction == null) { Debug.LogError($"[SH_LocomotionController] ApplyAcceleration failed: Direction vector is null. Ensure that the input processing correctly maps to a valid world-space direction."); return; }
-            if (dt <= 0) { Debug.LogError($"[SH_LocomotionController] ApplyAcceleration failed: Invalid delta time value ({dt}). Ensure that a positive, non-zero value is passed when calling ApplyAcceleration."); return; }
+            if (direction == null) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_LocomotionController] ApplyAcceleration failed: Direction vector is null. Ensure that the input processing correctly maps to a valid world-space direction.");
+#endif
+                return; 
+            }
+            if (dt <= 0) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_LocomotionController] ApplyAcceleration failed: Invalid delta time value ({dt}). Ensure that a positive, non-zero value is passed when calling ApplyAcceleration.");
+#endif
+                return; 
+            }
 
             // Extract horizontal velocity (ignoring vertical component for grounded movement)
             Vector3 currentVelocity = _physicsMotor.CurrentVelocity;
@@ -157,8 +198,20 @@ namespace Core.Locomotion
         /// </summary>
         private void ApplyRotation(Vector3 direction, float dt)
         {
-            if (direction == null) { Debug.LogError($"[SH_LocomotionController] ApplyRotation failed: Direction vector is null. Ensure that the input processing correctly maps to a valid world-space direction."); return; }
-            if (dt <= 0) { Debug.LogError($"[SH_LocomotionController] ApplyRotation failed: Invalid delta time value ({dt}). Ensure that a positive, non-zero value is passed when calling ApplyRotation."); return; }
+            if (direction == null) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_LocomotionController] ApplyRotation failed: Direction vector is null. Ensure that the input processing correctly maps to a valid world-space direction.");
+#endif
+                return; 
+            }
+            if (dt <= 0) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_LocomotionController] ApplyRotation failed: Invalid delta time value ({dt}). Ensure that a positive, non-zero value is passed when calling ApplyRotation.");
+#endif
+                return; 
+            }
 
             // Only rotate if there is significant movement input to avoid jitter when idle
             if (direction.sqrMagnitude < 0.0001f)

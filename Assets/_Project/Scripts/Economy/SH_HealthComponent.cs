@@ -124,9 +124,15 @@ namespace Game.Economy
         /// </param>
         public void Initialize(SH_EconomySettings settings)
         {
-            if (settings == null) { Debug.LogError($"[SH_HealthComponent] Initialization failed on {gameObject.name}: SH_EconomySettings reference is null. Ensure a valid EconomySettings asset is assigned."); return;}
+            if (settings == null) 
+            {
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_HealthComponent] Initialization failed on {gameObject.name}: SH_EconomySettings reference is null. Ensure a valid EconomySettings asset is assigned.");
+#endif
+                return;
+            }
 
-            _settings = settings;
+                _settings = settings;
             _currentDurability = _settings.maxDurability;
             _isDefeated = false;
             _isInitialized = true;
@@ -146,12 +152,24 @@ namespace Game.Economy
         /// </param>
         public void TakeDamage(float damageAmount)
         {
-            if (!_isInitialized) { Debug.LogWarning($"[SH_HealthComponent] TakeDamage called on {gameObject.name} before initialization. Call Initialize() first."); return; }
+            if (!_isInitialized) 
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_HealthComponent] TakeDamage called on {gameObject.name} before initialization. Call Initialize() first.");
+#endif
+                return; 
+            }
             if (_isDefeated) return;
             if (_isInvulnerable) return;
-            if (damageAmount <= 0f) { Debug.LogWarning($"[SH_HealthComponent] TakeDamage called with invalid damageAmount ({damageAmount}). Value must be greater than zero."); return; }
+            if (damageAmount <= 0f) 
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_HealthComponent] TakeDamage called with invalid damageAmount ({damageAmount}). Value must be greater than zero.");
+#endif
+                return; 
+            }
 
-            float previousDurability = _currentDurability;
+                float previousDurability = _currentDurability;
             _currentDurability = Mathf.Max(0f, _currentDurability - damageAmount);
             float actualDamage = previousDurability - _currentDurability;
 
@@ -171,8 +189,20 @@ namespace Game.Economy
         /// </param>
         public void Repair(float repairAmount)
         {
-            if (!_isInitialized) { Debug.LogWarning($"[SH_HealthComponent] Repair called on {gameObject.name} before initialization. Call Initialize() first."); return;}
-            if (repairAmount <= 0f) { Debug.LogWarning($"[SH_HealthComponent] Repair called with invalid repairAmount ({repairAmount}). Value must be greater than zero."); return;}
+            if (!_isInitialized) 
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_HealthComponent] Repair called on {gameObject.name} before initialization. Call Initialize() first.");
+#endif
+                return;
+            }
+            if (repairAmount <= 0f) 
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_HealthComponent] Repair called with invalid repairAmount ({repairAmount}). Value must be greater than zero.");
+#endif
+                return;
+            }
 
             float previousDurability = _currentDurability;
             _currentDurability = Mathf.Min(_settings.maxDurability, _currentDurability + repairAmount);
@@ -188,7 +218,13 @@ namespace Game.Economy
         /// </summary>
         public void ResetToFull()
         {
-            if (!_isInitialized) { Debug.LogWarning($"[SH_HealthComponent] ResetToFull called on {gameObject.name} before initialization. Call Initialize() first."); return;}
+            if (!_isInitialized) 
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_HealthComponent] ResetToFull called on {gameObject.name} before initialization. Call Initialize() first.");
+#endif
+                return;
+            }
 
             _currentDurability = _settings.maxDurability;
             _isDefeated = false;

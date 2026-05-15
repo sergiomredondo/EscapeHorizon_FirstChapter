@@ -53,8 +53,10 @@ namespace Game.World
 
             if (playerFSM == null)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning($"[SH_ZoneTrigger] No SH_PlayerStateMachine found on " +
                                  $"'{other.gameObject.name}'. Zone change not applied.");
+#endif
                 return;
             }
 

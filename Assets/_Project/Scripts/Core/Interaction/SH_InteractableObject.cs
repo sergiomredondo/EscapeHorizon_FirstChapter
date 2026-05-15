@@ -255,9 +255,12 @@ namespace Game.Interaction
         {
             if (persistentID == "UNSET_ID")
             {
+#if UNITY_EDITOR
                 Debug.LogWarning($"[SH_InteractableObject] '{gameObject.name}' has no " +
                                  $"persistent ID assigned. Persistence will not work correctly. " +
                                  $"Assign a unique ID in the Inspector (GDD §5.2.4).");
+#endif
+
             }
         }
 

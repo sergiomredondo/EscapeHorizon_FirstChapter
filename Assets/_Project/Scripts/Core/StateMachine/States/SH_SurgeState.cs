@@ -53,8 +53,12 @@ namespace Core.StateMachine.States
             : base(context, stateMachine)
         {
             if (actionData == null)
+            {
+#if UNITY_EDITOR
                 Debug.LogError("[SH_SurgeState] actionData is null. Assign SurgeActivation.asset " +
                                "to the surgeAction field in SH_MovementSettings.");
+#endif
+            }
             _actionData = actionData;
             _animationMap = animationMap;
         }
@@ -105,7 +109,9 @@ namespace Core.StateMachine.States
         {
             if (dt <= 0f)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_SurgeState] PhysicsUpdate: invalid dt ({dt}).");
+#endif
                 return;
             }
 
@@ -145,9 +151,12 @@ namespace Core.StateMachine.States
             AnimationClip clip = _animationMap?.GetClip(_actionData);
 
             if (clip == null)
+            {
+#if UNITY_EDITOR
                 Debug.LogWarning($"[SH_SurgeState] No clip found for '{_actionData.name}' " +
                                  $"in SH_ActionAnimationMap. Phase callbacks will still fire.");
-
+#endif
+            }
             SubscribeToBridgeCallbacks();
 
             _context.AnimatorBridge.PlayActionClip(

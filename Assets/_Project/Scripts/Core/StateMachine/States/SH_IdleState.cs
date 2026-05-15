@@ -21,8 +21,10 @@ namespace Core.StateMachine.States
         public SH_IdleState(SH_PlayerContext context, SH_PlayerStateMachine stateMachine)
             : base(context, stateMachine)
         {
+#if UNITY_EDITOR
             if (context == null) Debug.LogError("[SH_IdleState] context is null.");
             if (stateMachine == null) Debug.LogError("[SH_IdleState] stateMachine is null.");
+#endif
         }
 
         public override void Enter()
@@ -83,7 +85,9 @@ namespace Core.StateMachine.States
         {
             if (dt <= 0)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_IdleState] PhysicsUpdate: invalid dt ({dt}).");
+#endif
                 return;
             }
 

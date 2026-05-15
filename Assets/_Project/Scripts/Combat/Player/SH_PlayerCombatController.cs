@@ -113,17 +113,23 @@ namespace Game.Combat.Core
         {
             if (context == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_PlayerCombatController] Initialize: context is null on {gameObject.name}.");
+#endif
                 return;
             }
             if (hitbox == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_PlayerCombatController] Initialize: hitbox is null on {gameObject.name}.");
+#endif
                 return;
             }
             if (combatSettings == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_PlayerCombatController] Initialize: combatSettings is null on {gameObject.name}.");
+#endif
                 return;
             }
 
@@ -204,9 +210,11 @@ namespace Game.Combat.Core
 
             if (action == null)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning(
                     $"[SH_PlayerCombatController] {type} attack action is not assigned. " +
                     $"Assign the action asset in the Inspector.");
+#endif
                 return;
             }
 
@@ -220,8 +228,10 @@ namespace Game.Combat.Core
 
             if (!accepted)
             {
+#if UNITY_EDITOR
                 Debug.Log($"[SH_PlayerCombatController] {type} attack denied by state machine " +
                           $"(cooldown or priority).");
+#endif
             }
         }
 
@@ -290,7 +300,9 @@ namespace Game.Combat.Core
             IsSurgeActive = true;
             _surgeTimer   = 0f;
 
+#if UNITY_EDITOR
             Debug.Log("[SH_PlayerCombatController] Energy Surge activated.");
+#endif
         }
 
         private void EndSurge()
@@ -299,7 +311,9 @@ namespace Game.Combat.Core
             IsInSurgeCooldown = true;
             _surgeTimer       = 0f;
 
+#if UNITY_EDITOR
             Debug.Log("[SH_PlayerCombatController] Energy Surge ended. Cooldown started.");
+#endif
         }
 
         #endregion

@@ -107,8 +107,20 @@ namespace Game.Economy
             SH_EconomicEventSettings eventSettings,
             SH_ResourceSystem resourceSystem)
         {
-            if (eventSettings == null) { Debug.LogError($"[SH_EconomicEventManager] Initialization failed on {gameObject.name}: SH_EconomicEventSettings is null."); return;}
-            if (resourceSystem == null) { Debug.LogError($"[SH_EconomicEventManager] Initialization failed on {gameObject.name}: SH_ResourceSystem is null."); return;}
+            if (eventSettings == null) 
+            {
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_EconomicEventManager] Initialization failed on {gameObject.name}: SH_EconomicEventSettings is null.");
+#endif
+                return;
+            }
+            if (resourceSystem == null) 
+            {
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_EconomicEventManager] Initialization failed on {gameObject.name}: SH_ResourceSystem is null.");
+#endif
+                return;
+            }
 
             _eventSettings = eventSettings;
             _resourceSystem = resourceSystem;
@@ -162,9 +174,15 @@ namespace Game.Economy
         /// </param>
         public void NotifyRegionChange(string regionId)
         {
-            if (!_isInitialized) { Debug.LogWarning($"[SH_EconomicEventManager] NotifyRegionChange called before initialization."); return;}
+            if (!_isInitialized) 
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_EconomicEventManager] NotifyRegionChange called before initialization.");
+#endif
+                return;
+            }
 
-            ActivateEvent(
+                ActivateEvent(
                 EconomicEventType.IdentityCoreScarcity,
                 _eventSettings.scarcityDuration);
         }
@@ -178,7 +196,13 @@ namespace Game.Economy
         /// </summary>
         public void NotifyReconfigurationPerformed()
         {
-            if (!_isInitialized) { Debug.LogWarning($"[SH_EconomicEventManager] NotifyReconfigurationPerformed called before initialization."); return;}
+            if (!_isInitialized) 
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_EconomicEventManager] NotifyReconfigurationPerformed called before initialization."); 
+#endif
+                return;
+            }
 
             float currentTime = Time.time;
             float windowElapsed = currentTime - _reconfigWindowStartTime;
@@ -214,13 +238,21 @@ namespace Game.Economy
         /// </summary>
         public void RollEnergyEventOnEliteEncounter()
         {
-            if (!_isInitialized) { Debug.LogWarning($"[SH_EconomicEventManager] RollEnergyEventOnEliteEncounter called before initialization."); return;}
+            if (!_isInitialized) 
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_EconomicEventManager] RollEnergyEventOnEliteEncounter called before initialization.");
+#endif
+                return;
+            }
 
             float roll = UnityEngine.Random.value;
 
             if (roll > _eventSettings.energyFluxChance)
             {
+#if UNITY_EDITOR
                 Debug.Log($"[SH_EconomicEventManager] Energy Flux not triggered.");
+#endif
                 return;
             }
 

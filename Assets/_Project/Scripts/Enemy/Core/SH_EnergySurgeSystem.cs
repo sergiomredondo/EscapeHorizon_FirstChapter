@@ -114,12 +114,16 @@ namespace Game.Combat.Core
         {
             if (context == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_EnergySurgeSystem] Initialize: null context on {gameObject.name}.");
+#endif
                 return;
             }
             if (combatController == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"[SH_EnergySurgeSystem] Initialize: null combatController on {gameObject.name}.");
+#endif
                 return;
             }
 

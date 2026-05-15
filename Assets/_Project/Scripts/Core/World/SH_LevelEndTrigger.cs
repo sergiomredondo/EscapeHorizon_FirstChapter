@@ -36,7 +36,9 @@ namespace Game.World
             if (_overlay != null)
                 _overlay.Show();
             else
+#if UNITY_EDITOR
                 Debug.LogWarning("[SH_LevelEndTrigger] No SH_LevelCompleteOverlay assigned.");
+#endif
         }
 
         private void OnDrawGizmos()

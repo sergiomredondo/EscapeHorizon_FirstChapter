@@ -216,7 +216,9 @@ namespace Game.Combat.Core
         {
             if (attackerStats == null || defenderStats == null || settings == null)
             {
+#if UNITY_EDITOR
                 Debug.LogError("[SH_DamageCalculator] BuildPayload: null reference in parameters.");
+#endif
                 return SH_DamagePayload.Empty;
             }
 

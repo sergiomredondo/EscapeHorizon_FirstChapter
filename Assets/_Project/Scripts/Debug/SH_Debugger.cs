@@ -163,7 +163,11 @@ namespace DebugTools
         {
             _stateMachine = GetComponent<SH_PlayerStateMachine>();
             if (_stateMachine == null)
+            {
+#if UNITY_EDITOR
                 Debug.LogWarning($"[SH_Debugger] SH_PlayerStateMachine not found on {gameObject.name}.");
+#endif
+            }
         }
 
         private void Update()
@@ -184,8 +188,10 @@ namespace DebugTools
         {
             if (context == null)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning($"[SH_Debugger] Initialize called with null context on " +
                                  $"{gameObject.name}. Telemetry unavailable.");
+#endif
                 return;
             }
 

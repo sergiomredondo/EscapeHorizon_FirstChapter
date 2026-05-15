@@ -57,8 +57,20 @@ namespace Game.Economy.Progression
         /// </returns>
         public static float GetICCostForNextDP(int totalDPSpent, SH_EconomySettings settings)
         {
-            if (settings == null) { Debug.LogError("[SH_ProgressionCalculator] GetICCostForNextDP: SH_EconomySettings reference is null. Returning float.MaxValue to prevent invalid eligibility."); return float.MaxValue;}
-            if (totalDPSpent < 0) { Debug.LogWarning($"[SH_ProgressionCalculator] GetICCostForNextDP: totalDPSpent ({totalDPSpent}) is negative. Clamping to 0."); totalDPSpent = 0;}
+            if (settings == null) 
+            {
+#if UNITY_EDITOR
+                Debug.LogError("[SH_ProgressionCalculator] GetICCostForNextDP: SH_EconomySettings reference is null. Returning float.MaxValue to prevent invalid eligibility.");
+#endif
+                return float.MaxValue;
+            }
+            if (totalDPSpent < 0) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_ProgressionCalculator] GetICCostForNextDP: totalDPSpent ({totalDPSpent}) is negative. Clamping to 0."); 
+#endif
+                totalDPSpent = 0;
+            }
 
             // IC_0 * e^(k * DP)
             float cost = settings.icBaseCost *
@@ -90,9 +102,15 @@ namespace Game.Economy.Progression
             int totalDPSpent,
             SH_EconomySettings settings)
         {
-            if (settings == null) { Debug.LogError("[SH_ProgressionCalculator] IsEligibleForNextDP: SH_EconomySettings reference is null. Returning false."); return false;}
+            if (settings == null) 
+            {
+#if UNITY_EDITOR
+                Debug.LogError("[SH_ProgressionCalculator] IsEligibleForNextDP: SH_EconomySettings reference is null. Returning false.");
+#endif
+                return false;
+            }
 
-            float cost = GetICCostForNextDP(totalDPSpent, settings);
+                float cost = GetICCostForNextDP(totalDPSpent, settings);
             return currentIC >= cost;
         }
 
@@ -122,7 +140,13 @@ namespace Game.Economy.Progression
             int totalDPSpent,
             SH_EconomySettings settings)
         {
-            if (settings == null) { Debug.LogError("[SH_ProgressionCalculator] GetProgressToNextDP: SH_EconomySettings reference is null. Returning 0."); return 0f;}
+            if (settings == null) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError("[SH_ProgressionCalculator] GetProgressToNextDP: SH_EconomySettings reference is null. Returning 0."); 
+#endif
+                return 0f;
+            }
 
             float cost = GetICCostForNextDP(totalDPSpent, settings);
 
@@ -158,7 +182,13 @@ namespace Game.Economy.Progression
             int totalDPSpent,
             SH_EconomySettings settings)
         {
-            if (settings == null) { Debug.LogError("[SH_ProgressionCalculator] SimulatePurge: SH_EconomySettings reference is null. Returning 0."); return 0;}
+            if (settings == null) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError("[SH_ProgressionCalculator] SimulatePurge: SH_EconomySettings reference is null. Returning 0."); 
+#endif
+                return 0;
+            }
 
             int simulatedIC = currentIC;
             int simulatedDPSpent = totalDPSpent;
@@ -213,8 +243,20 @@ namespace Game.Economy.Progression
         /// </returns>
         public static float GetReconfigCost(int totalDPSpent, SH_EconomySettings settings)
         {
-            if (settings == null) { Debug.LogError("[SH_ProgressionCalculator] GetReconfigCost: SH_EconomySettings reference is null. Returning float.MaxValue to prevent invalid authorization."); return float.MaxValue;}
-            if (totalDPSpent < 0) { Debug.LogWarning($"[SH_ProgressionCalculator] GetReconfigCost: totalDPSpent ({totalDPSpent}) is negative. Clamping to 0."); totalDPSpent = 0;}
+            if (settings == null) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError("[SH_ProgressionCalculator] GetReconfigCost: SH_EconomySettings reference is null. Returning float.MaxValue to prevent invalid authorization."); 
+#endif
+                return float.MaxValue;
+            }
+            if (totalDPSpent < 0) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_ProgressionCalculator] GetReconfigCost: totalDPSpent ({totalDPSpent}) is negative. Clamping to 0."); 
+#endif
+                totalDPSpent = 0;
+            }
 
             // SC_0 + m * DP
             float cost = settings.scBaseReconfigCost +
@@ -247,7 +289,13 @@ namespace Game.Economy.Progression
             SH_EconomySettings settings,
             float csModifier = 1f)
         {
-            if (csModifier < 1f) { Debug.LogWarning($"[SH_ProgressionCalculator] GetReconfigCostWithModifier: csModifier ({csModifier}) is below 1.0. Clamping to 1.0. Reconfiguration cost modifiers cannot reduce base cost."); csModifier = 1f;}
+            if (csModifier < 1f) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SH_ProgressionCalculator] GetReconfigCostWithModifier: csModifier ({csModifier}) is below 1.0. Clamping to 1.0. Reconfiguration cost modifiers cannot reduce base cost."); 
+#endif
+                csModifier = 1f;
+            }
 
             float baseCost = GetReconfigCost(totalDPSpent, settings);
             return baseCost * csModifier;
@@ -281,7 +329,13 @@ namespace Game.Economy.Progression
             int stepsToPreview,
             SH_EconomySettings settings)
         {
-            if (settings == null) { Debug.LogError("[SH_ProgressionCalculator] GetICCostCurvePreview: SH_EconomySettings reference is null. Returning empty array."); return new float[0];}
+            if (settings == null) 
+            {
+#if UNITY_EDITOR
+                Debug.LogError("[SH_ProgressionCalculator] GetICCostCurvePreview: SH_EconomySettings reference is null. Returning empty array.");
+#endif
+                return new float[0]; 
+            }
 
             stepsToPreview = Mathf.Clamp(stepsToPreview, 1, 50);
             float[] curve = new float[stepsToPreview];
@@ -321,7 +375,13 @@ namespace Game.Economy.Progression
             SH_EconomySettings settings,
             float csModifier = 1f)
         {
-            if (settings == null) { Debug.LogError("[SH_ProgressionCalculator] GetReconfigCostCurvePreview: SH_EconomySettings reference is null. Returning empty array."); return new float[0];}
+            if (settings == null) 
+            { 
+#if UNITY_EDITOR
+                Debug.LogError("[SH_ProgressionCalculator] GetReconfigCostCurvePreview: SH_EconomySettings reference is null. Returning empty array.");
+#endif
+                return new float[0]; 
+            }
 
             stepsToPreview = Mathf.Clamp(stepsToPreview, 1, 50);
             float[] curve = new float[stepsToPreview];
