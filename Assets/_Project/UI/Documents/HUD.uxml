@@ -49,6 +49,9 @@
         <!-- Shown/hidden by SH_HUDController via display:flex / none.      -->
         <!-- Time.timeScale = 0 while this panel is visible.                -->
         <!-- ═══════════════════════════════════════════════════════════════ -->
+        <ui:Label name="build-readonly-notice" text="[ Return to base to modify build ]"
+          class="build-readonly-notice" style="display: none;"/>
+
         <ui:VisualElement name="build-menu-overlay" class="build-menu-overlay" style="display: none;">
 
             <ui:VisualElement name="build-menu-panel" class="build-menu-panel">
@@ -64,6 +67,17 @@
                     <ui:Label name="build-label-scrap"  text="SC: 0"  class="build-resource-chip build-resource-chip--scrap"/>
                     <ui:Label name="build-label-ic"     text="IC: 0"  class="build-resource-chip build-resource-chip--ic"/>
                     <ui:Label name="build-label-pd"     text="PD: 0"  class="build-resource-chip build-resource-chip--pd"/>
+                </ui:VisualElement>
+                <!-- Purge section — only visible in full interaction mode (terminal) -->
+                <ui:VisualElement name="build-purge-section" class="build-purge-section" style="display: none;">
+                    <ui:VisualElement class="build-purge-header-row">
+                        <ui:Label name="build-purge-title" text="PURIFY CORES"
+                                  class="build-purge-title"/>
+                        <ui:Label name="build-purge-yield" text=""
+                                  class="build-purge-yield"/>
+                    </ui:VisualElement>
+                    <ui:Button name="build-purge-btn" text="PURGE"
+                               class="build-purge-btn"/>
                 </ui:VisualElement>
                 <ui:VisualElement class="separator"/>
 

@@ -61,17 +61,6 @@ namespace Core.StateMachine
         [Tooltip("Maps each SH_ActionData to its AnimationClip for the player entity. " +
          "Create via ScapeHorizon/Animation/ActionAnimationMap.")]
         [SerializeField] private SH_ActionAnimationMap _actionAnimationMap;
-        [Tooltip("World-space position and rotation the camera moves to during the defeat cinematic. " +
-         "Place an empty GameObject in the scene at the desired cinematic angle and assign it here.")]
-        [SerializeField] private Transform _defeatCameraTarget;
-        [Tooltip("Duration in seconds of the defeat cinematic before the player resets.")]
-        [Min(1f)]
-        [SerializeField] private float _defeatSequenceDuration = 3f;
-        [Tooltip("Animation trigger string sent to Bear's Animator when defeated.")]
-        [SerializeField] private string _defeatAnimationTrigger = "Defeat";
-        [Tooltip("World-space spawn point where the player resets after defeat. " +
-                 "Assign an empty GameObject placed at the level start position.")]
-        [SerializeField] private Transform _spawnPoint;
 
         #endregion
 
@@ -152,6 +141,46 @@ namespace Core.StateMachine
                  "runs the 60-second dynamic AI aggressiveness loop (GDD §5.3.6). " +
                  "Add SH_DifficultyManager component to Bear (or a persistent manager object).")]
         [SerializeField] private SH_DifficultyManager _difficultyManager;
+
+        #endregion
+
+        #region Tactical Retreat Configuration
+
+        [Header("Tactical Retreat Sequence")]
+
+        [Tooltip("Animator trigger sent to Bear at the start of the retreat. " +
+         "Should play a flee or stumble animation.")]
+        [SerializeField] private string _retreatAnimTrigger = "TacticalRetreat";
+
+        [Tooltip("Animator trigger sent to Bear when it arrives at the safe zone.")]
+        [SerializeField] private string _arrivalAnimTrigger = "SafeZoneArrival";
+
+        [Tooltip("timeScale value during the slow-motion phase. 0.25–0.35 recommended.")]
+        [Range(0.1f, 0.9f)]
+        [SerializeField] private float _slowMotionScale = 0.3f;
+
+        [Tooltip("Duration of the slow-motion phase in real seconds.")]
+        [Min(0.3f)]
+        [SerializeField] private float _slowMotionDuration = 1.8f;
+
+        [Tooltip("Duration of each fade direction (in and out) in real seconds.")]
+        [Min(0.2f)]
+        [SerializeField] private float _fadeDuration = 0.6f;
+
+        [Tooltip("Duration of the arrival animation phase at the safe zone in real seconds.")]
+        [Min(0.3f)]
+        [SerializeField] private float _arrivalDuration = 1.2f;
+
+        [Tooltip("Transform the camera lerps to during the slow-motion close-up. " +
+                 "Place an empty child of the Main Camera at the desired cinematic angle.")]
+        [SerializeField] private Transform _retreatCameraCloseUp;
+
+        [Tooltip("Safe zone spawn point where Bear reappears after the retreat.")]
+        [SerializeField] private Transform _spawnPoint;
+
+        [Tooltip("Full-screen CanvasGroup for the black fade. " +
+                 "Add a Canvas with a black Panel and a CanvasGroup component.")]
+        [SerializeField] private CanvasGroup _retreatFadeOverlay;
 
         #endregion
 
@@ -252,13 +281,18 @@ namespace Core.StateMachine
 
         private void HandlePlayerDefeated()
         {
-            ChangeState(new SH_DeathSequenceState(
+            ChangeState(new SH_TacticalRetreatState(
                 _context,
                 this,
-                _defeatAnimationTrigger,
-                _defeatSequenceDuration,
-                _defeatCameraTarget,
-                _spawnPoint));
+                _retreatAnimTrigger,
+                _arrivalAnimTrigger,
+                _slowMotionScale,
+                _slowMotionDuration,
+                _fadeDuration,
+                _arrivalDuration,
+                _retreatCameraCloseUp,
+                _spawnPoint,
+                _retreatFadeOverlay));
         }
 
         private void Update()
@@ -392,8 +426,12 @@ namespace Core.StateMachine
             if (_difficultyManager == null) Debug.LogError($"[SH_PlayerStateMachine] SH_DifficultyManager not assigned on {gameObject.name}.");
 
             if (_spawnPoint == null)
-                Debug.LogWarning($"[SH_PlayerStateMachine] No spawn point assigned on {gameObject.name}. " +
-                                 $"Player will reset to origin on defeat.");
+                Debug.LogWarning($"[SH_PlayerStateMachine] No spawn point assigned on " +
+                                 $"{gameObject.name}. Bear will reset to world origin on retreat.");
+
+            if (_retreatFadeOverlay == null)
+                Debug.LogWarning($"[SH_PlayerStateMachine] No retreat fade overlay assigned on " +
+                                 $"{gameObject.name}. Retreat sequence will have no screen fade.");
 #endif
         }
 
@@ -406,7 +444,6 @@ namespace Core.StateMachine
         {
             if (_context?.Health != null)
                 _context.Health.OnDefeated -= HandlePlayerDefeated;
-            _context?.Dispose();
         }
 
         #endregion

@@ -38,6 +38,12 @@ namespace Game.Economy
         private bool _isDefeated;
 
         /// <summary>
+        /// Optional threshold for triggering a retreat behavior before actual defeat.
+        /// </summary>
+        private float _retreatThreshold = 0f;
+        private bool _retreatTriggered = false;
+
+        /// <summary>
         /// Flag to indicate temporary invulnerability states (e.g., during certain actions or effects).
         /// When true, TakeDamage will ignore incoming damage and not trigger events.
         /// </summary>
@@ -143,6 +149,17 @@ namespace Game.Economy
         #region Public API
 
         /// <summary>
+        /// Sets the retreat health threshold in absolute durability units.
+        /// Called by SH_PlayerContext during orchestration after EconomySettings are available.
+        /// When current durability drops below this value, OnDefeated fires and the
+        /// tactical retreat sequence begins. The Mecha is not destroyed at zero HP.
+        /// </summary>
+        public void SetRetreatThreshold(float thresholdAbsolute)
+        {
+            _retreatThreshold = Mathf.Max(0f, thresholdAbsolute);
+        }
+
+        /// <summary>
         /// Applies damage to the Mecha, reducing current Durability.
         /// Clamps the result to zero and evaluates defeat and critical state conditions.
         /// Does nothing if the component is already in a defeated state.
@@ -169,14 +186,23 @@ namespace Game.Economy
                 return; 
             }
 
-                float previousDurability = _currentDurability;
+            float previousDurability = _currentDurability;
             _currentDurability = Mathf.Max(0f, _currentDurability - damageAmount);
             float actualDamage = previousDurability - _currentDurability;
 
             OnDamageReceived?.Invoke(_currentDurability, _settings.maxDurability, actualDamage);
 
             EvaluateCriticalState();
-            EvaluateDefeatCondition();
+
+            // Trigger tactical retreat when durability crosses the retreat threshold.
+            // Guards against re-triggering if multiple hits land in the same frame.
+            if (!_retreatTriggered && _retreatThreshold > 0f
+                && _currentDurability <= _retreatThreshold)
+            {
+                _retreatTriggered = true;
+                _isDefeated = true;
+                OnDefeated?.Invoke();
+            }
         }
 
         /// <summary>
@@ -228,6 +254,9 @@ namespace Game.Economy
 
             _currentDurability = _settings.maxDurability;
             _isDefeated = false;
+            _retreatTriggered = false;
+
+            OnRepaired?.Invoke(_currentDurability, _settings.maxDurability, _settings.maxDurability);
         }
 
         /// <summary>

@@ -49,6 +49,10 @@ namespace UI
         private const string ElementInteractionContainer = "interaction-container";
         private const string ElementInteractionLabel = "interaction-label";
         private const string ElementInteractionProgress = "interaction-progress";
+        private const string ElementBuildReadonlyNotice = "build-readonly-notice";
+        private const string ElementBuildPurgeSection = "build-purge-section";
+        private const string ElementBuildPurgeYield = "build-purge-yield";
+        private const string ElementBuildPurgeBtn = "build-purge-btn";
 
         #endregion
 
@@ -95,6 +99,12 @@ namespace UI
         /// </summary>
         public event Action OnBuildMenuClosePressed;
 
+        /// <summary>
+        /// Fired when the player clicks the purge button.
+        /// Consumed by SH_UIBridge which executes the transaction.
+        /// </summary>
+        public event Action OnPurgePressed;
+
         #endregion
 
         // ─────────────────────────────────────────────────────────────────────
@@ -125,6 +135,9 @@ namespace UI
         private Label _buildReanalysisCostLabel;
         private VisualElement _buildNarrativePanel;
         private Label _buildNarrativeText;
+        private Label _buildReadonlyNotice;
+        private VisualElement _buildPurgeSection;
+        private Label _buildPurgeYield;
 
         // [branch 0-2, node 0-4]
         private readonly Button[,] _nodeButtons = new Button[3, 5];
@@ -214,6 +227,7 @@ namespace UI
             _model.OnBuildMenuOpenChanged += OnBuildMenuOpenChanged;
             _model.OnBuildTreeRefreshed += OnBuildTreeRefreshed;
             _model.OnBuildNarrativeChanged += OnBuildNarrativeChanged;
+            _model.OnPurgeDataChanged += OnPurgeDataChanged;
 
             PushCurrentModelState();
             _isInitialized = true;
@@ -312,6 +326,13 @@ namespace UI
             _buildReanalysisCostLabel = root.Q<Label>(ElementBuildReanalysisCost);
             _buildNarrativePanel = root.Q<VisualElement>(ElementBuildNarrativePanel);
             _buildNarrativeText = root.Q<Label>(ElementBuildNarrativeText);
+            _buildPurgeSection = root.Q<VisualElement>(ElementBuildPurgeSection);
+            _buildPurgeYield = root.Q<Label>(ElementBuildPurgeYield);
+
+            Button purgeBtn = root.Q<Button>(ElementBuildPurgeBtn);
+            if (purgeBtn != null)
+                purgeBtn.RegisterCallback<ClickEvent>(_ => OnPurgePressed?.Invoke());
+            _buildReadonlyNotice = root.Q<Label>(ElementBuildReadonlyNotice);
 
             if (_buildOverlay == null)
             {
@@ -417,6 +438,12 @@ namespace UI
         {
             if (_buildOverlay == null) return;
             _buildOverlay.style.display = isOpen ? DisplayStyle.Flex : DisplayStyle.None;
+            if (isOpen && _buildReadonlyNotice != null)
+            {
+                _buildReadonlyNotice.style.display = _model.BuildMenuInteractionEnabled
+                    ? DisplayStyle.None
+                    : DisplayStyle.Flex;
+            }
         }
 
         private void OnBuildTreeRefreshed()
@@ -434,8 +461,9 @@ namespace UI
                 _buildLabelIC.text = $"IC: {_model.CurrentIdentityCores}";
             if (_buildLabelPD != null)
                 _buildLabelPD.text = $"PD: {_model.BuildAvailablePD}";
+            bool interactionEnabled = _model.BuildMenuInteractionEnabled;
 
-            // ── Node buttons ───────────────────────────────────────────────
+            // Node buttons.
             for (int b = 0; b < 3; b++)
             {
                 for (int n = 0; n < 5; n++)
@@ -446,12 +474,10 @@ namespace UI
                     SH_UIStateModel.BuildNodeDisplayData data =
                         _model.GetNodeDisplay((BuildBranch)b, n);
 
-                    // Text.
                     btn.text = data.State == SH_UIStateModel.BuildNodeDisplayState.Active
                         ? $"✓  {data.NodeName}"
                         : $"{data.NodeName}\n{data.CostLabel}";
 
-                    // CSS state classes — only one active at a time.
                     btn.EnableInClassList(CssNodeActive,
                         data.State == SH_UIStateModel.BuildNodeDisplayState.Active);
                     btn.EnableInClassList(CssNodeNext,
@@ -460,28 +486,31 @@ namespace UI
                         data.State == SH_UIStateModel.BuildNodeDisplayState.Unavailable
                      || data.State == SH_UIStateModel.BuildNodeDisplayState.Locked);
 
-                    // Interactable only when this is the next purchasable slot.
-                    btn.SetEnabled(data.State == SH_UIStateModel.BuildNodeDisplayState.Next);
+                    // Only enable interaction when opened from the terminal.
+                    bool canInteract = interactionEnabled
+                                    && data.State == SH_UIStateModel.BuildNodeDisplayState.Next;
+                    btn.SetEnabled(canInteract);
                 }
             }
 
-            // ── Reanalysis buttons ─────────────────────────────────────────
+            // Reanalysis buttons.
             float reaCost = _model.BuildReanalysisCost;
-
             if (_buildReanalysisCostLabel != null)
-                _buildReanalysisCostLabel.text = _model.BuildHasActiveBuild
+                _buildReanalysisCostLabel.text = _model.BuildHasActiveBuild && interactionEnabled
                     ? $"Reanalysis cost: {Mathf.FloorToInt(reaCost)} SC"
-                    : string.Empty;
+                    : _model.BuildHasActiveBuild
+                        ? "Return to base to reanalyze"
+                        : string.Empty;
 
             for (int b = 0; b < 3; b++)
             {
                 Button reaBtn = _reanalysisButtons[b];
                 if (reaBtn == null) continue;
 
-                bool canReanalyze = _model.BuildHasActiveBuild
+                bool canReanalyze = interactionEnabled
+                                 && _model.BuildHasActiveBuild
                                  && (int)_model.BuildActiveBranch != b
                                  && _model.CurrentScrap >= reaCost;
-
                 reaBtn.SetEnabled(canReanalyze);
             }
         }
@@ -492,6 +521,29 @@ namespace UI
             _buildNarrativePanel.style.display = isVisible ? DisplayStyle.Flex : DisplayStyle.None;
             if (_buildNarrativeText != null)
                 _buildNarrativeText.text = text ?? string.Empty;
+        }
+
+        private void OnPurgeDataChanged(int icAvailable, int dpYield, bool enabled)
+        {
+            if (_buildPurgeSection == null) return;
+
+            // Show the purge section only when in terminal mode and there are IC to purge.
+            bool showSection = _model.BuildMenuInteractionEnabled && icAvailable > 0;
+            _buildPurgeSection.style.display = showSection
+                ? DisplayStyle.Flex
+                : DisplayStyle.None;
+
+            if (_buildPurgeYield != null)
+            {
+                _buildPurgeYield.text = dpYield > 0
+                    ? $"{icAvailable} IC  →  +{dpYield} PD"
+                    : $"{icAvailable} IC  →  no PD gain";
+            }
+
+            // Find and update the purge button's enabled state.
+            Button purgeBtn = _buildPurgeSection?.Q<Button>(ElementBuildPurgeBtn);
+            if (purgeBtn != null)
+                purgeBtn.SetEnabled(enabled && dpYield > 0);
         }
 
         #endregion

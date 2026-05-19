@@ -180,6 +180,7 @@ namespace UI
                 _hudController.OnBuildNodePressed += OnHUDBuildNodePressed;
                 _hudController.OnBuildReanalysisPressed += OnHUDBuildReanalysisPressed;
                 _hudController.OnBuildMenuClosePressed += CloseBuildMenu;
+                _hudController.OnPurgePressed += OnHUDPurgePressed;
             }
         }
 
@@ -218,6 +219,7 @@ namespace UI
                 _hudController.OnBuildNodePressed -= OnHUDBuildNodePressed;
                 _hudController.OnBuildReanalysisPressed -= OnHUDBuildReanalysisPressed;
                 _hudController.OnBuildMenuClosePressed -= CloseBuildMenu;
+                _hudController.OnPurgePressed -= OnHUDPurgePressed;
             }
         }
 
@@ -242,6 +244,7 @@ namespace UI
 
                 case ResourceType.IdentityCore:
                     _model.SetIdentityCores((int)newValue);
+                    if (_buildMenuOpen) PushPurgeData();
                     break;
             }
 
@@ -335,20 +338,37 @@ namespace UI
             PushBuildTreeState();
         }
 
+        private void OnHUDPurgePressed()
+        {
+            if (_context?.Resources == null) return;
+            if (_context.Resources.CurrentIdentityCores <= 0) return;
+
+            _context.Resources.PurgeCores();
+
+            PushBuildTreeState();
+            PushPurgeData();
+
+            _model.SetBuildNarrative(true,
+                "Core purified. Development potential unlocked.\n" +
+                "Return to the Analysis Tree to apply improvements.");
+        }
+
         #endregion
 
         // ─────────────────────────────────────────────────────────────────────
         #region Build Menu Open / Close
 
-        public void OpenBuildMenu()
+        public void OpenBuildMenu(bool interactionEnabled = false)
         {
             if (_buildMenuOpen) return;
             _buildMenuOpen = true;
 
             Time.timeScale = 0f;
 
+            _model.SetBuildMenuInteractionEnabled(interactionEnabled);
             _model.SetBuildNarrative(false, string.Empty);
             PushBuildTreeState();
+            PushPurgeData();
             _model.SetBuildMenuOpen(true);
         }
 
@@ -424,6 +444,24 @@ namespace UI
                 _context.Resources.AvailableDevelopmentPoints,
                 build.GetReanalysisCost(),
                 nodeData);
+        }
+
+        private void PushPurgeData()
+        {
+            if (_context?.Resources == null || _model == null) return;
+
+            int ic = _context.Resources.CurrentIdentityCores;
+            bool interactionEnabled = _model.BuildMenuInteractionEnabled;
+
+            // Calculate DP yield using the progression calculator.
+            // The calculator is internal to SH_ResourceSystem, so we
+            // read the available DP before and after a hypothetical purge
+            // by querying the public formula via SH_ProgressionCalculator.
+            // Since it is not directly accessible, we expose CalculateDPFromCores
+            // through a new public query method on SH_ResourceSystem.
+            int dpYield = _context.Resources.CalculatePurgeDPYield();
+
+            _model.SetPurgeData(ic, dpYield, interactionEnabled && ic > 0 && dpYield > 0);
         }
 
         #endregion

@@ -290,6 +290,14 @@
     max-width: 680px;
 }
 
+.build-readonly-notice {
+    font-size: var(--font-size-small);
+    color: var(--color-orange);
+    -unity-text-align: middle-center;
+    opacity: 0.8;
+    margin-bottom: 6px;
+}
+
 /* ── Title ─────────────────────────────────────────────────────────── */
 
 .build-menu-title {
@@ -464,6 +472,60 @@
     -unity-text-align: upper-left;
     white-space: normal;
     opacity: 0.85;
+}
+/* ── Purge section ─────────────────────────────────────────────────── */
+
+.build-purge-section {
+    flex-direction: column;
+    background-color: rgba(0, 255, 180, 0.04);
+    border-color: rgba(0, 255, 180, 0.18);
+    border-width: 1px;
+    border-radius: var(--panel-border-radius);
+    padding: 8px 10px;
+    margin-top: 8px;
+    margin-bottom: 4px;
+}
+
+.build-purge-header-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.build-purge-title {
+    font-size: var(--font-size-small);
+    color: rgb(0, 255, 180);
+    -unity-font-style: bold;
+}
+
+.build-purge-yield {
+    font-size: var(--font-size-small);
+    color: var(--color-white);
+    -unity-text-align: middle-right;
+    opacity: 0.8;
+}
+
+.build-purge-btn {
+    font-size: var(--font-size-small);
+    height: 32px;
+    border-radius: var(--panel-border-radius);
+    border-width: 1px;
+    border-color: rgba(0, 255, 180, 0.45);
+    background-color: rgba(0, 255, 180, 0.10);
+    color: rgb(0, 255, 180);
+    -unity-text-align: middle-center;
+    transition: background-color var(--transition-duration) ease-out,
+                border-color     var(--transition-duration) ease-out;
+}
+
+.build-purge-btn:hover {
+    background-color: rgba(0, 255, 180, 0.22);
+    border-color: rgba(0, 255, 180, 0.75);
+}
+
+.build-purge-btn:disabled {
+    opacity: 0.3;
 }
 
 /* ── Close button ──────────────────────────────────────────────────── */

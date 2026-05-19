@@ -77,6 +77,31 @@ namespace Game.Economy.Data
         [Min(0.01f)]
         public float icScalingCoefficient = 0.15f;
 
+        #endregion
+
+        #region Defeat & Penalty
+
+        [Tooltip("Fraction of max durability at which the tactical retreat triggers. " +
+         "The pilot warns and activates the escape before reaching zero. " +
+         "Range: 0.05 – 0.30. Default: 0.15 (15%).")]
+        [Range(0.05f, 0.30f)]
+        public float retreatHealthThreshold = 0.15f;
+
+        [Tooltip("Minimum energy fraction the Mecha retains after a defeat penalty. " +
+                 "Energy never drops below 10% of maximum after a retreat.")]
+        [Range(0.05f, 0.20f)]
+        public float energyFloorFraction = 0.10f;
+
+        [Tooltip("Fraction of unspent Scrap retained after a defeat event. " +
+                 "Expressed as a fraction (e.g. 0.5 = 50% retained, 50% lost).")]
+        [Range(0f, 1f)]
+        public float scrapDefeatRetentionRate = 0.5f;
+
+        [Tooltip("Fraction of unspent Energy retained after a defeat event. " +
+                 "Expressed as a fraction (e.g. 0.5 = 50% retained, 50% lost).")]
+        [Range(0f, 1f)]
+        public float energyDefeatRetentionRate = 0.5f;
+
         [Tooltip("Fraction of unspent IC cores retained after a defeat event. " +
                  "Expressed as a fraction (e.g. 0.5 = 50% retained, 50% lost).")]
         [Range(0f, 1f)]
@@ -139,6 +164,9 @@ namespace Game.Economy.Data
             maxDurability = Mathf.Max(1f, maxDurability);
             defeatThreshold = Mathf.Clamp(defeatThreshold, 0f, 0.5f);
             durabilityPerScrap = Mathf.Max(0.1f, durabilityPerScrap);
+
+            retreatHealthThreshold = Mathf.Clamp(retreatHealthThreshold, 0.05f, 0.30f);
+            energyFloorFraction = Mathf.Clamp(energyFloorFraction, 0.05f, 0.20f);
         }
 
         #endregion

@@ -209,6 +209,13 @@ namespace Core
             EconomicEvents.Initialize(EconomicEventSettings, Resources);
             Health.OnDefeated += Resources.ApplyDefeatPenalty;
 
+            // Set retreat threshold from economy settings.
+            if (EconomySettings != null && Health != null)
+            {
+                float thresholdAbsolute = Health.MaxDurability * EconomySettings.retreatHealthThreshold;
+                Health.SetRetreatThreshold(thresholdAbsolute);
+            }
+
             // Interaction
             Interaction.Initialize(InteractionSettings, this);
             _onDamageReceivedHandler = (_, __, ___) => Interaction.NotifyDamageReceived();
