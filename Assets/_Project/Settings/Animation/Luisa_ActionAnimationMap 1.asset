@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc01903872567e945842addb84f84529, type: 3}
+  m_Name: Luisa_ActionAnimationMap 1
+  m_EditorClassIdentifier: Assembly-CSharp::Animation.SH_ActionAnimationMap
+  _entries:
+  - actionData: {fileID: 11400000, guid: 563a61b551dce7243b6d49a9306a1e34, type: 2}
+    clip:
+    - {fileID: 8229114333873125851, guid: 380cb8b3e2d8fb14386ac6dc0f79215f, type: 3}
+  - actionData: {fileID: 11400000, guid: 64fab2549f8d0f347960276a610b1450, type: 2}
+    clip:
+    - {fileID: -3688916512082895539, guid: 380cb8b3e2d8fb14386ac6dc0f79215f, type: 3}
+    - {fileID: -8832242952648793945, guid: 380cb8b3e2d8fb14386ac6dc0f79215f, type: 3}
+  - actionData: {fileID: 11400000, guid: 60d9b0273ed099647901c77850e67c0f, type: 2}
+    clip:
+    - {fileID: -8004319752199881518, guid: 380cb8b3e2d8fb14386ac6dc0f79215f, type: 3}
+  - actionData: {fileID: 11400000, guid: c8270df5db8ebe540ab85596178d5a05, type: 2}
+    clip:
+    - {fileID: 8902891609017625766, guid: 380cb8b3e2d8fb14386ac6dc0f79215f, type: 3}
+  _fallbackClip: {fileID: -3688916512082895539, guid: 380cb8b3e2d8fb14386ac6dc0f79215f, type: 3}

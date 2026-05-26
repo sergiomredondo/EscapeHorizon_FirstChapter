@@ -52,9 +52,9 @@ namespace Core.StateMachine
         [Tooltip("Movement settings asset. Configure walk/run speeds, acceleration, etc. " +
                  "Create via ScapeHorizon/Settings/MovementSettings and assign it here.")]
         [SerializeField] private SH_MovementSettings _settings;
-        [Tooltip("Animator component for controlling animations. " +
-                 "Add Animator component to Bear and set up the controller with movement/combat animations.")]
-        [SerializeField] private Animator _animator;
+        [Tooltip("All Animator components that should receive synchronized animation commands. " +
+         "Assign Bear's Animator first, then Luisa's Animator.")]
+        [SerializeField] private Animator[] _animators;
         [Tooltip("Animator bridge for syncing animation events and parameters. " +
                  "Add SH_AnimatorBridge component to Bear.")]
         [SerializeField] private SH_AnimatorBridge _animatorBridge;
@@ -218,7 +218,7 @@ namespace Core.StateMachine
                 _locomotion,
                 _physics,
                 _settings,
-                _animator,
+                _animators,
                 _animatorBridge,
                 _actionAnimationMap,
                 this,
@@ -400,7 +400,7 @@ namespace Core.StateMachine
             if (_locomotion == null) Debug.LogError($"[SH_PlayerStateMachine] SH_LocomotionController not assigned on {gameObject.name}.");
             if (_physics == null) Debug.LogError($"[SH_PlayerStateMachine] SH_PhysicsMotor not assigned on {gameObject.name}.");
             if (_settings == null) Debug.LogError($"[SH_PlayerStateMachine] SH_MovementSettings not assigned on {gameObject.name}.");
-            if (_animator == null) Debug.LogError($"[SH_PlayerStateMachine] Animator not assigned on {gameObject.name}.");
+            if (_animators == null || _animators.Length == 0) Debug.LogError($"[SH_PlayerStateMachine] No Animators assigned in SH_PlayerStateMachine on {gameObject.name}.");
             if (_animatorBridge == null) Debug.LogError($"[SH_PlayerStateMachine] SH_AnimatorBridge not assigned on {gameObject.name}.");
 
             // Economic

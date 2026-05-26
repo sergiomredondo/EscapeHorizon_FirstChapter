@@ -1,6 +1,5 @@
 using System;
 using Game.Progression.Data;
-using UI;
 using UnityEngine;
 using UnityEngine.UIElements;
 

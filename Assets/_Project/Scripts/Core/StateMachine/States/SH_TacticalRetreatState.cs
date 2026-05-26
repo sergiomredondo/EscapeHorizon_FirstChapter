@@ -126,8 +126,14 @@ namespace Core.StateMachine.States
             }
 
             // Trigger retreat animation.
-            if (_context.Animator != null && !string.IsNullOrEmpty(_retreatAnimTrigger))
-                _context.Animator.SetTrigger(_retreatAnimTrigger);
+            if (_context.Animators != null && _context.Animators.Length > 0 && !string.IsNullOrEmpty(_retreatAnimTrigger))
+            {
+                foreach (var animator in _context.Animators)
+                {
+                    if (animator != null)
+                        animator.SetTrigger(_retreatAnimTrigger);
+                }
+            }
 
             // Begin slow motion.
             Time.timeScale = _slowMotionScale;
@@ -255,8 +261,14 @@ namespace Core.StateMachine.States
             _context.BuildSystem?.DeactivateBuild();
 
             // Trigger arrival animation immediately so it plays during FadeIn.
-            if (_context.Animator != null && !string.IsNullOrEmpty(_arrivalAnimTrigger))
-                _context.Animator.SetTrigger(_arrivalAnimTrigger);
+            if (_context.Animators != null && _context.Animators.Length > 0 && !string.IsNullOrEmpty(_arrivalAnimTrigger))
+            {
+                foreach (var animator in _context.Animators)
+                {
+                    if (animator != null)
+                        animator.SetTrigger(_arrivalAnimTrigger);
+                }
+            }
 
             // Snap camera to the safe zone using the same isometric offset
             // captured at the start of the retreat, so it is correctly positioned

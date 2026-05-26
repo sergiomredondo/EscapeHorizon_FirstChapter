@@ -69,8 +69,8 @@ namespace Animation
         // the AnimatorOverrideController used for clip injection, and precomputed parameter hashes for efficient access.
         #region Dependencies
 
-        private Animator _animator;
-        private AnimatorOverrideController _overrideController;
+        private Animator[] _animators = System.Array.Empty<Animator>();
+        private AnimatorOverrideController[] _overrideControllers = System.Array.Empty<AnimatorOverrideController>();
         private int _movementSpeedHash;
         private int _dashForceHash;
         private int _actionLayerIndex;
@@ -123,45 +123,55 @@ namespace Animation
         /// </param>
         public void Initialize(Animator animator)
         {
-            if (animator == null)
+            Initialize(animator != null ? new[] { animator } : System.Array.Empty<Animator>());
+        }
+
+        public void Initialize(Animator[] animators)
+        {
+            if (animators == null || animators.Length == 0)
             {
-#if UNITY_EDITOR
-                Debug.LogError("[SH_AnimatorBridge] Initialize: Animator reference is null.");
-#endif
+                Debug.LogError("[SH_AnimatorBridge] Initialize: no Animator references provided.");
                 return;
             }
 
-            _animator = animator;
+            _animators = animators;
+            _overrideControllers = new AnimatorOverrideController[animators.Length];
 
             _movementSpeedHash = Animator.StringToHash("Movement_Blend");
             _dashForceHash = Animator.StringToHash("DashForce");
 
-            _actionLayerIndex = _animator.GetLayerIndex("Action");
+            // Use the first animator to resolve the layer index — all controllers
+            // are expected to share the same layer structure.
+            _actionLayerIndex = _animators[0].GetLayerIndex("Action");
             if (_actionLayerIndex < 0)
             {
 #if UNITY_EDITOR
-                Debug.LogWarning("[SH_AnimatorBridge] 'Action' layer not found in Animator Controller. " +
-                                 "Speed normalization will target layer 0 until the layer is created. " +
-                                 "See implementation plan — Etapa 3.");
+                Debug.LogWarning("[SH_AnimatorBridge] 'Action' layer not found. Targeting layer 0.");
 #endif
                 _actionLayerIndex = 0;
             }
 
-            var baseController = animator.runtimeAnimatorController;
-            if (baseController == null)
+            for (int i = 0; i < _animators.Length; i++)
             {
-#if UNITY_EDITOR
-                Debug.LogError("[SH_AnimatorBridge] Animator has no RuntimeAnimatorController assigned. " +
-                               "Assign an Animator Controller to the Animator component on this entity.");
-#endif
-                return;
+                if (_animators[i] == null)
+                {
+                    Debug.LogWarning($"[SH_AnimatorBridge] Animator at index {i} is null. Skipping.");
+                    continue;
+                }
+
+                var baseController = _animators[i].runtimeAnimatorController;
+                if (baseController == null)
+                {
+                    Debug.LogError($"[SH_AnimatorBridge] Animator[{i}] has no RuntimeAnimatorController.");
+                    continue;
+                }
+
+                _overrideControllers[i] = new AnimatorOverrideController(baseController);
+                _animators[i].runtimeAnimatorController = _overrideControllers[i];
             }
-            _overrideController = new AnimatorOverrideController(baseController);
-            _animator.runtimeAnimatorController = _overrideController;
+
 #if UNITY_EDITOR
-            Debug.Log($"[SH_AnimatorBridge] Initialized on '{gameObject.name}'. " +
-                      $"Override controller built from '{baseController.name}'. " +
-                      $"Action layer index: {_actionLayerIndex}.");
+            Debug.Log($"[SH_AnimatorBridge] Initialized with {_animators.Length} animator(s).");
 #endif
         }
 
@@ -261,11 +271,11 @@ namespace Animation
         /// Default 0.08s is appropriate for most melee attacks.
         /// </param>
         public void PlayActionClip(
-            AnimationClip clip,
-            float totalDuration,
-            float startupTime,
-            float activeTime,
-            float crossFadeDuration = 0.08f)
+    AnimationClip clip,
+    float totalDuration,
+    float startupTime,
+    float activeTime,
+    float crossFadeDuration = 0.08f)
         {
             StopPhaseTimer();
 
@@ -273,29 +283,34 @@ namespace Animation
             _startupTime = Mathf.Clamp(startupTime, 0f, _actionTotalDuration);
             _activeTime = Mathf.Clamp(activeTime, 0f, _actionTotalDuration - _startupTime);
 
-            if (clip != null && _overrideController != null)
+            for (int i = 0; i < _animators.Length; i++)
             {
-                _overrideController["Action_Base"] = clip;
-                _clipDuration = clip.length;
+                if (_animators[i] == null) continue;
 
-                float normalizedSpeed = _clipDuration / _actionTotalDuration;
-                _animator.SetFloat(_dashForceHash, 0f);
-                SetActionLayerSpeed(normalizedSpeed);
-
-                _animator.CrossFadeInFixedTime("Action.Action_Base", crossFadeDuration, _actionLayerIndex, 0f);
-            }
-            else
-            {
-                SetActionLayerSpeed(1f);
-
-                if (clip == null)
+                if (clip != null && _overrideControllers[i] != null)
                 {
-#if UNITY_EDITOR
-                    Debug.LogWarning("[SH_AnimatorBridge] PlayActionClip: no clip provided. " +
-                                     "Phase timer will run but no animation will play. " +
-                                     "Assign a clip in the SH_ActionAnimationMap asset.");
-#endif
+                    _overrideControllers[i]["Action_Base"] = clip;
+                    _clipDuration = clip.length;
+
+                    float normalizedSpeed = _clipDuration / _actionTotalDuration;
+                    _animators[i].SetFloat(_dashForceHash, 0f);
+                    SetActionLayerSpeed(_animators[i], normalizedSpeed);
+
+                    _animators[i].CrossFadeInFixedTime(
+                        "Action.Action_Base", crossFadeDuration, _actionLayerIndex, 0f);
                 }
+                else
+                {
+                    SetActionLayerSpeed(_animators[i], 1f);
+                }
+            }
+
+            if (clip == null)
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning("[SH_AnimatorBridge] PlayActionClip: no clip provided. " +
+                                 "Phase timer will run but no animation will play.");
+#endif
             }
 
             StartPhaseTimer();
@@ -320,7 +335,11 @@ namespace Animation
         public void StopActionClip()
         {
             StopPhaseTimer();
-            SetActionLayerSpeed(1f);
+            for (int i = 0; i < _animators.Length; i++)
+            {
+                if (_animators[i] != null)
+                    SetActionLayerSpeed(_animators[i], 1f);
+            }
         }
 
         #endregion
@@ -351,8 +370,11 @@ namespace Animation
         /// <remarks>
         public void UpdateMovement(float normalizedSpeed)
         {
-            if (_animator == null) return;
-            _animator.SetFloat(_movementSpeedHash, normalizedSpeed);
+            for (int i = 0; i < _animators.Length; i++)
+            {
+                if (_animators[i] != null)
+                    _animators[i].SetFloat(_movementSpeedHash, normalizedSpeed);
+            }
         }
 
         #endregion
@@ -408,26 +430,27 @@ namespace Animation
             _phaseTimer = 0f;
         }
 
-        private void SetActionLayerSpeed(float speed)
+        private void SetActionLayerSpeed(Animator animator, float speed)
         {
-            if (_animator == null) return;
+            if (animator == null) return;
 
             int actionSpeedHash = Animator.StringToHash("ActionSpeed");
+            bool hasParam = false;
 
-            bool hasActionSpeedParam = false;
-            foreach (var param in _animator.parameters)
+            foreach (var param in animator.parameters)
             {
-                if (param.nameHash == actionSpeedHash && param.type == AnimatorControllerParameterType.Float)
+                if (param.nameHash == actionSpeedHash
+                    && param.type == AnimatorControllerParameterType.Float)
                 {
-                    hasActionSpeedParam = true;
+                    hasParam = true;
                     break;
                 }
             }
 
-            if (hasActionSpeedParam)
-                _animator.SetFloat(actionSpeedHash, speed);
+            if (hasParam)
+                animator.SetFloat(actionSpeedHash, speed);
             else
-                _animator.speed = speed;
+                animator.speed = speed;
         }
 
         #endregion

@@ -18,33 +18,33 @@ AvatarMask:
   - m_Path: Body_Bear
     m_Weight: 0
   - m_Path: Body_Luisa
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: Eyelashes_Luisa
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: Eyes_Luisa
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: Hair_Luisa
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: Head_Bear
     m_Weight: 0
   - m_Path: Head_Luisa
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: HeadCover_Luisa
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: HeadCoverGlass_Luisa
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: HeadMask_Luisa
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: Hips_Bear
     m_Weight: 0
   - m_Path: Jacket_Luisa
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: L.Arm_Bear
     m_Weight: 0
   - m_Path: L.Foot_Luisa
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: L.Hand_Luisa
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: L.Leg_Bear
     m_Weight: 0
   - m_Path: Neck_Bear
@@ -52,9 +52,9 @@ AvatarMask:
   - m_Path: R.Arm_Bear
     m_Weight: 0
   - m_Path: R.Foot_Luisa
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: R.Hand_Luisa
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: R.Leg_Bear
     m_Weight: 0
   - m_Path: RG_Bear

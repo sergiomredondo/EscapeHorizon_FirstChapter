@@ -1119,6 +1119,7 @@ namespace Game.Enemy
             _currentHP = _scaledMaxHP;
             _currentPosture = _data.ResolvedPostureMax;
 
+            _captiveCore?.ResetCaptiveState();
             _isDead = false;
             _isStaggered = false;
             _isBlocking = false;
@@ -1130,11 +1131,6 @@ namespace Game.Enemy
             _knockbackVelocity = Vector3.zero;
             _pendingDeactivation = false;
             _captiveRevealed = false;
-
-            if (_captiveCore != null)
-            {
-                _captiveCore.ResetCaptiveState();
-            }
 
             if (_agent != null)
             {

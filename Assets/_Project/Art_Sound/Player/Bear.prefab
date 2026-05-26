@@ -40,7 +40,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 773257763899009617}
-  - component: {fileID: 4064690777213403824}
   - component: {fileID: 4231962860589238056}
   - component: {fileID: 4463389341199476985}
   - component: {fileID: 6754301753042021680}
@@ -76,8 +75,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5108201429992033946}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 242.67719, y: 19.235477, z: 511.09506}
+  m_LocalRotation: {x: -0.0030907225, y: 0.0073900074, z: 0.0034654373, w: 0.9999619}
+  m_LocalPosition: {x: 242.65813, y: 19.224245, z: 511.10202}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -85,29 +84,7 @@ Transform:
   - {fileID: 926932406464759518}
   - {fileID: 4589670022627507479}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!95 &4064690777213403824
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5108201429992033946}
-  m_Enabled: 0
-  m_Avatar: {fileID: 9000000, guid: 17570c99f901b7b40b751c186159d50b, type: 3}
-  m_Controller: {fileID: 9100000, guid: 6b74c0471f91af34f8e98a4d46810410, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
+  m_LocalEulerAnglesHint: {x: -0.357, y: 0.846, z: 0.394}
 --- !u!143 &4231962860589238056
 CharacterController:
   m_ObjectHideFlags: 0
@@ -195,7 +172,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.PlayerInput
-  m_Actions: {fileID: -944628639613478452, guid: dbe8364047e15844ebaa020b108fbcef, type: 3}
+  m_Actions: {fileID: 0}
   m_NotificationBehavior: 2
   m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:
@@ -448,13 +425,11 @@ MonoBehaviour:
   _locomotion: {fileID: 6754301753042021680}
   _physics: {fileID: 4463389341199476985}
   _settings: {fileID: 11400000, guid: 6801dc563bc34f64a91aa9b8abbd0141, type: 2}
-  _animator: {fileID: 4064690777213403824}
+  _animators:
+  - {fileID: 6248008546668090173}
+  - {fileID: 7589097832158947181}
   _animatorBridge: {fileID: 8734282940631552895}
   _actionAnimationMap: {fileID: 11400000, guid: 7db204e959d93d140aaeb9346ed1d23c, type: 2}
-  _defeatCameraTarget: {fileID: 0}
-  _defeatSequenceDuration: 3
-  _defeatAnimationTrigger: Defeat
-  _spawnPoint: {fileID: 0}
   _health: {fileID: 3669066546897201515}
   _resources: {fileID: 8336110543186802622}
   _economicEvents: {fileID: 4372430390264156233}
@@ -470,6 +445,15 @@ MonoBehaviour:
   _surgeSystem: {fileID: 7418908401079733832}
   _buildSystem: {fileID: 4559715221112079403}
   _difficultyManager: {fileID: 13729479286958514}
+  _retreatAnimTrigger: TacticalRetreat
+  _arrivalAnimTrigger: SafeZoneArrival
+  _slowMotionScale: 0.3
+  _slowMotionDuration: 1.8
+  _fadeDuration: 0.6
+  _arrivalDuration: 1.2
+  _retreatCameraCloseUp: {fileID: 0}
+  _spawnPoint: {fileID: 0}
+  _retreatFadeOverlay: {fileID: 0}
   showOnScreenDebugging: 0
 --- !u!114 &2919933158002722599
 MonoBehaviour:
@@ -694,6 +678,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 390550915783018491, guid: 86ce6f936accd1348bd489f943cd9637, type: 3}
   m_PrefabInstance: {fileID: 4240784929019656940}
   m_PrefabAsset: {fileID: 0}
+--- !u!95 &7589097832158947181 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 6020097920165911937, guid: 86ce6f936accd1348bd489f943cd9637, type: 3}
+  m_PrefabInstance: {fileID: 4240784929019656940}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &9162284286670286558
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -709,6 +698,14 @@ PrefabInstance:
     - target: {fileID: 2674001058576773754, guid: 05884f3ef58a6bf4498a855741f59949, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8010418739289063864, guid: 05884f3ef58a6bf4498a855741f59949, type: 3}
+      propertyPath: m_Range
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 8010418739289063864, guid: 05884f3ef58a6bf4498a855741f59949, type: 3}
+      propertyPath: m_BounceIntensity
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 8357512261153155072, guid: 05884f3ef58a6bf4498a855741f59949, type: 3}
       propertyPath: m_LocalScale.x
@@ -782,5 +779,10 @@ PrefabInstance:
 --- !u!4 &926932406464759518 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8357512261153155072, guid: 05884f3ef58a6bf4498a855741f59949, type: 3}
+  m_PrefabInstance: {fileID: 9162284286670286558}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &6248008546668090173 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 2995909326073347555, guid: 05884f3ef58a6bf4498a855741f59949, type: 3}
   m_PrefabInstance: {fileID: 9162284286670286558}
   m_PrefabAsset: {fileID: 0}

@@ -1,7 +1,5 @@
 using Game.Economy.Data;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.ProBuilder.Shapes;
 using UnityEngine.UIElements;
 using static UnityEngine.EventSystems.EventTrigger;
 

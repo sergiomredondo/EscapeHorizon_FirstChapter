@@ -35,7 +35,7 @@ namespace Core
         public SH_LocomotionController Locomotion { get; }
         public SH_PhysicsMotor Physics { get; }
         public SH_MovementSettings Settings { get; }
-        public Animator Animator { get; }
+        public Animator[] Animators { get; }
         public SH_AnimatorBridge AnimatorBridge { get; }
         public SH_ActionAnimationMap ActionAnimationMap {  get; }
 
@@ -117,7 +117,7 @@ namespace Core
             SH_LocomotionController locomotion,
             SH_PhysicsMotor physics,
             SH_MovementSettings settings,
-            Animator animator,
+            Animator[] animators,
             SH_AnimatorBridge animatorBridge,
             SH_ActionAnimationMap animationMap,
             SH_PlayerStateMachine stateMachine,
@@ -143,7 +143,7 @@ namespace Core
             Locomotion = locomotion;
             Physics = physics;
             Settings = settings;
-            Animator = animator;
+            Animators = animators;
             AnimatorBridge = animatorBridge;
             ActionAnimationMap = animationMap;
             StateMachine = stateMachine;
@@ -176,7 +176,7 @@ namespace Core
             if (Locomotion == null) Debug.LogError("[SH_PlayerContext] LocomotionController is missing.");
             if (Physics == null) Debug.LogError("[SH_PlayerContext] PhysicsMotor is missing.");
             if (Settings == null) Debug.LogError("[SH_PlayerContext] MovementSettings is missing.");
-            if (Animator == null) Debug.LogError("[SH_PlayerContext] Animator is missing.");
+            if (Animators == null || Animators.Length == 0) Debug.LogError("[SH_PlayerContext] No Animators assigned.");
             if (AnimatorBridge == null) Debug.LogError("[SH_PlayerContext] AnimatorBridge is missing.");
             if (StateMachine == null) Debug.LogError("[SH_PlayerContext] StateMachine is missing.");
             if (Health == null) Debug.LogError("[SH_PlayerContext] HealthComponent is missing.");
@@ -201,7 +201,7 @@ namespace Core
             // Movement & Control
             Perspective.Initialize(Settings);
             Locomotion.Initialize(Input, Settings, Physics, Perspective);
-            AnimatorBridge.Initialize(Animator);
+            AnimatorBridge.Initialize(Animators);
 
             // Economic
             Health.Initialize(EconomySettings);

@@ -426,9 +426,9 @@ namespace DebugTools
 
         private float DrawAnimationPanel(float x, float y)
         {
-            if (_context?.Animator == null) return 0f;
+            if (_context?.Animators == null) return 0f;
 
-            Animator anim = _context.Animator;
+            Animator anim = _context.Animators[0];
             float panelH = 180f;
 
             GUILayout.BeginArea(new Rect(x, y, panelWidth, panelH), GUI.skin.box);
