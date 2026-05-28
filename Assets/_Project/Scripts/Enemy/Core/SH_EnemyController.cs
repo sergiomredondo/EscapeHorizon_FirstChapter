@@ -956,6 +956,7 @@ namespace Game.Enemy
                     break;
             }
 
+            string previousStateName = _state.ToString();
             _state = newState;
 
             // Entry setup
