@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b4602f3dd5522d4d9323273cfe88a44, type: 3}
+  m_Name: ArrivalAction
+  m_EditorClassIdentifier: Assembly-CSharp::Actions.Data.SH_ActionData
+  startupTime: 0
+  activeTime: 3
+  recoveryTime: 0
+  cancelWindowStart: 3.1
+  coolDownTime: 1.5
+  impulseMagnitude: 20000
+  impulseDuration: 0.1
+  directionMode: 0
+  customDirection: {x: 0, y: 0, z: 1}
+  hitboxRadius: 0
+  hitboxOffset: {x: 0, y: 0, z: 1.2}
+  targetLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  damage: 10
+  staggerImpulse: 1000
+  hitstopDuration: 0.05
+  priority: 2
+  staminaCost: 10
+  animationTrigger: Action_Base
+  locksMovement: 1
+  useRootMotion: 0
+  grantsInvulnerability: 0
+  activationEffectPrefab: {fileID: 0}
+  hitEffectPrefab: {fileID: 0}
+  effectAutoDestroyTime: 2
