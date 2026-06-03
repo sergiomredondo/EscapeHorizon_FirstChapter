@@ -1,3 +1,5 @@
+using Actions.Data;
+using Animation;
 using Game.Enemy;
 using UnityEngine;
 
@@ -47,6 +49,9 @@ namespace Core.StateMachine.States
         private readonly Transform _closeUpCameraTarget;
         private readonly Transform _spawnPoint;
         private readonly CanvasGroup _fadeOverlay;
+        private readonly SH_ActionData _retreatActionData;
+        private readonly SH_ActionData _arrivalActionData;
+        private readonly SH_ActionAnimationMap _retreatAnimationMap;
 
         #endregion
 
@@ -58,10 +63,9 @@ namespace Core.StateMachine.States
         private Transform _mainCameraTransform;
         private Vector3 _cameraOriginPosition;
         private Quaternion _cameraOriginRotation;
-        // Isometric offset from Bear to camera, captured in Enter().
-        // Applied to spawnPoint in ExecuteReset() so the camera appears
-        // correctly positioned at the safe zone when the screen fades back in.
         private Vector3 _cameraToPlayerOffset;
+        private bool _callbacksSubscribed;
+        private bool _animationPhaseComplete;
 
         #endregion
 
@@ -69,8 +73,9 @@ namespace Core.StateMachine.States
 
         /// <param name="context"> Player context. </param>
         /// <param name="stateMachine"> Owning FSM. </param>
-        /// <param name="retreatAnimTrigger"> Animator trigger for Bear's retreat/flee animation. </param>
-        /// <param name="arrivalAnimTrigger"> Animator trigger for Bear's arrival animation at safe zone. </param>
+        /// <param name="retreatActionData"> Action data for the retreat animation. Optional but recommended for visual polish. </param>
+        /// <param name="arrivalActionData"> Action data for the arrival animation. Optional but recommended for visual polish. </param>
+        /// <param name="animationMap"> Animation map to resolve clips for the retreatActionData. Optional but required if retreatActionData is provided. </param>
         /// <param name="slowMotionScale"> timeScale during the slow-motion phase. Recommended: 0.25–0.35. </param>
         /// <param name="slowMotionDuration"> Duration of the slow-motion phase in real seconds. </param>
         /// <param name="fadeDuration"> Duration of each fade direction in real seconds. </param>
@@ -81,8 +86,9 @@ namespace Core.StateMachine.States
         public SH_TacticalRetreatState(
             SH_PlayerContext context,
             SH_PlayerStateMachine stateMachine,
-            string retreatAnimTrigger,
-            string arrivalAnimTrigger,
+            SH_ActionData retreatActionData,
+            SH_ActionData arrivalActionData,
+            SH_ActionAnimationMap animationMap,
             float slowMotionScale,
             float slowMotionDuration,
             float fadeDuration,
@@ -92,8 +98,9 @@ namespace Core.StateMachine.States
             CanvasGroup fadeOverlay)
             : base(context, stateMachine)
         {
-            _retreatAnimTrigger = retreatAnimTrigger;
-            _arrivalAnimTrigger = arrivalAnimTrigger;
+            _retreatActionData = retreatActionData;
+            _arrivalActionData = arrivalActionData;
+            _retreatAnimationMap = animationMap;
             _slowMotionScale = Mathf.Clamp(slowMotionScale, 0.1f, 0.9f);
             _slowMotionDuration = Mathf.Max(0.5f, slowMotionDuration);
             _fadeDuration = Mathf.Max(0.2f, fadeDuration);
@@ -111,12 +118,12 @@ namespace Core.StateMachine.States
         {
             _phase = RetreatPhase.SlowMotion;
             _phaseTimer = 0f;
+            _callbacksSubscribed = false;
+            _animationPhaseComplete = false;
 
-            // Lock input for the entire sequence.
             _context.Locomotion.SetMovementLock(true);
             _context.Physics.CancelHorizontalVelocity();
 
-            // Store camera origin for the close-up lerp.
             if (UnityEngine.Camera.main != null)
             {
                 _mainCameraTransform = UnityEngine.Camera.main.transform;
@@ -125,25 +132,36 @@ namespace Core.StateMachine.States
                 _cameraToPlayerOffset = _mainCameraTransform.position - _context.Transform.position;
             }
 
-            // Trigger retreat animation.
-            if (_context.Animators != null && _context.Animators.Length > 0 && !string.IsNullOrEmpty(_retreatAnimTrigger))
-            {
-                foreach (var animator in _context.Animators)
-                {
-                    if (animator != null)
-                        animator.SetTrigger(_retreatAnimTrigger);
-                }
-            }
-
-            // Begin slow motion.
-            Time.timeScale = _slowMotionScale;
-
-            // Prepare fade overlay — ensure it starts transparent.
             if (_fadeOverlay != null)
             {
                 _fadeOverlay.alpha = 0f;
                 _fadeOverlay.gameObject.SetActive(true);
                 _fadeOverlay.blocksRaycasts = true;
+            }
+
+            Time.timeScale = _slowMotionScale;
+
+            // Dispatch retreat animation through the bridge exactly like attacks and surge.
+            // OnActiveBegin fires after startupTime — no action needed there.
+            // OnActionComplete fires when the clip ends — triggers FadeOut.
+            if (_context.AnimatorBridge != null && _retreatActionData != null)
+            {
+                AnimationClip[] clips = _retreatAnimationMap?.GetClips(_retreatActionData);
+
+                SubscribeToBridgeCallbacks();
+
+                _context.AnimatorBridge.PlayActionClip(
+                    clips,
+                    _retreatActionData.TotalDuration,
+                    _retreatActionData.startupTime,
+                    _retreatActionData.activeTime,0);
+
+
+            }
+            else
+            {
+                // No animation data — go straight to fade after the slowmotion window.
+                _animationPhaseComplete = true;
             }
         }
 
@@ -172,9 +190,11 @@ namespace Core.StateMachine.States
 
         public override void Exit()
         {
+            UnsubscribeBridgeCallbacks();
+            _context.AnimatorBridge?.StopActionClip();
             Time.timeScale = 1f;
-            _context.Locomotion.SetMovementLock(false);
 
+            _context.Locomotion.SetMovementLock(false);
             if (_fadeOverlay != null)
             {
                 _fadeOverlay.alpha = 0f;
@@ -185,11 +205,33 @@ namespace Core.StateMachine.States
 
         #endregion
 
+        #region Animation Bridge Callbacks
+
+        private void SubscribeToBridgeCallbacks()
+        {
+            if (_callbacksSubscribed || _context.AnimatorBridge == null) return;
+            _context.AnimatorBridge.OnActionComplete += HandleRetreatAnimationComplete;
+            _callbacksSubscribed = true;
+        }
+
+        private void UnsubscribeBridgeCallbacks()
+        {
+            if (!_callbacksSubscribed || _context.AnimatorBridge == null) return;
+            _context.AnimatorBridge.OnActionComplete -= HandleRetreatAnimationComplete;
+            _callbacksSubscribed = false;
+        }
+
+        private void HandleRetreatAnimationComplete()
+        {
+            _animationPhaseComplete = true;
+            UnsubscribeBridgeCallbacks();
+        }
+
+        #endregion
         #region Phase Ticks
 
         private void TickSlowMotion()
         {
-            // Lerp camera toward the close-up target during slow motion.
             if (_closeUpCameraTarget != null && _mainCameraTransform != null)
             {
                 float t = Mathf.Clamp01(_phaseTimer / _slowMotionDuration);
@@ -199,8 +241,10 @@ namespace Core.StateMachine.States
                     _cameraOriginRotation, _closeUpCameraTarget.rotation, t);
             }
 
-            if (_phaseTimer >= _slowMotionDuration)
-                TransitionToPhase(RetreatPhase.FadeOut);
+            // Wait for both the slowmotion window to complete
+            // before transitioning to the fade. Whichever takes longer wins.
+            bool timerDone = _phaseTimer >= _slowMotionDuration;
+            if (timerDone) TransitionToPhase(RetreatPhase.FadeOut);
         }
 
         private void TickFadeOut()
@@ -222,11 +266,11 @@ namespace Core.StateMachine.States
 
         private void TickFadeIn()
         {
-            float t = Mathf.Clamp01(_phaseTimer / _fadeDuration);
+            float t = Mathf.Clamp01(_phaseTimer * 0.5f/ _fadeDuration);
             if (_fadeOverlay != null)
                 _fadeOverlay.alpha = 1f - t;
 
-            if (_phaseTimer >= _fadeDuration)
+            if (_phaseTimer * 0.5f >= _fadeDuration)
                 TransitionToPhase(RetreatPhase.Arrive);
         }
 
@@ -260,14 +304,15 @@ namespace Core.StateMachine.States
             // Deactivate build — PD return to pool, base stats restored.
             _context.BuildSystem?.DeactivateBuild();
 
-            // Trigger arrival animation immediately so it plays during FadeIn.
-            if (_context.Animators != null && _context.Animators.Length > 0 && !string.IsNullOrEmpty(_arrivalAnimTrigger))
+            // Play arrival animation if data is provided, using the same bridge mechanism as attacks and surge.
+            if (_context.AnimatorBridge != null && _arrivalActionData != null)
             {
-                foreach (var animator in _context.Animators)
-                {
-                    if (animator != null)
-                        animator.SetTrigger(_arrivalAnimTrigger);
-                }
+                AnimationClip[] arrivalClips = _retreatAnimationMap?.GetClips(_arrivalActionData);
+                _context.AnimatorBridge.PlayActionClip(
+                    arrivalClips,
+                    _arrivalActionData.TotalDuration,
+                    _arrivalActionData.startupTime,
+                    _arrivalActionData.activeTime);
             }
 
             // Snap camera to the safe zone using the same isometric offset

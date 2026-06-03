@@ -39,7 +39,11 @@ namespace Game.World
             _bridge = UnityEngine.Object.FindFirstObjectByType<SH_UIBridge>();
 
             if (_bridge == null)
+            {
+#if UNITY_EDITOR
                 Debug.LogWarning("[SH_OperationsTerminal] SH_UIBridge not found in scene.");
+#endif
+            }
         }
 
         public override void Interact(Core.SH_PlayerContext context)

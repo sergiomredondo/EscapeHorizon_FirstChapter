@@ -75,37 +75,22 @@ namespace Animation
         #region Public API
 
         /// <summary>
-        /// Returns the AnimationClip mapped to the given SH_ActionData.
-        /// Falls back to _fallbackClip if no entry exists.
-        /// Returns null if neither a mapped entry nor a fallback is configured,
-        /// in which case SH_AnimatorBridge will skip the override for this action.
+        /// Returns all clips mapped to this action as an array.
+        /// Index 0 = Bear's clip, Index 1 = Luisa's clip, etc.
+        /// Matches the Animator array order in SH_AnimatorBridge.
+        /// Falls back to [_fallbackClip] if no entry exists.
         /// </summary>
-        /// <param name="actionData">
-        /// The action contract whose clip is being requested.
-        /// </param>
-        public AnimationClip GetClip(SH_ActionData actionData)
+        /// <param name="actionData">The action contract to look up.</param>
+        public AnimationClip[] GetClips(SH_ActionData actionData)
         {
-            if (actionData == null) return _fallbackClip;
+            if (actionData == null)
+                return _fallbackClip != null ? new[] { _fallbackClip } : null;
 
             var entry = _entries.FirstOrDefault(e => e.actionData == actionData);
             if (entry == null || entry.clip == null || entry.clip.Count == 0)
-                return _fallbackClip;
-            int newIndex;
+                return _fallbackClip != null ? new[] { _fallbackClip } : null;
 
-            BuildCacheIfNeeded();
-
-            do
-            {
-                newIndex = Random.Range(0, entry.clip.Count);
-            }
-            while (_lastIndex.ContainsKey(actionData) && newIndex == _lastIndex[actionData] && entry.clip.Count > 1);
-
-            _lastIndex[actionData] = newIndex;
-
-            if (_cache.TryGetValue(actionData, out List<AnimationClip> clip))
-                return entry.clip[newIndex];
-
-            return _fallbackClip;
+            return entry.clip.ToArray();
         }
 
         /// <summary>

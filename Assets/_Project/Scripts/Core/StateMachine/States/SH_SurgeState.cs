@@ -145,22 +145,24 @@ namespace Core.StateMachine.States
 
         private void DispatchAnimation()
         {
-            if (_context.AnimatorBridge == null || _actionData == null) return;
+            if (_context.AnimatorBridge == null) return;
+            if (_actionData == null) return;
             if (string.IsNullOrEmpty(_actionData.animationTrigger)) return;
 
-            AnimationClip clip = _animationMap?.GetClip(_actionData);
+            AnimationClip[] clips = _animationMap?.GetClips(_actionData);
 
-            if (clip == null)
+            if (clips == null || clips.Length == 0)
             {
 #if UNITY_EDITOR
-                Debug.LogWarning($"[SH_SurgeState] No clip found for '{_actionData.name}' " +
-                                 $"in SH_ActionAnimationMap. Phase callbacks will still fire.");
+                Debug.LogWarning($"[SH_ActionState] No clips found for action '{_actionData.name}' " +
+                                 $"in the assigned SH_ActionAnimationMap.");
 #endif
             }
+
             SubscribeToBridgeCallbacks();
 
             _context.AnimatorBridge.PlayActionClip(
-                clip,
+                clips,
                 _actionData.TotalDuration,
                 _actionData.startupTime,
                 _actionData.activeTime);

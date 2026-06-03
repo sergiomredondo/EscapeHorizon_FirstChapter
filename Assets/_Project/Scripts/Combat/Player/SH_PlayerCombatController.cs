@@ -138,8 +138,6 @@ namespace Game.Combat.Core
             _combatSettings = combatSettings;
             _isInitialized  = true;
 
-            // Wire the AnimatorBridge callback so OnHitImpact routes here
-            // instead of the placeholder Debug.Log.
             _context.AnimatorBridge.SetHitImpactCallback(ActivateHitDetection);
         }
 

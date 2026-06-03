@@ -148,12 +148,16 @@ namespace Core.StateMachine
 
         [Header("Tactical Retreat Sequence")]
 
-        [Tooltip("Animator trigger sent to Bear at the start of the retreat. " +
-         "Should play a flee or stumble animation.")]
-        [SerializeField] private string _retreatAnimTrigger = "TacticalRetreat";
+        [Tooltip("SH_ActionData asset for Bear's tactical retreat animation. " +
+         "Configure startupTime, activeTime and TotalDuration to match the clip length.")]
+        [SerializeField] private SH_ActionData _retreatActionData;
 
-        [Tooltip("Animator trigger sent to Bear when it arrives at the safe zone.")]
-        [SerializeField] private string _arrivalAnimTrigger = "SafeZoneArrival";
+        [Tooltip("SH_ActionData asset for Bear's safe zone arrival animation.")]
+        [SerializeField] private SH_ActionData _arrivalActionData;
+
+        [Tooltip("Animation map used to resolve clips for retreat and arrival. " +
+                 "Can be the same map as _actionAnimationMap or a dedicated one.")]
+        [SerializeField] private SH_ActionAnimationMap _retreatAnimationMap;
 
         [Tooltip("timeScale value during the slow-motion phase. 0.25–0.35 recommended.")]
         [Range(0.1f, 0.9f)]
@@ -284,8 +288,9 @@ namespace Core.StateMachine
             ChangeState(new SH_TacticalRetreatState(
                 _context,
                 this,
-                _retreatAnimTrigger,
-                _arrivalAnimTrigger,
+                _retreatActionData,
+                _arrivalActionData,
+                _retreatAnimationMap,
                 _slowMotionScale,
                 _slowMotionDuration,
                 _fadeDuration,

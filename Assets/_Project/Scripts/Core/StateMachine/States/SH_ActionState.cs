@@ -255,44 +255,26 @@ namespace Core.StateMachine.States
         private void DispatchAnimation()
         {
             if (_context.AnimatorBridge == null) return;
+            if (_actionData == null) return;
+            if (string.IsNullOrEmpty(_actionData.animationTrigger)) return;
 
-            string trigger = _actionData.animationTrigger;
+            AnimationClip[] clips = _animationMap?.GetClips(_actionData);
 
-            if (string.IsNullOrEmpty(trigger)) return;
-
-            // --- Override Controller Path (attacks and all non-dash actions) ---
-
-            // Resolve the clip from the animation map.
-            // If the map is null or has no entry for this action, clip will be null.
-            // PlayActionClip() handles null clips gracefully — the phase timer still
-            // runs and all gameplay callbacks fire correctly without a visual clip.
-            AnimationClip clip = _animationMap?.GetClip(_actionData);
-
-            if (clip == null)
+            if (clips == null || clips.Length == 0)
             {
 #if UNITY_EDITOR
-                Debug.LogWarning(
-                    $"[SH_ActionState] No clip found for action '{_actionData.name}' " +
-                    $"in the assigned SH_ActionAnimationMap. " +
-                    $"Assign a clip or a fallback clip to the map asset. " +
-                    $"Gameplay callbacks will still fire correctly.");
+                Debug.LogWarning($"[SH_ActionState] No clips found for action '{_actionData.name}' " +
+                                 $"in the assigned SH_ActionAnimationMap.");
 #endif
             }
 
-            // Subscribe to phase callbacks before PlayActionClip() so that
-            // callbacks fired synchronously on the first Update() are not missed.
             SubscribeToBridgeCallbacks();
 
             _context.AnimatorBridge.PlayActionClip(
-                clip,
+                clips,
                 _actionData.TotalDuration,
                 _actionData.startupTime,
                 _actionData.activeTime);
-#if UNITY_EDITOR
-            Debug.Log($"[SH_ActionState] Dispatched action '{_actionData.name}'. " +
-                      $"Clip: '{(clip != null ? clip.name : "none")}'. " +
-                      $"Total duration: {_actionData.TotalDuration:F2}s.");
-#endif
         }
 
         #endregion

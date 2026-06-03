@@ -130,7 +130,9 @@ namespace Animation
         {
             if (animators == null || animators.Length == 0)
             {
+#if UNITY_EDITOR
                 Debug.LogError("[SH_AnimatorBridge] Initialize: no Animator references provided.");
+#endif
                 return;
             }
 
@@ -155,14 +157,18 @@ namespace Animation
             {
                 if (_animators[i] == null)
                 {
+#if UNITY_EDITOR
                     Debug.LogWarning($"[SH_AnimatorBridge] Animator at index {i} is null. Skipping.");
+#endif
                     continue;
                 }
 
                 var baseController = _animators[i].runtimeAnimatorController;
                 if (baseController == null)
                 {
+#if UNITY_EDITOR
                     Debug.LogError($"[SH_AnimatorBridge] Animator[{i}] has no RuntimeAnimatorController.");
+#endif
                     continue;
                 }
 
@@ -248,16 +254,10 @@ namespace Animation
         #region Action Clip Override — Public API
 
         /// <summary>
-        /// Overrides the clip in the Action layer slot and begins phase timer tracking.
-        ///
-        /// If the map provides a valid clip, it is injected into the override controller
-        /// and the Animator crossfades into the Action state. Playback speed is normalized
-        /// so the clip's full duration matches SH_ActionData.TotalDuration.
-        ///
-        /// If no clip is available (null), the phase timer still runs and all callbacks
-        /// fire at the correct times, ensuring gameplay logic is never blocked by a
-        /// missing animation asset.
-        /// 
+        /// Plays the given array of AnimationClips on the Action layer, overriding the placeholder clip in the Animator Controller.
+        /// The clips array can contain one clip per Animator, allowing for different animations on different body parts if multiple
+        /// Animators are used (e.g., upper body and lower body). If a clip is null or the array is shorter than the number of Animators,
+        /// the last valid clip will be reused for subsequent Animators, allowing for flexible configurations.
         /// </summary>
         /// <param name="clip">
         /// The AnimationClip to inject. May be null during early prototyping — gameplay
@@ -267,35 +267,43 @@ namespace Animation
         /// <param name="startupTime">SH_ActionData.startupTime — startup phase length in seconds.</param>
         /// <param name="activeTime">SH_ActionData.activeTime — active phase length in seconds.</param>
         /// <param name="crossFadeDuration">
-        /// Blend time in seconds for the CrossFade into the Action state.
-        /// Default 0.08s is appropriate for most melee attacks.
         /// </param>
         public void PlayActionClip(
-    AnimationClip clip,
-    float totalDuration,
-    float startupTime,
-    float activeTime,
-    float crossFadeDuration = 0.08f)
+            AnimationClip[] clips,
+            float totalDuration,
+            float startupTime,
+            float activeTime,
+            float crossFadeDuration = 0.08f)
         {
+            //if (clips == null || clips.Length == 0)
+            //{
+            //    PlayActionClip((AnimationClip)null, totalDuration, startupTime, activeTime, crossFadeDuration);
+            //    return;
+            //}
+
             StopPhaseTimer();
 
             _actionTotalDuration = Mathf.Max(totalDuration, 0.01f);
             _startupTime = Mathf.Clamp(startupTime, 0f, _actionTotalDuration);
             _activeTime = Mathf.Clamp(activeTime, 0f, _actionTotalDuration - _startupTime);
 
+            AnimationClip lastValidClip = null;
+
             for (int i = 0; i < _animators.Length; i++)
             {
                 if (_animators[i] == null) continue;
 
+                AnimationClip clip = i < clips.Length ? clips[i] : lastValidClip;
+                if (clip != null) lastValidClip = clip;
+
                 if (clip != null && _overrideControllers[i] != null)
                 {
                     _overrideControllers[i]["Action_Base"] = clip;
-                    _clipDuration = clip.length;
+                    if (i == 0) _clipDuration = clip.length;
 
-                    float normalizedSpeed = _clipDuration / _actionTotalDuration;
+                    float normalizedSpeed = clip.length / _actionTotalDuration;
                     _animators[i].SetFloat(_dashForceHash, 0f);
                     SetActionLayerSpeed(_animators[i], normalizedSpeed);
-
                     _animators[i].CrossFadeInFixedTime(
                         "Action.Action_Base", crossFadeDuration, _actionLayerIndex, 0f);
                 }
@@ -303,14 +311,6 @@ namespace Animation
                 {
                     SetActionLayerSpeed(_animators[i], 1f);
                 }
-            }
-
-            if (clip == null)
-            {
-#if UNITY_EDITOR
-                Debug.LogWarning("[SH_AnimatorBridge] PlayActionClip: no clip provided. " +
-                                 "Phase timer will run but no animation will play.");
-#endif
             }
 
             StartPhaseTimer();
