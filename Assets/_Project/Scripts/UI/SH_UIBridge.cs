@@ -368,7 +368,17 @@ namespace UI
             _model.SetBuildMenuInteractionEnabled(interactionEnabled);
             _model.SetBuildNarrative(false, string.Empty);
             PushBuildTreeState();
-            PushPurgeData();
+
+            bool requirementsNotMet = interactionEnabled && 
+                (_context.Resources.CurrentIdentityCores <= 0 || _model.PurgeDPYield <= 0);
+            _model.SetPurgeRequirementsNotMet(requirementsNotMet);
+
+            var hudController = _hudController;
+            if (hudController != null)
+            {
+                hudController.TriggerNoticesTimeout();
+            }
+
             _model.SetBuildMenuOpen(true);
         }
 
@@ -444,6 +454,8 @@ namespace UI
                 _context.Resources.AvailableDevelopmentPoints,
                 build.GetReanalysisCost(),
                 nodeData);
+
+            PushPurgeData();
         }
 
         private void PushPurgeData()

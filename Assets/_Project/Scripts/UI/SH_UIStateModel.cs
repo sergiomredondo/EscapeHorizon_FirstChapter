@@ -290,6 +290,16 @@ namespace UI
             BuildMenuInteractionEnabled = enabled;
         }
 
+        /// <summary>
+        /// True when the menu is opened from the terminal but the player 
+        /// does not have enough Identity Cores to perform a purge.
+        /// </summary>
+        public bool BuildPurgeRequirementsNotMet { get; private set; }
+        public void SetPurgeRequirementsNotMet(bool notMet)
+        {
+            BuildPurgeRequirementsNotMet = notMet;
+        }
+
         // Node display data — 3 branches × 5 nodes.
         private readonly BuildNodeDisplayData[,] _nodeDisplayData =
             new BuildNodeDisplayData[3, 5];
@@ -396,6 +406,7 @@ namespace UI
             _purgeEnabled = enabled;
             OnPurgeDataChanged?.Invoke(_purgeICAvailable, _purgeDPYield, _purgeEnabled);
         }
+
 
         #endregion
 

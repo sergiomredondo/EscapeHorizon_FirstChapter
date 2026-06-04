@@ -49,6 +49,7 @@ namespace UI
         private const string ElementInteractionLabel = "interaction-label";
         private const string ElementInteractionProgress = "interaction-progress";
         private const string ElementBuildReadonlyNotice = "build-readonly-notice";
+        private const string ElementBuildPurgeNotice = "build-purge-notice";
         private const string ElementBuildPurgeSection = "build-purge-section";
         private const string ElementBuildPurgeYield = "build-purge-yield";
         private const string ElementBuildPurgeBtn = "build-purge-btn";
@@ -135,8 +136,16 @@ namespace UI
         private VisualElement _buildNarrativePanel;
         private Label _buildNarrativeText;
         private Label _buildReadonlyNotice;
+        private Label _buildPurgeNotice;
         private VisualElement _buildPurgeSection;
         private Label _buildPurgeYield;
+        private Coroutine _noticeFadeCoroutine;
+        private bool _readonlyNoticeExpired = true;
+        private bool _purgeNoticeExpired = true;
+
+        [Header("UI Configuration")]
+        [Tooltip("Duration in seconds before the terminal warnings disappear.")]
+        [SerializeField] private float _noticeDisplayDuration = 4.0f;
 
         // [branch 0-2, node 0-4]
         private readonly Button[,] _nodeButtons = new Button[3, 5];
@@ -332,6 +341,7 @@ namespace UI
             if (purgeBtn != null)
                 purgeBtn.RegisterCallback<ClickEvent>(_ => OnPurgePressed?.Invoke());
             _buildReadonlyNotice = root.Q<Label>(ElementBuildReadonlyNotice);
+            _buildPurgeNotice = root.Q<Label>(ElementBuildPurgeNotice);
 
             if (_buildOverlay == null)
             {
@@ -436,13 +446,55 @@ namespace UI
         private void OnBuildMenuOpenChanged(bool isOpen)
         {
             if (_buildOverlay == null) return;
+
             _buildOverlay.style.display = isOpen ? DisplayStyle.Flex : DisplayStyle.None;
-            if (isOpen && _buildReadonlyNotice != null)
+
+            if (isOpen)
             {
-                _buildReadonlyNotice.style.display = _model.BuildMenuInteractionEnabled
-                    ? DisplayStyle.None
-                    : DisplayStyle.Flex;
+                if (_buildReadonlyNotice != null)
+                {
+                    _buildReadonlyNotice.style.display = (!_model.BuildMenuInteractionEnabled && !_readonlyNoticeExpired)
+                        ? DisplayStyle.Flex
+                        : DisplayStyle.None;
+                }
+
+                if (_buildPurgeNotice != null)
+                {
+                    _buildPurgeNotice.style.display = (_model.BuildPurgeRequirementsNotMet && !_purgeNoticeExpired)
+                        ? DisplayStyle.Flex
+                        : DisplayStyle.None;
+                }
             }
+        }
+
+        /// <summary>
+        /// Public entry point to invoke or update terminal window warnings.
+        /// Restarts the chronological real-time clock independently of panel visibility.
+        /// </summary>
+        public void TriggerNoticesTimeout()
+        {
+            if (_noticeFadeCoroutine != null)
+            {
+                StopCoroutine(_noticeFadeCoroutine);
+            }
+
+            _readonlyNoticeExpired = false;
+            _purgeNoticeExpired = false;
+
+            if (_buildOverlay != null && _buildOverlay.style.display == DisplayStyle.Flex)
+            {
+                if (_buildReadonlyNotice != null)
+                {
+                    _buildReadonlyNotice.style.display = !_model.BuildMenuInteractionEnabled ? DisplayStyle.Flex : DisplayStyle.None;
+                }
+
+                if (_buildPurgeNotice != null)
+                {
+                    _buildPurgeNotice.style.display = _model.BuildPurgeRequirementsNotMet ? DisplayStyle.Flex : DisplayStyle.None;
+                }
+            }
+
+            _noticeFadeCoroutine = StartCoroutine(FadeOutNoticesRoutine());
         }
 
         private void OnBuildTreeRefreshed()
@@ -581,6 +633,34 @@ namespace UI
                 screenPos.x - (_interactionContainer.layout.width / 2f);
             _interactionContainer.style.top =
                 screenPos.y - (_interactionContainer.layout.height / 2f);
+        }
+
+        #endregion
+
+        #region Terminal Notices Fade-Out Routine
+
+        /// <summary>
+        /// Execution routine that waits for real-time seconds and turns off
+        /// the visibility state flags independently of current layout visibility.
+        /// </summary>
+        private System.Collections.IEnumerator FadeOutNoticesRoutine()
+        {
+            yield return new WaitForSecondsRealtime(_noticeDisplayDuration);
+
+            _readonlyNoticeExpired = true;
+            _purgeNoticeExpired = true;
+
+            if (_buildReadonlyNotice != null)
+            {
+                _buildReadonlyNotice.style.display = DisplayStyle.None;
+            }
+
+            if (_buildPurgeNotice != null)
+            {
+                _buildPurgeNotice.style.display = DisplayStyle.None;
+            }
+
+            _noticeFadeCoroutine = null;
         }
 
         #endregion

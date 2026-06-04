@@ -25,14 +25,14 @@ MonoBehaviour:
   PursuitSpeed: 4
   RotationSpeed: 180
   AttackCooldown: 2
-  ComboLength: 2
+  ComboLength: 1
   BlockProbability: 0.2
   BlockDuration: 0.4
   ParryUpgradeProbability: 0.1
   SurgeEvadeProbability: 0.7
   EvasionDistance: 3
   CriticalHealthThreshold: 0.2
-  RetreatsAtCriticalHealth: 0
+  RetreatsAtCriticalHealth: 1
   CanBeGroupLeader: 0
   MinGroupSpacing: 1.5
   DropData: {fileID: 11400000, guid: 9f8e76df64f75e1449b23f7f9e90b932, type: 2}

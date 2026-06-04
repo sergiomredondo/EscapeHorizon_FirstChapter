@@ -51,6 +51,7 @@
         <!-- ═══════════════════════════════════════════════════════════════ -->
         <ui:Label name="build-readonly-notice" text="[ Return to base to modify build ]"
           class="build-readonly-notice" style="display: none;"/>
+        <ui:Label name="build-purge-notice" text="[ Insufficient Identity Cores for purification ]" class="build-purge-notice" style="display: none;"/>
 
         <ui:VisualElement name="build-menu-overlay" class="build-menu-overlay" style="display: none;">
 
