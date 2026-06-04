@@ -46,6 +46,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _Outline_Width: 50
+    - _Tweak_SystemShadowsLevel: 0.35
     - _Use_BaseAs1st: 1
     m_Colors: []
   m_BuildTextureStacks: []

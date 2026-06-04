@@ -72,6 +72,7 @@ Material:
     - _ShadeColor_Step: 0.2
     - _TweakHighColorOnShadow: 0
     - _Tweak_LightDirection_MaskLevel: 0.3
+    - _Tweak_SystemShadowsLevel: -0.35
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
