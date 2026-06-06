@@ -378,6 +378,36 @@ namespace Core.StateMachine
             return true;
         }
 
+        /// <summary>
+        /// Creates and activates SH_BlockadeState when a boundary trigger is entered.
+        /// Returns false if the current state has higher or equal priority and cannot
+        /// be interrupted.
+        /// </summary>
+        public bool RequestBlockade(
+            string message,
+            float readDuration,
+            float fadeDuration,
+            float walkAwayDuration,
+            GameObject bubblePrefab,
+            Vector3 rejectDirection)
+        {
+            int blockadePriority = 8;
+            if (_currentState != null && _currentState.Priority >= blockadePriority)
+                return false;
+
+            ChangeState(new SH_BlockadeState(
+                _context,
+                this,
+                message,
+                readDuration,
+                fadeDuration,
+                walkAwayDuration,
+                bubblePrefab,
+                rejectDirection));
+
+            return true;
+        }
+
         public void RegisterActionCooldown(SH_ActionData actionData)
         {
             if (actionData == null) return;
