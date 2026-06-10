@@ -28,6 +28,9 @@ namespace Game.Enemy
         [SerializeField] private string _animMoveY = "MoveY";
         [SerializeField] private string _animAttackTrigger = "Attack";
         [SerializeField] private string _animDefeatedTrigger = "Defeated";
+        [SerializeField] private string _animDetectedParam = "Detected";
+        [SerializeField] private string _animRollX = "RollX";
+        [SerializeField] private string _animRollY = "RollY";
 
         [Header("Animation Tuning")]
         [SerializeField] private float _animDamping = 0.1f;
@@ -36,19 +39,15 @@ namespace Game.Enemy
         [Tooltip("Maximum radius from the spawn origin within which patrol destinations are chosen.")]
         [Min(1f)]
         [SerializeField] private float _patrolRadius = 8f;
-
         [Tooltip("Minimum seconds the agent waits at a patrol destination before moving again.")]
         [Min(0f)]
         [SerializeField] private float _patrolWaitTimeMin = 1.5f;
-
         [Tooltip("Maximum seconds the agent waits at a patrol destination before moving again.")]
         [Min(0f)]
         [SerializeField] private float _patrolWaitTimeMax = 4f;
-
         [Tooltip("Maximum seconds allowed to reach a patrol destination before picking a new one.")]
         [Min(1f)]
         [SerializeField] private float _patrolStuckTimeout = 6f;
-
         [Tooltip("NavMesh sample radius used when validating a random patrol destination.")]
         [Min(0.5f)]
         [SerializeField] private float _patrolNavMeshSampleRadius = 2f;
@@ -57,6 +56,10 @@ namespace Game.Enemy
         private int _animMoveYHash;
         private int _animAttackHash;
         private int _animDefeatedHash;
+        private int _animDetectedHash;
+        private int _animRollXHash;
+        private int _animRollYHash;
+
         private SH_CaptiveCore _captiveCore;
         private bool _captiveRevealed = false;
         private NavMeshAgent _agent;
@@ -125,6 +128,9 @@ namespace Game.Enemy
         private Vector3 _knockbackVelocity;
         private const float KnockbackDecay = 8f;
 
+        // Tank-specific: tracks whether the Detected boolean has been set.
+        private bool _tankDetected = false;
+
         #endregion
 
         #region Runtime State — Patrol
@@ -169,11 +175,7 @@ namespace Game.Enemy
         {
             if (_isDead) return;
 
-            if (_currentHP <= 0f && !_isDead)
-            {
-                Die();
-                return;
-            }
+            if (_currentHP <= 0f && !_isDead) { Die(); return; }
 
             _currentHP -= payload.EffectiveDamage;
             _currentHP = Mathf.Max(0f, _currentHP);
@@ -184,13 +186,15 @@ namespace Game.Enemy
                 _currentPosture = Mathf.Max(0f, _currentPosture);
             }
 
-            if (!payload.WasBlocked && !payload.WasParried && payload.KnockbackImpulse.sqrMagnitude > 0.01f)
+            if (!payload.WasBlocked && !payload.WasParried
+                && payload.KnockbackImpulse.sqrMagnitude > 0.01f)
             {
                 float defenseFactor = Mathf.Max(1f, _data?.CombatStats?.Defense ?? 8f);
                 ApplyKnockback(payload.KnockbackImpulse / defenseFactor);
             }
 
-            if (_currentPosture <= 0f && !_isStaggered && !(_data?.CombatStats?.IsStaggerImmune ?? false))
+            if (_currentPosture <= 0f && !_isStaggered
+                && !(_data?.CombatStats?.IsStaggerImmune ?? false))
                 EnterStagger();
 
             if (_comboInProgress)
@@ -220,11 +224,7 @@ namespace Game.Enemy
                 && _state != EnemyState.Vulnerable)
                 TryEvaluateSurgeEvasion();
 
-            if (_currentHP <= 0f && !_isDead)
-            {
-                Die();
-                return;
-            }
+            if (_currentHP <= 0f && !_isDead) { Die(); return; }
         }
 
         #endregion
@@ -262,6 +262,9 @@ namespace Game.Enemy
             _animMoveYHash = Animator.StringToHash(_animMoveY);
             _animAttackHash = Animator.StringToHash(_animAttackTrigger);
             _animDefeatedHash = Animator.StringToHash(_animDefeatedTrigger);
+            _animDetectedHash = Animator.StringToHash(_animDetectedParam);
+            _animRollXHash = Animator.StringToHash(_animRollX);
+            _animRollYHash = Animator.StringToHash(_animRollY);
 
             if (_data == null)
             {
@@ -277,8 +280,6 @@ namespace Game.Enemy
             _captiveCore = GetComponentInChildren<SH_CaptiveCore>(includeInactive: true);
             _currentHP = _scaledMaxHP;
             _currentPosture = _data.ResolvedPostureMax;
-
-            // Capture spawn position as the centre of the patrol area.
             _patrolOrigin = transform.position;
 
             if (_agent != null)
@@ -354,7 +355,8 @@ namespace Game.Enemy
             _scaledMaxHP = _data.ResolvedMaxDurability * hpMult;
             _currentHP = Mathf.Min(_currentHP, _scaledMaxHP);
             _scaledAttackCooldown = _data.AttackCooldown / Mathf.Max(0.1f, aiMult);
-            _scaledAttackStrength = (_data.CombatStats != null ? _data.CombatStats.Strength : 1f) * attackMult;
+            _scaledAttackStrength = (_data.CombatStats != null
+                ? _data.CombatStats.Strength : 1f) * attackMult;
         }
 
         private static float GetHpMultiplier(DifficultyLevel d) => d switch
@@ -392,15 +394,25 @@ namespace Game.Enemy
         {
             if (_isStaggered) return;
 
-            // Player detection takes priority over roaming.
             if (_playerContext != null)
             {
                 float dist = Vector3.Distance(transform.position, _playerContext.Transform.position);
                 if (dist <= _data.DetectionRange)
                 {
                     _lastKnownPlayerPosition = _playerContext.Transform.position;
-                    BroadcastAlert(_lastKnownPlayerPosition);
-                    TransitionTo(EnemyState.Search);
+
+                    if (_data.Archetype == EnemyArchetype.Tank)
+                    {
+                        // Tank sets Detected and begins its hold-distance tracking phase.
+                        SetTankDetected(true);
+                        BroadcastAlert(_lastKnownPlayerPosition);
+                        TransitionTo(EnemyState.Search);
+                    }
+                    else
+                    {
+                        BroadcastAlert(_lastKnownPlayerPosition);
+                        TransitionTo(EnemyState.Search);
+                    }
                     return;
                 }
             }
@@ -417,7 +429,6 @@ namespace Game.Enemy
                 return;
             }
 
-            // Move toward the current patrol destination.
             _patrolMoveTimer += Time.deltaTime;
             TrySetDestination(_patrolDestination);
             FaceTarget(_patrolDestination);
@@ -440,6 +451,13 @@ namespace Game.Enemy
 
         private void TickSearch()
         {
+            // Tank has its own tracking search behaviour.
+            if (_data?.Archetype == EnemyArchetype.Tank && _tankDetected)
+            {
+                TickSearchTank();
+                return;
+            }
+
             _searchTimer += Time.deltaTime;
 
             if (_searchTimer >= SearchTimeout || _isStaggered)
@@ -464,6 +482,44 @@ namespace Game.Enemy
             TrySetDestination(_lastKnownPlayerPosition);
         }
 
+        // Tank-specific search: holds at half detection range, waits for engage range.
+        private void TickSearchTank()
+        {
+            if (_playerContext == null) return;
+
+            float dist = Vector3.Distance(transform.position, _playerContext.Transform.position);
+            float holdDistance = _data.DetectionRange * 0.5f;
+
+            // Player fully escaped — return to patrol.
+            if (dist > _data.DetectionRange)
+            {
+                SetTankDetected(false);
+                TransitionTo(EnemyState.Patrol);
+                return;
+            }
+
+            // Player entered engage range — start attacking.
+            if (dist <= _data.AttackEngageRange)
+            {
+                TransitionTo(EnemyState.Attack);
+                return;
+            }
+
+            _lastKnownPlayerPosition = _playerContext.Transform.position;
+            FaceTarget(_playerContext.Transform.position);
+
+            // Close the gap to hold distance; stop once within it.
+            if (dist > holdDistance)
+            {
+                if (_agent != null) _agent.isStopped = false;
+                TrySetDestination(_playerContext.Transform.position);
+            }
+            else
+            {
+                if (_agent != null) _agent.isStopped = true;
+            }
+        }
+
         private void TickAttack()
         {
             if (_playerContext == null) return;
@@ -472,6 +528,10 @@ namespace Game.Enemy
 
             if (dist > _data.DetectionRange * 1.5f)
             {
+                // Tank resets Detected when it fully loses the player.
+                if (_data.Archetype == EnemyArchetype.Tank)
+                    SetTankDetected(false);
+
                 TransitionTo(EnemyState.Search);
                 return;
             }
@@ -550,18 +610,10 @@ namespace Game.Enemy
 
         private void TickAttackTank(float dist)
         {
-            float preferredHoldRange = _data.AttackEngageRange * 0.6f;
-
-            if (_attackCooldownTimer <= 0f && !_comboInProgress)
-            {
-                if (!_knockbackActive)
-                    TrySetDestination(_playerContext.Transform.position);
-            }
-            else if (dist < preferredHoldRange && !_comboInProgress)
-            {
-                Vector3 awayDir = (transform.position - _playerContext.Transform.position).normalized;
-                TrySetDestination(transform.position + awayDir * (preferredHoldRange - dist), force: true);
-            }
+            // Tank always closes in to melee range when in Attack state.
+            // RollX/RollY animation driven by UpdateAnimatorMovement when _tankDetected.
+            if (!_knockbackActive)
+                TrySetDestination(_playerContext.Transform.position);
 
             FaceTarget(_playerContext.Transform.position);
             _attackCooldownTimer -= Time.deltaTime;
@@ -697,6 +749,18 @@ namespace Game.Enemy
 
         #endregion
 
+        #region Tank Animation Helper
+
+        // Sets the Detected boolean on the animator and tracks the internal flag.
+        private void SetTankDetected(bool detected)
+        {
+            if (_tankDetected == detected) return;
+            _tankDetected = detected;
+            _animator?.SetBool(_animDetectedHash, detected);
+        }
+
+        #endregion
+
         #region Stagger & Posture
 
         private void EnterStagger()
@@ -773,10 +837,6 @@ namespace Game.Enemy
 
         #region Patrol Helpers
 
-        /// <summary>
-        /// Picks a random reachable destination within the patrol radius.
-        /// Falls back to _patrolOrigin if no valid NavMesh point is found.
-        /// </summary>
         private void PickPatrolDestination()
         {
             const int MaxAttempts = 5;
@@ -786,7 +846,8 @@ namespace Game.Enemy
                 Vector2 rand2D = UnityEngine.Random.insideUnitCircle * _patrolRadius;
                 Vector3 candidate = _patrolOrigin + new Vector3(rand2D.x, 0f, rand2D.y);
 
-                if (NavMesh.SamplePosition(candidate, out NavMeshHit hit, _patrolNavMeshSampleRadius, NavMesh.AllAreas))
+                if (NavMesh.SamplePosition(candidate, out NavMeshHit hit,
+                    _patrolNavMeshSampleRadius, NavMesh.AllAreas))
                 {
                     _patrolDestination = hit.position;
                     if (_agent != null) _agent.isStopped = false;
@@ -810,8 +871,8 @@ namespace Game.Enemy
                 if (_destinationTimer < DestinationUpdateInterval) return;
                 float moveSqr = (destination - _lastSubmittedDestination).sqrMagnitude;
                 if (moveSqr < DestinationMoveThresholdSqr
-                    && Vector3.Distance(transform.position, _lastSubmittedDestination) <= _data.MeleeAttackRange)
-                    return;
+                    && Vector3.Distance(transform.position, _lastSubmittedDestination)
+                       <= _data.MeleeAttackRange) return;
             }
             _agent.SetDestination(destination);
             _lastSubmittedDestination = destination;
@@ -834,7 +895,9 @@ namespace Game.Enemy
             {
                 case EnemyState.Patrol:
                     if (_agent != null) _agent.speed = _data.PatrolSpeed;
-                    // Reset patrol cycle so the agent starts roaming immediately.
+                    // Reset Detected on Tank when returning to passive patrol.
+                    if (_data?.Archetype == EnemyArchetype.Tank && _tankDetected)
+                        SetTankDetected(false);
                     _isPatrolWaiting = false;
                     _patrolMoveTimer = 0f;
                     PickPatrolDestination();
@@ -856,7 +919,8 @@ namespace Game.Enemy
         {
             if (!_knockbackActive) return;
             transform.position += _knockbackVelocity * Time.deltaTime;
-            _knockbackVelocity = Vector3.Lerp(_knockbackVelocity, Vector3.zero, KnockbackDecay * Time.deltaTime);
+            _knockbackVelocity = Vector3.Lerp(_knockbackVelocity, Vector3.zero,
+                KnockbackDecay * Time.deltaTime);
 
             if (_knockbackVelocity.sqrMagnitude < 0.01f)
             {
@@ -899,11 +963,26 @@ namespace Game.Enemy
         private void UpdateAnimatorMovement()
         {
             if (_animator == null || _agent == null) return;
+
             Vector3 velocity = _knockbackActive ? _knockbackVelocity : _agent.velocity;
             Vector3 localVelocity = transform.InverseTransformDirection(velocity);
-            Vector2 normalized = Vector2.ClampMagnitude(new Vector2(localVelocity.x, localVelocity.z), 1f);
-            _animator.SetFloat(_animMoveXHash, normalized.x, _animDamping, Time.deltaTime);
-            _animator.SetFloat(_animMoveYHash, normalized.y, _animDamping, Time.deltaTime);
+            Vector2 normalized = Vector2.ClampMagnitude(
+                new Vector2(localVelocity.x, localVelocity.z), 1f);
+
+            if (_data?.Archetype == EnemyArchetype.Tank && _tankDetected)
+            {
+                // Once detected the tank animates through RollX/RollY.
+                _animator.SetFloat(_animRollXHash, normalized.x, _animDamping, Time.deltaTime);
+                _animator.SetFloat(_animRollYHash, normalized.y, _animDamping, Time.deltaTime);
+                // Zero out the standard blend tree to avoid blending conflicts.
+                _animator.SetFloat(_animMoveXHash, 0f, _animDamping, Time.deltaTime);
+                _animator.SetFloat(_animMoveYHash, 0f, _animDamping, Time.deltaTime);
+            }
+            else
+            {
+                _animator.SetFloat(_animMoveXHash, normalized.x, _animDamping, Time.deltaTime);
+                _animator.SetFloat(_animMoveYHash, normalized.y, _animDamping, Time.deltaTime);
+            }
         }
 
         #endregion
@@ -911,7 +990,8 @@ namespace Game.Enemy
         #region Public Query API
 
         public float NormalizedHP => _scaledMaxHP > 0f ? _currentHP / _scaledMaxHP : 0f;
-        public float NormalizedPosture => _data?.ResolvedPostureMax > 0f ? _currentPosture / _data.ResolvedPostureMax : 0f;
+        public float NormalizedPosture => _data?.ResolvedPostureMax > 0f
+                                          ? _currentPosture / _data.ResolvedPostureMax : 0f;
         public string CurrentStateName => _state.ToString();
         public bool IsElite => _data != null && _data.IsElite;
         public bool IsNockdback => _knockbackActive;
@@ -942,11 +1022,13 @@ namespace Game.Enemy
             _knockbackVelocity = Vector3.zero;
             _pendingDeactivation = false;
             _captiveRevealed = false;
-
-            // Reset patrol cycle so the enemy starts roaming on respawn.
             _isPatrolWaiting = false;
             _patrolMoveTimer = 0f;
             _patrolWaitTimer = 0f;
+
+            // Reset tank detection state on respawn.
+            if (_data?.Archetype == EnemyArchetype.Tank)
+                SetTankDetected(false);
 
             if (_agent != null)
             {
@@ -975,11 +1057,18 @@ namespace Game.Enemy
             Gizmos.color = new Color(1f, 0.1f, 0.1f, 0.4f);
             Gizmos.DrawWireSphere(transform.position, _data.MeleeAttackRange);
 
-            // Patrol area — visualised from the runtime origin when playing,
-            // from the current transform position when editing.
             Vector3 center = Application.isPlaying ? _patrolOrigin : transform.position;
             Gizmos.color = new Color(0.3f, 0.7f, 1f, 0.15f);
             Gizmos.DrawWireSphere(center, _patrolRadius);
+
+            // Tank hold-distance ring.
+            if (_data.Archetype == EnemyArchetype.Tank)
+            {
+                Gizmos.color = new Color(0.8f, 0.2f, 1f, 0.2f);
+                Gizmos.DrawWireSphere(
+                    Application.isPlaying ? transform.position : transform.position,
+                    _data.DetectionRange * 0.5f);
+            }
         }
 
         #endregion

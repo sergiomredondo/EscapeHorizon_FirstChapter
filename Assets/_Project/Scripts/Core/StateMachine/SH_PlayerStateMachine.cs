@@ -391,7 +391,7 @@ namespace Core.StateMachine
             GameObject bubblePrefab,
             Vector3 rejectDirection)
         {
-            int blockadePriority = 8;
+            int blockadePriority = 6;
             if (_currentState != null && _currentState.Priority >= blockadePriority)
                 return false;
 
