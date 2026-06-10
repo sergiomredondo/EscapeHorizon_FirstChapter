@@ -18,21 +18,21 @@ MonoBehaviour:
   CombatStats: {fileID: 11400000, guid: 4e4cfb9a10145044399cc2ff4244652c, type: 2}
   MaxDurabilityOverride: 0
   PostureMaxOverride: 0
-  DetectionRange: 20
-  AttackEngageRange: 3
-  MeleeAttackRange: 2
+  DetectionRange: 30
+  AttackEngageRange: 3.5
+  MeleeAttackRange: 2.7
   PatrolSpeed: 2
-  PursuitSpeed: 4
+  PursuitSpeed: 3
   RotationSpeed: 270
   AttackCooldown: 5
   ComboLength: 3
-  BlockProbability: 0.2
+  BlockProbability: 0.3
   BlockDuration: 0.4
   ParryUpgradeProbability: 0.1
-  SurgeEvadeProbability: 0.7
-  EvasionDistance: 2.5
+  SurgeEvadeProbability: 0.6
+  EvasionDistance: 2
   CriticalHealthThreshold: 0.2
   RetreatsAtCriticalHealth: 0
-  CanBeGroupLeader: 0
+  CanBeGroupLeader: 1
   MinGroupSpacing: 2
   DropData: {fileID: 11400000, guid: 9f1bba374c749684e9804c456019e1f7, type: 2}

@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28ceaa0d8ef8fca4cae45f0e0ef1dd82, type: 3}
   m_Name: Tank
   m_EditorClassIdentifier: Assembly-CSharp::Game.Economy.Data.SH_ResourceDropData
-  scrapOnDestroy: 100
+  scrapOnDestroy: 200
   scrapVariance: 20
   identityCoresOnRescue: 1
-  scrapOnRescue: 15
-  energyOnInteraction: 20
+  scrapOnRescue: 50
+  energyOnInteraction: 70
   energyVariance: 5

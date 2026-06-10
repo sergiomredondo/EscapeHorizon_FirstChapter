@@ -45,8 +45,8 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3494942468665377610}
   serializedVersion: 5
-  m_Mass: 500
-  m_LinearDamping: 0
+  m_Mass: 1000
+  m_LinearDamping: 1
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
@@ -60,7 +60,7 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
@@ -76,7 +76,7 @@ NavMeshAgent:
   m_Radius: 1.4
   m_Speed: 3.5
   m_Acceleration: 8
-  avoidancePriority: 50
+  avoidancePriority: 5
   m_AngularSpeed: 120
   m_StoppingDistance: 0
   m_AutoTraverseOffMeshLink: 1
@@ -124,7 +124,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Enemy.SH_EnemyController
   _data: {fileID: 11400000, guid: 2de925f67ce3525479a4953f85a2027c, type: 2}
-  _animator: {fileID: 0}
+  _animator: {fileID: 6753966740947073983}
   _animMoveX: MoveX
   _animMoveY: MoveY
   _animAttackTrigger: Attack
@@ -138,6 +138,9 @@ MonoBehaviour:
   _patrolWaitTimeMax: 4
   _patrolStuckTimeout: 6
   _patrolNavMeshSampleRadius: 2
+  _searchTimeout: 15
+  _maxSearchPoints: 4
+  _searchPointDuration: 1.5
 --- !u!136 &1306663729726650558
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -685,5 +688,10 @@ PrefabInstance:
 --- !u!4 &6753966740937708593 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1257510012038695175, guid: 8b26a86ca05fc5649ba4dbac88389780, type: 3}
+  m_PrefabInstance: {fileID: 5533088058325687606}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &6753966740947073983 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 1257510012046452361, guid: 8b26a86ca05fc5649ba4dbac88389780, type: 3}
   m_PrefabInstance: {fileID: 5533088058325687606}
   m_PrefabAsset: {fileID: 0}

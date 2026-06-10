@@ -25,12 +25,12 @@
     --crosshair-size: 6px;
     --opacity-zone-c: 0.55;
     --build-column-width: 160px;
-    --build-node-height:  42px;
-    --color-attack:       rgb(210, 60, 60);
-    --color-defense:      rgb(60, 140, 210);
-    --color-agility:      rgb(60, 200, 120);
+    --build-node-height: 42px;
+    --color-attack: rgb(210, 60, 60);
+    --color-defense: rgb(60, 140, 210);
+    --color-agility: rgb(60, 200, 120);
     --transition-duration: 0.15s;
-
+    -unity-font-definition: url("project://database/Assets/_Project/UI/Fonts/Tektur-VariableFont_wdth,wght.ttf?fileID=12800000&guid=4f1027b2edfe59f4ebdd0bc0d3defbdb&type=3#Tektur-VariableFont_wdth,wght");
 }
 
 .hud-root {
@@ -41,6 +41,10 @@
     bottom: 0;
     background-color: rgba(0, 0, 0, 0);
     -unity-overflow-clip-box: content-box;
+    -unity-font-definition: url("project://database/Assets/_Project/UI/Fonts/Tektur-VariableFont_wdth,wght.ttf?fileID=12800000&guid=4f1027b2edfe59f4ebdd0bc0d3defbdb&type=3#Tektur-VariableFont_wdth,wght");
+    font-size: 14px;
+    display: flex;
+    visibility: visible;
 }
 
 .corner-panel {
@@ -51,6 +55,7 @@
     border-radius: var(--panel-border-radius);
     padding: var(--panel-padding);
     min-width: 260px;
+    -unity-font-definition: url("project://database/Assets/_Project/UI/Fonts/Tektur-VariableFont_wdth,wght.ttf?fileID=12800000&guid=4f1027b2edfe59f4ebdd0bc0d3defbdb&type=3#Tektur-VariableFont_wdth,wght");
 }
 
 .corner-panel--bottom-left {
@@ -58,7 +63,7 @@
     bottom: var(--panel-margin);
     background-image: url("/Assets/UI/Icons/panel-vitality-frame.svg");
     background-color: rgba(0, 0, 0, 0);
-    border-width:     0;
+    border-width: 0;
     -unity-background-scale-mode: stretch-to-fill;
 }
 
@@ -136,6 +141,7 @@
     border-radius: var(--bar-border-radius);
     border-width: 1px;
     border-color: rgba(255, 255, 255, 0.08);
+    background-image: url("project://database/Assets/Preselected/SciFi%20Assets/Sprites/vector_4/Vector_7.png?fileID=2800000&guid=8c76d139fc8f53b4d8920d458235e8df&type=3#Vector_7");
 }
 
 .resource-bar > .unity-progress-bar__progress {
@@ -247,26 +253,6 @@
     margin-bottom: 4px;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   BUILD MENU OVERLAY
-   All build menu classes follow the same naming convention as the HUD.
-   Colors reference the existing :root variables — no new hardcoded values.
-   Node state is communicated exclusively via CSS classes applied from C#:
-     .build-node-btn--active      → purchased node in the active branch
-     .build-node-btn--next        → next purchasable slot
-     .build-node-btn--unavailable → locked because another branch is active
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-/* ── Variables added to :root ── */
-/* Append these inside the existing :root block in HUD.uss               */
-/* --build-column-width: 160px;                                          */
-/* --build-node-height: 42px;                                            */
-/* --color-attack:  rgb(210, 60, 60);                                    */
-/* --color-defense: rgb(60, 140, 210);                                   */
-/* --color-agility: rgb(60, 200, 120);                                   */
-
-/* ── Overlay backdrop ──────────────────────────────────────────────── */
-
 .build-menu-overlay {
     position: absolute;
     left: 0;
@@ -277,8 +263,6 @@
     align-items: center;
     justify-content: center;
 }
-
-/* ── Main panel ────────────────────────────────────────────────────── */
 
 .build-menu-panel {
     background-color: var(--color-panel-bg);
@@ -308,8 +292,6 @@
     transition: opacity 0.4s ease-out;
 }
 
-/* ── Title ─────────────────────────────────────────────────────────── */
-
 .build-menu-title {
     font-size: var(--font-size-large);
     color: var(--color-cyan);
@@ -317,8 +299,6 @@
     margin-bottom: 8px;
     -unity-font-style: bold;
 }
-
-/* ── Resources summary row ─────────────────────────────────────────── */
 
 .build-resources-row {
     flex-direction: row;
@@ -339,13 +319,25 @@
     margin-right: 4px;
 }
 
-.build-resource-chip--hp     { color: var(--color-hp-fill); }
-.build-resource-chip--energy { color: var(--color-cyan); }
-.build-resource-chip--scrap  { color: var(--color-yellow); }
-.build-resource-chip--ic     { color: var(--color-cyan); }
-.build-resource-chip--pd     { color: var(--color-white); }
+.build-resource-chip--hp {
+    color: var(--color-hp-fill);
+}
 
-/* ── Branch columns container ──────────────────────────────────────── */
+.build-resource-chip--energy {
+    color: var(--color-cyan);
+}
+
+.build-resource-chip--scrap {
+    color: var(--color-yellow);
+}
+
+.build-resource-chip--ic {
+    color: var(--color-cyan);
+}
+
+.build-resource-chip--pd {
+    color: var(--color-white);
+}
 
 .build-tree-columns {
     flex-direction: row;
@@ -353,8 +345,6 @@
     margin-top: 10px;
     margin-bottom: 10px;
 }
-
-/* ── Single branch column ──────────────────────────────────────────── */
 
 .build-branch-column {
     flex-direction: column;
@@ -367,8 +357,6 @@
     margin-right: 0;
 }
 
-/* ── Branch headers ────────────────────────────────────────────────── */
-
 .build-branch-header {
     font-size: var(--font-size-small);
     -unity-text-align: middle-center;
@@ -379,11 +367,17 @@
     border-color: rgba(255, 255, 255, 0.1);
 }
 
-.build-branch-header--attack  { color: rgb(210, 60, 60); }
-.build-branch-header--defense { color: rgb(60, 140, 210); }
-.build-branch-header--agility { color: rgb(60, 200, 120); }
+.build-branch-header--attack {
+    color: rgb(210, 60, 60);
+}
 
-/* ── Node buttons — base ───────────────────────────────────────────── */
+.build-branch-header--defense {
+    color: rgb(60, 140, 210);
+}
+
+.build-branch-header--agility {
+    color: rgb(60, 200, 120);
+}
 
 .build-node-btn {
     font-size: var(--font-size-small);
@@ -396,18 +390,13 @@
     color: var(--color-placeholder);
     -unity-text-align: middle-center;
     white-space: normal;
-    transition: background-color var(--transition-duration) ease-out,
-                border-color     var(--transition-duration) ease-out,
-                color            var(--transition-duration) ease-out;
+    transition: background-color var(--transition-duration) ease-out, border-color var(--transition-duration) ease-out, color var(--transition-duration) ease-out;
 }
 
-/* Hover only applies when button is interactable (next state). */
 .build-node-btn:hover {
     background-color: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.25);
 }
-
-/* ── Node buttons — state classes (applied from C# via EnableInClassList) */
 
 .build-node-btn--active {
     background-color: rgba(0, 255, 180, 0.15);
@@ -428,8 +417,6 @@
     opacity: 0.5;
 }
 
-/* ── Reanalysis buttons ────────────────────────────────────────────── */
-
 .build-reanalysis-btn {
     font-size: var(--font-size-small);
     height: 28px;
@@ -440,8 +427,7 @@
     background-color: rgba(255, 100, 0, 0.08);
     color: var(--color-orange);
     -unity-text-align: middle-center;
-    transition: background-color var(--transition-duration) ease-out,
-                border-color     var(--transition-duration) ease-out;
+    transition: background-color var(--transition-duration) ease-out, border-color var(--transition-duration) ease-out;
 }
 
 .build-reanalysis-btn:hover {
@@ -453,8 +439,6 @@
     opacity: 0.3;
 }
 
-/* ── Reanalysis cost indicator ─────────────────────────────────────── */
-
 .build-reanalysis-cost-label {
     font-size: var(--font-size-small);
     color: var(--color-orange);
@@ -463,8 +447,6 @@
     margin-bottom: 4px;
     opacity: 0.75;
 }
-
-/* ── Captive memory narrative panel ───────────────────────────────── */
 
 .build-narrative-panel {
     background-color: rgba(0, 255, 255, 0.04);
@@ -483,7 +465,6 @@
     white-space: normal;
     opacity: 0.85;
 }
-/* ── Purge section ─────────────────────────────────────────────────── */
 
 .build-purge-section {
     flex-direction: column;
@@ -522,11 +503,10 @@
     border-radius: var(--panel-border-radius);
     border-width: 1px;
     border-color: rgba(0, 255, 180, 0.45);
-    background-color: rgba(0, 255, 180, 0.10);
+    background-color: rgba(0, 255, 180, 0.1);
     color: rgb(0, 255, 180);
     -unity-text-align: middle-center;
-    transition: background-color var(--transition-duration) ease-out,
-                border-color     var(--transition-duration) ease-out;
+    transition: background-color var(--transition-duration) ease-out, border-color var(--transition-duration) ease-out;
 }
 
 .build-purge-btn:hover {
@@ -545,8 +525,6 @@
     opacity: 0.8;
     margin-bottom: 6px;
 }
-
-/* ── Close button ──────────────────────────────────────────────────── */
 
 .build-close-btn {
     font-size: var(--font-size-small);

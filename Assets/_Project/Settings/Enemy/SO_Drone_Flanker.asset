@@ -21,15 +21,15 @@ MonoBehaviour:
   DetectionRange: 10
   AttackEngageRange: 6
   MeleeAttackRange: 2.5
-  PatrolSpeed: 2
-  PursuitSpeed: 4
+  PatrolSpeed: 4
+  PursuitSpeed: 6
   RotationSpeed: 180
   AttackCooldown: 2
   ComboLength: 1
   BlockProbability: 0.2
-  BlockDuration: 0.4
+  BlockDuration: 0.2
   ParryUpgradeProbability: 0.1
-  SurgeEvadeProbability: 0.7
+  SurgeEvadeProbability: 0.2
   EvasionDistance: 3
   CriticalHealthThreshold: 0.2
   RetreatsAtCriticalHealth: 1

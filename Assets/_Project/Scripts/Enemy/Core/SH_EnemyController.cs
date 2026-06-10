@@ -35,7 +35,7 @@ namespace Game.Enemy
         [Header("Animation Tuning")]
         [SerializeField] private float _animDamping = 0.1f;
 
-        [Header("Patrol Area")]
+        [Header("Patrol Tuning")]
         [Tooltip("Maximum radius from the spawn origin within which patrol destinations are chosen.")]
         [Min(1f)]
         [SerializeField] private float _patrolRadius = 8f;
@@ -51,6 +51,17 @@ namespace Game.Enemy
         [Tooltip("NavMesh sample radius used when validating a random patrol destination.")]
         [Min(0.5f)]
         [SerializeField] private float _patrolNavMeshSampleRadius = 2f;
+
+        [Header("Search Tuning")]
+        [Tooltip("Maximum seconds the agent will search for the player before returning to patrol.")]
+        [Min(1f)]
+        [SerializeField] private float _searchTimeout = 8f;
+        [Tooltip("Maximum number of search points the agent will visit before returning to patrol.")]
+        [Range(1, 10)]
+        [SerializeField] private int _maxSearchPoints = 4;
+        [Tooltip("Seconds spent moving to each search point before picking a new one.")]
+        [Min(0.1f)]
+        [SerializeField] private float _searchPointDuration = 1.5f;
 
         private int _animMoveXHash;
         private int _animMoveYHash;
@@ -110,7 +121,6 @@ namespace Game.Enemy
         private EnemyState _state = EnemyState.Patrol;
         private Vector3 _lastKnownPlayerPosition;
         private float _searchTimer;
-        private const float SearchTimeout = 8f;
         private float _attackCooldownTimer;
         private int _comboHitsRemaining;
         private bool _comboInProgress;
@@ -140,9 +150,7 @@ namespace Game.Enemy
         private SearchPhase _searchPhase;
         private Vector3 _currentSearchPoint;
         private int _searchPointsVisited;
-        private const int MaxSearchPoints = 4;
         private float _searchPointTimer;
-        private const float SearchPointDuration = 1.5f;
 
         #endregion
 
@@ -166,12 +174,19 @@ namespace Game.Enemy
         {
             s_sharedAlertActive = true;
             s_alertPlayerPosition = playerPosition;
+#if UNITY_EDITOR
+            Debug.Log($"[SH_EnemyController] BroadcastAlert: Player detected at {playerPosition} by {gameObject.name}. Alerting nearby allies.");
+#endif
+
         }
 
         public static void ResetSharedAlert()
         {
             s_sharedAlertActive = false;
             s_alertPlayerPosition = Vector3.zero;
+#if UNITY_EDITOR
+            Debug.Log($"[SH_EnemyController] ResetSharedAlert: Alert reset. All enemies will return to normal detection behavior.");
+#endif
         }
 
         #endregion
@@ -303,6 +318,8 @@ namespace Game.Enemy
                 _agent.updateRotation = false;
             }
 
+            _lastKnownPlayerPosition = Vector3.zero;
+
             PickPatrolDestination();
         }
 
@@ -423,6 +440,7 @@ namespace Game.Enemy
                     }
                     else
                     {
+                        SetTankDetected(false);
                         BroadcastAlert(_lastKnownPlayerPosition);
                         TransitionTo(EnemyState.Search);
                     }
@@ -472,7 +490,7 @@ namespace Game.Enemy
 
             _searchTimer += Time.deltaTime;
 
-            if (_searchTimer >= SearchTimeout || _isStaggered)
+            if (_searchTimer >= _searchTimeout || _isStaggered)
             {
                 TransitionTo(EnemyState.Patrol);
                 return;
@@ -481,17 +499,29 @@ namespace Game.Enemy
             if (_playerContext != null)
             {
                 float dist = Vector3.Distance(transform.position, _playerContext.Transform.position);
+                
+                if (dist <= _data.DetectionRange)
+                {
+                    _lastKnownPlayerPosition = _playerContext.Transform.position;
+                    _searchPhase = SearchPhase.MoveToLastKnown;
+                    if (_data.Archetype == EnemyArchetype.Tank)
+                    {
+                        SetTankDetected(true);
+                        BroadcastAlert(_lastKnownPlayerPosition);
+                    }
+                }
+                else if (dist > _data.DetectionRange * 1.5f)
+                {
+                    if (_data.Archetype == EnemyArchetype.Tank)
+                    {
+                        SetTankDetected(false);
+                    }
+                }
 
                 if (dist <= _data.AttackEngageRange)
                 {
                     TransitionTo(EnemyState.Attack);
                     return;
-                }
-
-                if (dist <= _data.DetectionRange)
-                {
-                    _lastKnownPlayerPosition = _playerContext.Transform.position;
-                    _searchPhase = SearchPhase.MoveToLastKnown;
                 }
             }
 
@@ -537,11 +567,11 @@ namespace Game.Enemy
             float dist = Vector3.Distance(transform.position, _currentSearchPoint);
             bool arrived = dist <= _agent.stoppingDistance + 0.3f;
 
-            if (arrived || _searchPointTimer >= SearchPointDuration)
+            if (arrived || _searchPointTimer >= _searchPointDuration)
             {
                 _searchPointsVisited++;
 
-                if (_searchPointsVisited >= MaxSearchPoints)
+                if (_searchPointsVisited >= _maxSearchPoints)
                 {
                     TransitionTo(EnemyState.Patrol);
                     return;
@@ -570,7 +600,6 @@ namespace Game.Enemy
             }
         }
 
-        // Tank-specific search: holds at half detection range, waits for engage range.
         private void TickSearchTank()
         {
             if (_playerContext == null) return;
@@ -578,11 +607,13 @@ namespace Game.Enemy
             float dist = Vector3.Distance(transform.position, _playerContext.Transform.position);
             float holdDistance = _data.DetectionRange * 0.5f;
 
-            // Player fully escaped — return to patrol.
+            // Player fully escaped — return to Search state.
             if (dist > _data.DetectionRange)
             {
                 SetTankDetected(false);
-                TransitionTo(EnemyState.Patrol);
+                TransitionTo(EnemyState.Search);
+                _lastKnownPlayerPosition = _playerContext.Transform.position;
+                FaceTarget(_playerContext.Transform.position);
                 return;
             }
 
@@ -597,7 +628,7 @@ namespace Game.Enemy
             FaceTarget(_playerContext.Transform.position);
 
             // Close the gap to hold distance; stop once within it.
-            if (dist > holdDistance)
+            if (dist > holdDistance && dist < _data.DetectionRange)
             {
                 if (_agent != null) _agent.isStopped = false;
                 TrySetDestination(_playerContext.Transform.position);
@@ -611,12 +642,13 @@ namespace Game.Enemy
         private void TickAttack()
         {
             if (_playerContext == null) return;
+            
+            if (_agent != null) _agent.isStopped = false;
 
             float dist = Vector3.Distance(transform.position, _playerContext.Transform.position);
 
             if (dist > _data.DetectionRange * 1.5f)
             {
-                // Tank resets Detected when it fully loses the player.
                 if (_data.Archetype == EnemyArchetype.Tank)
                     SetTankDetected(false);
 
@@ -630,6 +662,12 @@ namespace Game.Enemy
             if ((_playerContext.CombatController?.IsSurgeActive ?? false) && !_comboInProgress)
             {
                 TryEvaluateSurgeEvasion();
+                return;
+            }
+
+            if (dist > _data.AttackEngageRange && _data.Archetype == EnemyArchetype.Tank)
+            {
+                TransitionTo(EnemyState.Search);
                 return;
             }
 
@@ -973,12 +1011,13 @@ namespace Game.Enemy
 
             switch (_state)
             {
-                case EnemyState.Search: _searchTimer = 0f; break;
+                case EnemyState.Search: 
+                    _searchTimer = 0f;
+                    _searchPhase = SearchPhase.MoveToLastKnown;
+                    break;
                 case EnemyState.Evade: _evadeTimer = 0f; break;
             }
-
-            _searchTimer = 0f;
-            _searchPhase = SearchPhase.MoveToLastKnown;
+            
             _state = newState;
 
             switch (_state)
@@ -991,6 +1030,7 @@ namespace Game.Enemy
                     _searchPointsVisited = 0;
                     _isPatrolWaiting = false;
                     _patrolMoveTimer = 0f;
+                    ResetSharedAlert();
                     PickPatrolDestination();
                     break;
                 case EnemyState.Attack:

@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Tank
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Data.SH_CombatStats
   Strength: 10
-  Defense: 30
-  Agility: 6
+  Defense: 20
+  Agility: 4
   PostureMax: 100
-  MaxDurability: 100
+  MaxDurability: 70
   Archetype: 1
   IsStaggerImmune: 0

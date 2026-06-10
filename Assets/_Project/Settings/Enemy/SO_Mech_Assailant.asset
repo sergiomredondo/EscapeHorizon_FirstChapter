@@ -19,20 +19,20 @@ MonoBehaviour:
   MaxDurabilityOverride: 0
   PostureMaxOverride: 0
   DetectionRange: 20
-  AttackEngageRange: 2
+  AttackEngageRange: 4
   MeleeAttackRange: 2
   PatrolSpeed: 2
   PursuitSpeed: 4
-  RotationSpeed: 180
+  RotationSpeed: 120
   AttackCooldown: 2
   ComboLength: 2
   BlockProbability: 0.2
-  BlockDuration: 0.4
+  BlockDuration: 0.1
   ParryUpgradeProbability: 0.1
-  SurgeEvadeProbability: 0.7
+  SurgeEvadeProbability: 0.5
   EvasionDistance: 2.5
   CriticalHealthThreshold: 0.2
-  RetreatsAtCriticalHealth: 0
+  RetreatsAtCriticalHealth: 1
   CanBeGroupLeader: 0
   MinGroupSpacing: 1.5
   DropData: {fileID: 11400000, guid: 6c1ee1612a40a5a429ebf9b986d99e5c, type: 2}
