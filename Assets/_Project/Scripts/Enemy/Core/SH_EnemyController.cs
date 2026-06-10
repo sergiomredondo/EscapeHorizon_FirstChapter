@@ -101,6 +101,12 @@ namespace Game.Enemy
             Vulnerable
         }
 
+        private enum SearchPhase
+        {
+            MoveToLastKnown,
+            LocalSearch
+        }
+
         private EnemyState _state = EnemyState.Patrol;
         private Vector3 _lastKnownPlayerPosition;
         private float _searchTimer;
@@ -130,6 +136,13 @@ namespace Game.Enemy
 
         // Tank-specific: tracks whether the Detected boolean has been set.
         private bool _tankDetected = false;
+
+        private SearchPhase _searchPhase;
+        private Vector3 _currentSearchPoint;
+        private int _searchPointsVisited;
+        private const int MaxSearchPoints = 4;
+        private float _searchPointTimer;
+        private const float SearchPointDuration = 1.5f;
 
         #endregion
 
@@ -451,7 +464,6 @@ namespace Game.Enemy
 
         private void TickSearch()
         {
-            // Tank has its own tracking search behaviour.
             if (_data?.Archetype == EnemyArchetype.Tank && _tankDetected)
             {
                 TickSearchTank();
@@ -469,17 +481,93 @@ namespace Game.Enemy
             if (_playerContext != null)
             {
                 float dist = Vector3.Distance(transform.position, _playerContext.Transform.position);
+
                 if (dist <= _data.AttackEngageRange)
                 {
                     TransitionTo(EnemyState.Attack);
                     return;
                 }
+
                 if (dist <= _data.DetectionRange)
+                {
                     _lastKnownPlayerPosition = _playerContext.Transform.position;
+                    _searchPhase = SearchPhase.MoveToLastKnown;
+                }
             }
 
+            switch (_searchPhase)
+            {
+                case SearchPhase.MoveToLastKnown:
+                    TickSearch_MoveToLastKnown();
+                    break;
+
+                case SearchPhase.LocalSearch:
+                    TickSearch_LocalSearch();
+                    break;
+            }
+        }
+
+        private void TickSearch_MoveToLastKnown()
+        {
             FaceTarget(_lastKnownPlayerPosition);
             TrySetDestination(_lastKnownPlayerPosition);
+            if (_agent != null)
+                _agent.isStopped = false;
+
+            float dist = Vector3.Distance(transform.position, _lastKnownPlayerPosition);
+            bool arrived = dist <= _agent.stoppingDistance + 0.3f;
+
+            if (arrived)
+            {
+                _searchPhase = SearchPhase.LocalSearch;
+                _searchPointsVisited = 0;
+                PickNextSearchPoint();
+            }
+        }
+
+        private void TickSearch_LocalSearch()
+        {
+            _searchPointTimer += Time.deltaTime;
+
+            FaceTarget(_currentSearchPoint);
+            TrySetDestination(_currentSearchPoint);
+            if (_agent != null)
+                _agent.isStopped = false;
+
+            float dist = Vector3.Distance(transform.position, _currentSearchPoint);
+            bool arrived = dist <= _agent.stoppingDistance + 0.3f;
+
+            if (arrived || _searchPointTimer >= SearchPointDuration)
+            {
+                _searchPointsVisited++;
+
+                if (_searchPointsVisited >= MaxSearchPoints)
+                {
+                    TransitionTo(EnemyState.Patrol);
+                    return;
+                }
+
+                PickNextSearchPoint();
+            }
+        }
+
+        private void PickNextSearchPoint()
+        {
+            _searchPointTimer = 0f;
+
+            Vector3 randomDir = UnityEngine.Random.insideUnitSphere * 5f;
+            randomDir.y = 0f;
+
+            Vector3 candidate = _lastKnownPlayerPosition + randomDir;
+
+            if (NavMesh.SamplePosition(candidate, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+            {
+                _currentSearchPoint = hit.position;
+            }
+            else
+            {
+                _currentSearchPoint = _lastKnownPlayerPosition;
+            }
         }
 
         // Tank-specific search: holds at half detection range, waits for engage range.
@@ -889,6 +977,8 @@ namespace Game.Enemy
                 case EnemyState.Evade: _evadeTimer = 0f; break;
             }
 
+            _searchTimer = 0f;
+            _searchPhase = SearchPhase.MoveToLastKnown;
             _state = newState;
 
             switch (_state)
@@ -898,6 +988,7 @@ namespace Game.Enemy
                     // Reset Detected on Tank when returning to passive patrol.
                     if (_data?.Archetype == EnemyArchetype.Tank && _tankDetected)
                         SetTankDetected(false);
+                    _searchPointsVisited = 0;
                     _isPatrolWaiting = false;
                     _patrolMoveTimer = 0f;
                     PickPatrolDestination();

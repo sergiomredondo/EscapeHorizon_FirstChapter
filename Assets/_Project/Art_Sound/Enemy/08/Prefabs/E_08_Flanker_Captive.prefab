@@ -73,7 +73,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 1650463087692150}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.65
+  m_Radius: 0.6
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
@@ -104,8 +104,8 @@ CharacterController:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Height: 3
-  m_Radius: 0.65
+  m_Height: 4
+  m_Radius: 0.6
   m_SlopeLimit: 45
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
@@ -129,6 +129,9 @@ MonoBehaviour:
   _animMoveY: MoveY
   _animAttackTrigger: Attack
   _animDefeatedTrigger: Defeated
+  _animDetectedParam: Detected
+  _animRollX: RollX
+  _animRollY: RollY
   _animDamping: 0.1
   _patrolRadius: 8
   _patrolWaitTimeMin: 1.5
@@ -154,8 +157,8 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.65
-  m_Height: 3
+  m_Radius: 0.6
+  m_Height: 4
   m_Direction: 1
   m_Center: {x: 0, y: 1, z: 0}
 --- !u!1 &210308277910014380

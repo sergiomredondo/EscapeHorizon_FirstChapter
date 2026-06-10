@@ -19,8 +19,8 @@ MonoBehaviour:
   MaxDurabilityOverride: 0
   PostureMaxOverride: 0
   DetectionRange: 20
-  AttackEngageRange: 7
-  MeleeAttackRange: 4
+  AttackEngageRange: 3
+  MeleeAttackRange: 2
   PatrolSpeed: 2
   PursuitSpeed: 4
   RotationSpeed: 270

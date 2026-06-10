@@ -103,13 +103,13 @@ CharacterController:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Height: 1
-  m_Radius: 1
+  m_Height: 3.1
+  m_Radius: 1.03
   m_SlopeLimit: 35
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 1.1, z: 0}
+  m_Center: {x: 0, y: 1.62, z: 0}
 --- !u!114 &4463389341199476985
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -445,8 +445,9 @@ MonoBehaviour:
   _surgeSystem: {fileID: 7418908401079733832}
   _buildSystem: {fileID: 4559715221112079403}
   _difficultyManager: {fileID: 13729479286958514}
-  _retreatAnimTrigger: TacticalRetreat
-  _arrivalAnimTrigger: SafeZoneArrival
+  _retreatActionData: {fileID: 0}
+  _arrivalActionData: {fileID: 0}
+  _retreatAnimationMap: {fileID: 0}
   _slowMotionScale: 0.3
   _slowMotionDuration: 1.8
   _fadeDuration: 0.6
