@@ -99,6 +99,48 @@ namespace Game.Combat.Core
         /// </summary>
         public bool IsInSurgeCooldown { get; private set; }
 
+        /// <summary>
+        /// Dynamically returns the current numeric progress of the surge system based on its current state.
+        /// Integrated with SurgeSystem configuration and combat settings.
+        /// Consumed by: SH_UIBridge via Update polling.
+        /// </summary>
+        public float CurrentSurgeProgress
+        {
+            get
+            {
+                if (IsSurgeActive)
+                {
+                    return _context.SurgeSystem != null ? _context.SurgeSystem.SurgeBar : 0f;
+                }
+                if (IsInSurgeCooldown)
+                {
+                    return _surgeTimer;
+                }
+                return _context.SurgeSystem != null ? _context.SurgeSystem.SurgeBar : 0f;
+            }
+        }
+
+        /// <summary>
+        /// Dynamically returns the maximum threshold capacity for the current surge state.
+        /// Integrated with SurgeSystem configuration and combat settings.
+        /// Consumed by: SH_UIBridge via Update polling.
+        /// </summary>
+        public float MaxSurgeProgress
+        {
+            get
+            {
+                if (IsSurgeActive)
+                {
+                    return 1f;
+                }
+                if (IsInSurgeCooldown)
+                {
+                    return _combatSettings != null ? _combatSettings.surgeCooldownDuration : 1f;
+                }
+                return 1f;
+            }
+        }
+
         #endregion
 
         #region Initialization

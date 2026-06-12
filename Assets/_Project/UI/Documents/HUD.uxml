@@ -2,7 +2,7 @@
     <Style src="project://database/Assets/_Project/UI/Styles/HUD.uss?fileID=7433441132597879392&amp;guid=46c5f35131f48844c985b28afd300693&amp;type=3#HUD"/>
     <ui:VisualElement name="hud-root" class="hud-root">
         <ui:VisualElement name="interaction-container" class="interaction-container" style="display: none; position: absolute;">
-            <ui:Label name="interaction-label" text="INTERACTAR" class="interaction-label" style="font-size: 20px; -unity-font-definition: url(&quot;project://database/Assets/_Project/UI/Fonts/Tektur-VariableFont_wdth,wght.ttf?fileID=12800000&amp;guid=4f1027b2edfe59f4ebdd0bc0d3defbdb&amp;type=3#Tektur-VariableFont_wdth,wght&quot;); -unity-font-style: bold; color: rgb(229, 229, 229);"/>
+            <ui:Label name="interaction-label" text="Interactuar" class="interaction-label" style="font-size: 20px; -unity-font-definition: url(&quot;project://database/Assets/_Project/UI/Fonts/Tektur-VariableFont_wdth,wght.ttf?fileID=12800000&amp;guid=4f1027b2edfe59f4ebdd0bc0d3defbdb&amp;type=3#Tektur-VariableFont_wdth,wght&quot;); -unity-font-style: bold; color: rgb(229, 229, 229);"/>
             <ui:ProgressBar name="interaction-progress" low-value="0" high-value="100" class="interaction-progress"/>
         </ui:VisualElement>
         <ui:VisualElement name="mission-panel" class="corner-panel corner-panel--top-left">
@@ -14,27 +14,62 @@
         <ui:VisualElement name="center-anchor" class="center-anchor">
             <ui:VisualElement name="crosshair" class="crosshair"/>
         </ui:VisualElement>
-        <ui:VisualElement name="vitality-panel" class="corner-panel corner-panel--bottom-left" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Irregular%20Frames/Irregular%20(37).png?fileID=2800000&amp;guid=0e4841fbf5babc04a902658b58199cc6&amp;type=3#Irregular (37)&quot;);">
-            <ui:VisualElement name="hp-row" class="bar-row">
-                <ui:Label name="hp-icon-label" text="HP" class="bar-icon-label bar-icon-label--hp"/>
-                <ui:ProgressBar name="hp-bar" low-value="0" high-value="1" value="1" title="" class="resource-bar resource-bar--hp"/>
+        <ui:VisualElement name="vitality-panel" class="vitality-panel">
+            <ui:VisualElement name="energy-frame" class="vitality-frame vitality-frame--energy">
+                <ui:Label text="Energía" class="vitality-system-label"/>
+                <ui:ProgressBar name="energy-bar" low-value="0" high-value="100" class="vitality-bar vitality-bar--energy"/>
             </ui:VisualElement>
-            <ui:VisualElement name="energy-row" class="bar-row">
-                <ui:Label name="energy-icon-label" text="EN" class="bar-icon-label bar-icon-label--energy"/>
-                <ui:ProgressBar name="energy-bar" low-value="0" high-value="1" value="1" title="" class="resource-bar resource-bar--energy"/>
+            <ui:VisualElement name="health-frame" class="vitality-frame vitality-frame--health">
+                <ui:Label text="Integridad estructural" class="vitality-system-label"/>
+                <ui:ProgressBar name="hp-bar" low-value="0" high-value="100" class="vitality-bar vitality-bar--hp"/>
+            </ui:VisualElement>
+            <ui:VisualElement name="vitality-metrics" class="vitality-metrics-panel"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="resources-panel" class="resources-panel">
+            <ui:VisualElement name="resource-metrics" class="resource-metrics-panel">
+                <ui:VisualElement name="scrap-group" class="resource-group">
+                    <ui:Label text="SCRAP:" class="resource-metric-label"/>
+                    <ui:Label name="scrap-label" text="0000" class="resource-metric-value"/>
+                </ui:VisualElement>
+                <ui:VisualElement name="cores-group" class="resource-group">
+                    <ui:Label text="IC:" class="resource-metric-label"/>
+                    <ui:Label name="ic-label" text="00" class="resource-metric-value"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="separator"/>
+            <ui:VisualElement name="surge-frame" class="resources-frame resources-frame--surge">
+                <ui:Label text="Sistema Sobrecarga" class="resources-system-label"/>
+                <ui:VisualElement name="surge-bar-row" class="surge-bar-row">
+                    <ui:VisualElement name="surge-dot-cooldown" class="surge-status-dot surge-status-dot--cooldown"/>
+                    <ui:VisualElement name="surge-dot-active" class="surge-status-dot surge-status-dot--active"/>
+                    <ui:ProgressBar name="surge-bar" low-value="0" high-value="100" class="resources-bar resources-bar--surge"/>
+                </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="resources-panel" class="corner-panel corner-panel--bottom-right">
-            <ui:VisualElement name="scrap-row" class="resource-row">
-                <ui:Label name="scrap-label" text="SC: 0" class="resource-label resource-label--scrap"/>
-            </ui:VisualElement>
-            <ui:VisualElement name="ic-row" class="resource-row">
-                <ui:Label name="ic-label" text="IC: 0" class="resource-label resource-label--ic"/>
-            </ui:VisualElement>
-            <ui:VisualElement name="surge-row" class="resource-row">
-                <ui:VisualElement name="surge-indicator" class="surge-indicator">
-                    <ui:Label name="surge-state-label" text="SURGE" class="surge-state-label"/>
+        <ui:VisualElement name="reticle-focus" class="reticle-focus focus-faded">
+            <ui:VisualElement name="cooldown-arc-light" class="cooldown-arc cooldown-arc--light">
+                <ui:VisualElement class="arc-mask-container">
+                    <ui:VisualElement name="arc-fill-light" class="arc-fill"/>
                 </ui:VisualElement>
+                <ui:Image name="Icon" style="height: 10%; width: 10%; background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/LightAttack.png?fileID=2800000&amp;guid=8d9622995561d5d4e95c39b6669ba7da&amp;type=3#LightAttack&quot;); top: -12%; left: 30%;">
+                    <ui:Image name="line" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/LineLightAttack.png?fileID=2800000&amp;guid=7db5300306c4a874c896a486c68a66d2&amp;type=3#LineLightAttack&quot;); height: 25px; width: 45px; left: 20px; top: 20px;"/>
+                </ui:Image>
+            </ui:VisualElement>
+            <ui:VisualElement name="cooldown-arc-heavy" class="cooldown-arc cooldown-arc--heavy">
+                <ui:VisualElement class="arc-mask-container">
+                    <ui:VisualElement name="arc-fill-heavy" class="arc-fill"/>
+                </ui:VisualElement>
+                <ui:Image name="Icon" style="height: 10%; width: 10%; background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/HeavyAttack.png?fileID=2800000&amp;guid=eb28dc3c2e5d1474294457066653a169&amp;type=3#HeavyAttack&quot;); top: -12%; left: 20%;">
+                    <ui:Image name="line" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/LineHeavyAttack.png?fileID=2800000&amp;guid=34aa83d2ae37dc248a73deaa166cbafd&amp;type=3#LineHeavyAttack&quot;); height: 30px; width: 76px; left: 20px; top: 18px;"/>
+                </ui:Image>
+            </ui:VisualElement>
+            <ui:VisualElement name="cooldown-arc-dash" class="cooldown-arc cooldown-arc--dash">
+                <ui:VisualElement class="arc-mask-container">
+                    <ui:VisualElement name="arc-fill-dash" class="arc-fill"/>
+                </ui:VisualElement>
+                <ui:Image name="Icon" style="height: 10%; width: 10%; background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Dash.png?fileID=2800000&amp;guid=50563d698c71fab468abbd8d9142ba9d&amp;type=3#Dash&quot;); top: -11%; left: 10%;">
+                    <ui:Image name="line" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/LineDash.png?fileID=2800000&amp;guid=034067eed67d08d49829c8abbb69522f&amp;type=3#LineDash&quot;); height: 30px; width: 100px; left: 28px; top: 16px;"/>
+                </ui:Image>
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:Label name="build-readonly-notice" text="[ Return to base to modify build ]" class="build-readonly-notice" style="display: none;"/>

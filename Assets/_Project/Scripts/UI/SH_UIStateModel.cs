@@ -172,6 +172,8 @@ namespace UI
         private float _interactionProgress;
         private Vector3 _targetWorldPosition;
         public Vector3 TargetWorldPosition => _targetWorldPosition;
+        private float _currentSurgeProgress;
+        private float _maxSurgeProgress;
 
         /// <summary>
         /// True while the Energy Surge state is active and boosting combat attributes.
@@ -183,6 +185,12 @@ namespace UI
         /// Mutually exclusive with IsSurgeActive.
         /// </summary>
         public bool IsInSurgeCooldown => _isInSurgeCooldown;
+
+        /// <summary> Current progress of the surge system or cooldown timer. </summary>
+        public float CurrentSrugeProgress => _currentSurgeProgress;
+
+        /// <summary> Maximum threshold of the surge state duration or capacity. </summary>
+        public float MaxSurgeProgress => _maxSurgeProgress;
 
         /// <summary>
         /// Updates the Surge state flags and fires OnSurgeStateChanged only when
@@ -198,6 +206,30 @@ namespace UI
             _isInSurgeCooldown = inCooldown;
             OnSurgeStateChanged?.Invoke(_isSurgeActive, _isInSurgeCooldown);
         }
+
+        /// <summary>
+        /// Updates the Surge progress values and fires OnSurgeProgressChanged with a normalized ratio.
+        /// </summary>
+        /// <param name="current"> Current surge progress value. </param>
+        /// <param name="max"> Maximum surge capacity value. Must be > 0. </param>
+        public void SetSurgeProgress(float current, float max)
+        {
+            bool changed = !Approximately(_currentSurgeProgress, current) || !Approximately(_maxSurgeProgress, max);
+            if (!changed) return;
+
+            _currentSurgeProgress = current;
+            _maxSurgeProgress = max;
+
+            float normalized = max > 0f ? Mathf.Clamp01(current / max) : 0f;
+            OnSurgeProgressChanged?.Invoke(normalized);
+        }
+
+        /// <summary>
+        /// Fired when the Energy Surge progress values change.
+        /// Parameters: (float progressNormalized).
+        /// Consumed by: SH_HUDController → surge-bar ProgressBar.
+        /// </summary>
+        public event Action<float> OnSurgeProgressChanged;
 
         public void SetInteractionFocus(bool isVisible, string targetName)
         {
@@ -419,6 +451,49 @@ namespace UI
         /// no visible change in the UI.
         /// </summary>
         private static bool Approximately(float a, float b) => Math.Abs(a - b) < 0.001f;
+
+
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
+        #region Action Cooldowns
+
+        /// <summary>
+        /// Fired when any action cooldown progress changes.
+        /// Parameters: (float lightAttack01, float heavyAttack01, float dash01).
+        /// Values range [0, 1]: 0 = action executing/in cooldown (arc empty),
+        /// 1 = action ready (arc full).
+        /// Consumed by: SH_HUDController → reticle cooldown arcs.
+        /// </summary>
+        public event Action<float, float, float> OnActionCooldownsChanged;
+
+        private float _lightAttackCooldown01 = 1f;
+        private float _heavyAttackCooldown01 = 1f;
+        private float _dashCooldown01 = 1f;
+
+        public float LightAttackCooldown01 => _lightAttackCooldown01;
+        public float HeavyAttackCooldown01 => _heavyAttackCooldown01;
+        public float DashCooldown01 => _dashCooldown01;
+
+        /// <summary>
+        /// Updates the three action cooldown progress values and fires
+        /// OnActionCooldownsChanged only when at least one value differs.
+        /// </summary>
+        public void SetActionCooldowns(float lightAttack01, float heavyAttack01, float dash01)
+        {
+            bool changed = !Approximately(_lightAttackCooldown01, lightAttack01)
+                        || !Approximately(_heavyAttackCooldown01, heavyAttack01)
+                        || !Approximately(_dashCooldown01, dash01);
+            if (!changed) return;
+
+            _lightAttackCooldown01 = lightAttack01;
+            _heavyAttackCooldown01 = heavyAttack01;
+            _dashCooldown01 = dash01;
+            OnActionCooldownsChanged?.Invoke(
+                _lightAttackCooldown01,
+                _heavyAttackCooldown01,
+                _dashCooldown01);
+        }
 
         #endregion
     }

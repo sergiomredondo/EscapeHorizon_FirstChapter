@@ -1,5 +1,7 @@
+using Actions.Data;
 using Core;
 using Core.StateMachine;
+using Core.StateMachine.States;
 using Game.Combat.Core;
 using Game.Economy;
 using Game.Economy.Data;
@@ -44,6 +46,17 @@ namespace UI
         [Tooltip("Leave unassigned — resolved via FindFirstObjectByType in Start().")]
         [SerializeField] private SH_PlayerStateMachine _playerStateMachine;
 
+        [Header("Action Data — Cooldown Tracking")]
+        [Tooltip("Resolved from SH_PlayerCombatController via reflection-free reference. " +
+         "Assign the same LightAttack.asset used in SH_PlayerCombatController.")]
+        [SerializeField] private SH_ActionData _lightAttackData;
+
+        [Tooltip("Assign the same HeavyAttack.asset used in SH_PlayerCombatController.")]
+        [SerializeField] private SH_ActionData _heavyAttackData;
+
+        [Tooltip("Resolved from SH_MovementSettings.dashAction. " +
+                 "Assign the same Dash.asset used in SH_MovementSettings.")]
+        [SerializeField] private SH_ActionData _dashActionData;
         #endregion
 
         // ─────────────────────────────────────────────────────────────────────
@@ -62,6 +75,21 @@ namespace UI
         // ── Surge polling cache ────────────────────────────────────────────
         private bool _lastSurgeActive;
         private bool _lastSurgeInCooldown;
+
+        // ── Action cooldown polling cache ──────────────────────────────────
+        private float _lightAttackCooldownStart = -999f;
+        private float _heavyAttackCooldownStart = -999f;
+        private float _dashCooldownStart = -999f;
+
+        // Total window = TotalDuration + coolDownTime for each action.
+        private float _lightAttackWindow;
+        private float _heavyAttackWindow;
+        private float _dashWindow;
+
+        // Last known state to detect rising edge (action just started).
+        private bool _wasInLightAttack;
+        private bool _wasInHeavyAttack;
+        private bool _wasInDash;
 
         #endregion
 
@@ -105,6 +133,7 @@ namespace UI
 
             PollSurgeState();
             PollMenuInput();
+            PollActionCooldowns();
         }
 
         private void OnDestroy()
@@ -489,6 +518,9 @@ namespace UI
 
             bool currentSurgeActive = _context.CombatController.IsSurgeActive;
             bool currentSurgeInCooldown = _context.CombatController.IsInSurgeCooldown;
+            float currentProgress = _context.CombatController.CurrentSurgeProgress;
+            float maxProgress = _context.CombatController.MaxSurgeProgress;
+            _model.SetSurgeProgress(currentProgress, maxProgress);
 
             if (currentSurgeActive != _lastSurgeActive ||
                 currentSurgeInCooldown != _lastSurgeInCooldown)
@@ -535,6 +567,53 @@ namespace UI
                 OpenBuildMenu();
         }
 
+        private void PollActionCooldowns()
+        {
+            if (_context?.StateMachine == null) return;
+
+            string stateName = _context.StateMachine.GetCurrentStateName();
+
+            bool inLight = stateName == nameof(SH_ActionState)
+                        && _lightAttackData != null
+                        && _context.StateMachine.IsCurrentAction(_lightAttackData);
+
+            bool inHeavy = stateName == nameof(SH_ActionState)
+                        && _heavyAttackData != null
+                        && _context.StateMachine.IsCurrentAction(_heavyAttackData);
+
+            bool inDash = stateName == nameof(SH_ActionState)
+                        && _dashActionData != null
+                        && _context.StateMachine.IsCurrentAction(_dashActionData);
+
+            // Rising edge: action just started — record timestamp.
+            if (inLight && !_wasInLightAttack)
+                _lightAttackCooldownStart = Time.time;
+            if (inHeavy && !_wasInHeavyAttack)
+                _heavyAttackCooldownStart = Time.time;
+            if (inDash && !_wasInDash)
+                _dashCooldownStart = Time.time;
+
+            _wasInLightAttack = inLight;
+            _wasInHeavyAttack = inHeavy;
+            _wasInDash = inDash;
+
+            float light01 = ComputeCooldown01(_lightAttackCooldownStart, _lightAttackWindow);
+            float heavy01 = ComputeCooldown01(_heavyAttackCooldownStart, _heavyAttackWindow);
+            float dash01 = ComputeCooldown01(_dashCooldownStart, _dashWindow);
+
+            _model.SetActionCooldowns(light01, heavy01, dash01);
+        }
+
+        /// <summary>
+        /// Returns [0, 1] where 1 = ready, 0 = just started.
+        /// Reaches 1 when Time.time >= startTime + window.
+        /// </summary>
+        private static float ComputeCooldown01(float startTime, float window)
+        {
+            if (window <= 0f || startTime < 0f) return 1f;
+            return Mathf.Clamp01((Time.time - startTime) / window);
+        }
+
         private void UpdateFocusUIOnStateChange()
         {
             var target = _context?.Interaction.FocusedTarget;
@@ -574,9 +653,19 @@ namespace UI
             _lastSurgeActive = _context.CombatController.IsSurgeActive;
             _lastSurgeInCooldown = _context.CombatController.IsInSurgeCooldown;
             _model.SetSurgeState(_lastSurgeActive, _lastSurgeInCooldown);
-
+            _model.SetSurgeProgress(_context.CombatController.CurrentSurgeProgress, _context.CombatController.MaxSurgeProgress);
             // Build menu — push initial tree state (menu stays closed).
             PushBuildTreeState();
+
+            // Action cooldown windows — computed once from asset data.
+            if (_lightAttackData != null)
+                _lightAttackWindow = _lightAttackData.TotalDuration + _lightAttackData.coolDownTime;
+            if (_heavyAttackData != null)
+                _heavyAttackWindow = _heavyAttackData.TotalDuration + _heavyAttackData.coolDownTime;
+            if (_dashActionData != null)
+                _dashWindow = _dashActionData.TotalDuration + _dashActionData.coolDownTime;
+
+            _model.SetActionCooldowns(1f, 1f, 1f);
         }
 
         #endregion

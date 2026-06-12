@@ -72,6 +72,9 @@ namespace Core.StateMachine.States
 
         public override int Priority => _actionData.priority;
 
+        /// <summary> The SH_ActionData driving this state. Read by SH_PlayerStateMachine.IsCurrentAction(). </summary>
+        public SH_ActionData ActionData => _actionData;
+
         #endregion
 
         #region Constructor

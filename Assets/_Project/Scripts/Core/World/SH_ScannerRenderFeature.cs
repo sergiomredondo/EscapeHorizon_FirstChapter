@@ -3,6 +3,12 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Rendering.RenderGraphModule;
 
+/// <summary>
+/// Custom ScriptableRendererFeature that applies a post-processing 
+/// effect using a specified material.The effect is applied in two passes: 
+/// first, the custom shader is applied to an intermediate texture; 
+/// then, the result is copied back to the camera's color target.
+/// </summary>
 namespace TerrainScanner
 {
     public class ScannerRenderFeature : ScriptableRendererFeature

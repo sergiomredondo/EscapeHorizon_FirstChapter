@@ -414,6 +414,17 @@ namespace Core.StateMachine
             _actionCooldowns[actionData] = Time.time;
         }
 
+        /// <summary>
+        /// Returns true if the active state is SH_ActionState executing the given data.
+        /// Used by SH_UIBridge to detect cooldown rising edges without coupling to internals.
+        /// </summary>
+        public bool IsCurrentAction(SH_ActionData actionData)
+        {
+            if (_currentState is SH_ActionState actionState)
+                return actionState.ActionData == actionData;
+            return false;
+        }
+
 
         #endregion
 

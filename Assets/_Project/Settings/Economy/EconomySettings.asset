@@ -17,9 +17,13 @@ MonoBehaviour:
   energyDefeatFloor: 0.1
   icBaseCost: 10
   icScalingCoefficient: 0.15
+  retreatHealthThreshold: 0.15
+  energyFloorFraction: 0.1
+  scrapDefeatRetentionRate: 0.5
+  energyDefeatRetentionRate: 0.5
   icDefeatRetentionRate: 0.5
   scBaseReconfigCost: 50
   scReconfigCostMultiplier: 20
-  maxDurability: 50
+  maxDurability: 100
   defeatThreshold: 0.05
   durabilityPerScrap: 2

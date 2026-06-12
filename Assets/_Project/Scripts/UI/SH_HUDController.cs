@@ -34,6 +34,8 @@ namespace UI
         private const string CssNodeActive = "build-node-btn--active";
         private const string CssNodeNext = "build-node-btn--next";
         private const string CssNodeUnavailable = "build-node-btn--unavailable";
+        private const string CssFocusActive = "focus-active";
+        private const string CssFocusFaded = "focus-faded";
 
         #endregion
 
@@ -44,7 +46,9 @@ namespace UI
         private const string ElementEnergyBar = "energy-bar";
         private const string ElementScrapLabel = "scrap-label";
         private const string ElementICLabel = "ic-label";
-        private const string ElementSurgeIndicator = "surge-indicator";
+        private const string ElementSurgeBar = "surge-bar";
+        private const string ElementSurgeIndicator = "surge-dot-active";
+        private const string ElementSurgeCooldown = "surge-dot-cooldown";
         private const string ElementInteractionContainer = "interaction-container";
         private const string ElementInteractionLabel = "interaction-label";
         private const string ElementInteractionProgress = "interaction-progress";
@@ -53,6 +57,11 @@ namespace UI
         private const string ElementBuildPurgeSection = "build-purge-section";
         private const string ElementBuildPurgeYield = "build-purge-yield";
         private const string ElementBuildPurgeBtn = "build-purge-btn";
+        private const string ElementReticleFocus = "reticle-focus";
+        private const string ElementCooldownLight = "cooldown-arc-light";
+        private const string ElementCooldownHeavy = "cooldown-arc-heavy";
+        private const string ElementCooldownDash = "cooldown-arc-dash";
+        private const string ElementAarcFill = "arc-fill";
 
         #endregion
 
@@ -113,6 +122,8 @@ namespace UI
         private UIDocument _document;
         private ProgressBar _hpBar;
         private ProgressBar _energyBar;
+        private ProgressBar _surgeBar;
+        private VisualElement _surgeDotCooldown;
         private Label _scrapLabel;
         private Label _icLabel;
         private VisualElement _surgeIndicator;
@@ -120,6 +131,10 @@ namespace UI
         private Label _interactionLabel;
         private ProgressBar _interactionProgress;
         private bool _isInteractionActive;
+        private VisualElement _reticleFocus;
+        private VisualElement _cooldownArcLight;
+        private VisualElement _cooldownArcHeavy;
+        private VisualElement _cooldownArcDash;
 
         #endregion
 
@@ -228,8 +243,10 @@ namespace UI
             _model.OnScrapChanged += OnScrapChanged;
             _model.OnIdentityCoresChanged += OnIdentityCoresChanged;
             _model.OnSurgeStateChanged += OnSurgeStateChanged;
+            _model.OnSurgeProgressChanged += OnSurgeProgressChanged;
             _model.OnInteractionFocusChanged += OnInteractionFocusChanged;
             _model.OnInteractionProgressChanged += OnInteractionProgressChanged;
+            _model.OnActionCooldownsChanged += OnActionCooldownsChanged;
 
             // Build menu events.
             _model.OnBuildMenuOpenChanged += OnBuildMenuOpenChanged;
@@ -250,8 +267,10 @@ namespace UI
             _model.OnScrapChanged -= OnScrapChanged;
             _model.OnIdentityCoresChanged -= OnIdentityCoresChanged;
             _model.OnSurgeStateChanged -= OnSurgeStateChanged;
+            _model.OnSurgeProgressChanged -= OnSurgeProgressChanged;
             _model.OnInteractionFocusChanged -= OnInteractionFocusChanged;
             _model.OnInteractionProgressChanged -= OnInteractionProgressChanged;
+            _model.OnActionCooldownsChanged -= OnActionCooldownsChanged;
 
             _model.OnBuildMenuOpenChanged -= OnBuildMenuOpenChanged;
             _model.OnBuildTreeRefreshed -= OnBuildTreeRefreshed;
@@ -282,10 +301,27 @@ namespace UI
             _energyBar = root.Q<ProgressBar>(ElementEnergyBar);
             _scrapLabel = root.Q<Label>(ElementScrapLabel);
             _icLabel = root.Q<Label>(ElementICLabel);
+            _surgeBar = root.Q<ProgressBar>(ElementSurgeBar);
             _surgeIndicator = root.Q<VisualElement>(ElementSurgeIndicator);
+            _surgeDotCooldown = root.Q<VisualElement>(ElementSurgeCooldown);
             _interactionContainer = root.Q<VisualElement>(ElementInteractionContainer);
             _interactionLabel = root.Q<Label>(ElementInteractionLabel);
             _interactionProgress = root.Q<ProgressBar>(ElementInteractionProgress);
+            _reticleFocus = root.Q<VisualElement>(ElementReticleFocus);
+            _cooldownArcLight = root.Q<VisualElement>(ElementCooldownLight);
+            _cooldownArcHeavy = root.Q<VisualElement>(ElementCooldownHeavy);
+            _cooldownArcDash = root.Q<VisualElement>(ElementCooldownDash);
+
+            
+            if (_surgeBar != null)
+            {
+                _surgeBar.lowValue = 0f;
+                _surgeBar.highValue = 1f;
+                _surgeBar.value = 0f;
+            }
+
+            if (_reticleFocus != null)
+                _reticleFocus.AddToClassList(CssFocusFaded);
 
             bool allFound = true;
             if (_hpBar == null) 
@@ -316,6 +352,19 @@ namespace UI
 #endif
                 allFound = false;
             }
+            if (_surgeBar == null)
+            {
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_HUDController] '{ElementSurgeBar}' not found.");
+#endif
+                allFound = false;
+            }
+            if ( _surgeDotCooldown == null) {
+#if UNITY_EDITOR
+                Debug.LogError($"[SH_HUDController] '{ElementSurgeCooldown}' not found.");
+#endif
+                allFound = false;
+            } 
             if (_surgeIndicator == null) 
             {
 #if UNITY_EDITOR
@@ -395,32 +444,54 @@ namespace UI
         private void OnHPChanged(float currentHP, float maxHP)
         {
             if (_hpBar == null) return;
-            _hpBar.value = maxHP > 0f ? currentHP / maxHP : 0f;
+            _hpBar.value = maxHP > 0f ? currentHP / maxHP : 1f;
+            _hpBar.value = currentHP;
         }
 
         private void OnEnergyChanged(float currentEnergy, float maxEnergy)
         {
             if (_energyBar == null) return;
-            _energyBar.value = maxEnergy > 0f ? currentEnergy / maxEnergy : 0f;
+            _energyBar.value = maxEnergy > 0f ? currentEnergy / maxEnergy : 1f;
+            _energyBar.value = currentEnergy;
         }
 
         private void OnScrapChanged(float currentScrap)
         {
             if (_scrapLabel == null) return;
-            _scrapLabel.text = $"SC: {Mathf.FloorToInt(currentScrap)}";
+            _scrapLabel.text = Mathf.FloorToInt(currentScrap).ToString("D4");
         }
 
         private void OnIdentityCoresChanged(int currentCores)
         {
             if (_icLabel == null) return;
-            _icLabel.text = $"IC: {currentCores}";
+            _icLabel.text = currentCores.ToString("D2");
         }
 
         private void OnSurgeStateChanged(bool surgeActive, bool inCooldown)
         {
-            if (_surgeIndicator == null) return;
-            _surgeIndicator.EnableInClassList(CssSurgeActive, surgeActive);
-            _surgeIndicator.EnableInClassList(CssSurgeCooldown, inCooldown && !surgeActive);
+            if (_surgeIndicator != null)
+            {
+                if (surgeActive)
+                    _surgeIndicator.AddToClassList(CssSurgeActive);
+                else
+                    _surgeIndicator.RemoveFromClassList(CssSurgeActive);
+            }
+
+            if (_surgeDotCooldown != null)
+            {
+                if (inCooldown)
+                    _surgeDotCooldown.AddToClassList(CssSurgeCooldown);
+                else
+                    _surgeDotCooldown.RemoveFromClassList(CssSurgeCooldown);
+            }
+        }
+
+        private void OnSurgeProgressChanged(float progressNormalized)
+        {
+            if (_surgeBar != null)
+            {
+                _surgeBar.value = Mathf.Clamp01(progressNormalized);
+            }
         }
 
         private void OnInteractionFocusChanged(bool isVisible, string targetName)
@@ -436,6 +507,41 @@ namespace UI
         {
             if (_interactionProgress != null)
                 _interactionProgress.value = progress * 100f;
+        }
+
+        private void OnActionCooldownsChanged(float light01, float heavy01, float dash01)
+        {
+            SetArcProgress(_cooldownArcLight, light01);
+            SetArcProgress(_cooldownArcHeavy, heavy01);
+            SetArcProgress(_cooldownArcDash, dash01);
+
+            // Focus container: faded when all actions ready, active when any in cooldown.
+            bool anyInCooldown = light01 < 0.999f || heavy01 < 0.999f || dash01 < 0.999f;
+            if (_reticleFocus != null)
+            {
+                _reticleFocus.EnableInClassList(CssFocusActive, anyInCooldown);
+                _reticleFocus.EnableInClassList(CssFocusFaded, !anyInCooldown);
+            }
+        }
+
+        /// <summary>
+        /// Drives a semicircular arc by setting --arc-progress custom property [0,1].
+        /// The USS uses this variable to control the arc sweep via background rotation.
+        /// </summary>
+        private void SetArcProgress(VisualElement arcContainer, float progress01)
+        {
+            if (arcContainer == null) return;
+
+            //VisualElement fill = arcContainer.hierarchy.childCount > 0
+            //    ? arcContainer.hierarchy[0] : null;
+            VisualElement fill = arcContainer.Q<VisualElement>(className: ElementAarcFill);
+            if (fill == null) return;
+
+            // Rotate fill element: -180° = empty arc, 0° = full arc
+            float angleDeg = Mathf.Lerp(135f, -45f, progress01);
+            fill.style.rotate = new StyleRotate(new Rotate(angleDeg));
+            fill.style.opacity = progress01 < 0.999f ? 1f : 0.25f;
+
         }
 
         #endregion
@@ -609,6 +715,7 @@ namespace UI
             OnScrapChanged(_model.CurrentScrap);
             OnIdentityCoresChanged(_model.CurrentIdentityCores);
             OnSurgeStateChanged(_model.IsSurgeActive, _model.IsInSurgeCooldown);
+            OnSurgeProgressChanged(_model.MaxSurgeProgress > 0f ? _model.CurrentSrugeProgress / _model.MaxSurgeProgress : 0f);
 
             // Build menu starts closed — no tree refresh needed at init.
             if (_buildOverlay != null)
