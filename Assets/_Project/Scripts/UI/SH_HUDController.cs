@@ -531,7 +531,7 @@ namespace UI
         private void SetArcProgress(VisualElement arcContainer, float progress01)
         {
             if (arcContainer == null) return;
-
+            
             //VisualElement fill = arcContainer.hierarchy.childCount > 0
             //    ? arcContainer.hierarchy[0] : null;
             VisualElement fill = arcContainer.Q<VisualElement>(className: ElementAarcFill);

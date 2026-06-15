@@ -17,9 +17,7 @@ namespace Game.UI
     /// </summary>
     public class SH_LevelCompleteOverlay : MonoBehaviour
     {
-        private const string TitleSceneName = "SCN_0_Title";
-        private const string PrototypeSceneName = "SCN_1_Prototype";
-
+        
         [Header("UI References")]
         [Tooltip("Root GameObject of the UI Canvas. This is disabled when the overlay is shown.")]
         [SerializeField] private GameObject _uiObject;
@@ -38,6 +36,9 @@ namespace Game.UI
         [Min(0f)]
         [SerializeField] private float _autoDismissDelay = 0f;
 
+        [Tooltip("Default scene to load when the overlay is dismissed.")]
+        [SerializeField] SceneOptions TitleSceneName = SceneOptions.SCN_0_Title;
+
         [Header("Transition")]
         [Tooltip("CanvasGroup for a full-screen fade overlay on scene transition.")]
         [SerializeField] private CanvasGroup _fadeOverlay;
@@ -45,6 +46,13 @@ namespace Game.UI
         [Tooltip("Duration of the fade before loading a new scene.")]
         [Min(0.1f)]
         [SerializeField] private float _fadeDuration = 0.5f;
+
+        public enum SceneOptions
+        {
+            SCN_0_Title,
+            SCN_1_Prototype,
+            SCN_3_Gameplay
+        }
 
         private bool _isVisible;
         private float _autoDismissTimer;
@@ -67,7 +75,7 @@ namespace Game.UI
 
             _autoDismissTimer += Time.unscaledDeltaTime;
             if (_autoDismissTimer >= _autoDismissDelay)
-                OnReturnToTitle();
+                OnReturnDefault();
         }
 
         // ── Public API (called by SH_LevelEndTrigger) ────────────────────
@@ -89,18 +97,22 @@ namespace Game.UI
 
         // ── Button Handlers ──────────────────────────────────────────────
 
-        /// <summary> Retry button — reloads the current prototype scene. </summary>
+        /// <summary> Retry button — reloads the current scene. </summary>
         public void OnRetry()
         {
-            Time.timeScale = 1f;
-            StartCoroutine(FadeAndLoad(PrototypeSceneName));
+            StartCoroutine(FadeAndLoad(SceneManager.GetActiveScene().name));
         }
 
         /// <summary> Return to Title button — loads SCN_0_Title. </summary>
         public void OnReturnToTitle()
         {
-            Time.timeScale = 1f;
-            StartCoroutine(FadeAndLoad(TitleSceneName));
+            StartCoroutine(FadeAndLoad(SceneOptions.SCN_0_Title.ToString()));
+        }
+
+        /// <summary> Return to default scene when timme is up. </summary>
+        public void OnReturnDefault()
+        {
+            StartCoroutine(FadeAndLoad(TitleSceneName.ToString()));
         }
 
         // ── Internal ─────────────────────────────────────────────────────
@@ -113,10 +125,10 @@ namespace Game.UI
                 while (timer < _fadeDuration)
                 {
                     timer += Time.unscaledDeltaTime;
-                    _fadeOverlay.alpha = Mathf.Clamp01(timer / _fadeDuration);
+                    Time.timeScale = _fadeOverlay.alpha = Mathf.Clamp01(timer / _fadeDuration);
                     yield return null;
                 }
-                _fadeOverlay.alpha = 1f;
+                Time.timeScale = _fadeOverlay.alpha = 1f;
             }
 
             SceneManager.LoadScene(sceneName);

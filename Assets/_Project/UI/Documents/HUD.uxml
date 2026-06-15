@@ -28,11 +28,11 @@
         <ui:VisualElement name="resources-panel" class="resources-panel">
             <ui:VisualElement name="resource-metrics" class="resource-metrics-panel">
                 <ui:VisualElement name="scrap-group" class="resource-group">
-                    <ui:Label text="SCRAP:" class="resource-metric-label"/>
+                    <ui:Label text="SC:" class="resource-metric-label" style="color: rgb(0, 204, 204);"/>
                     <ui:Label name="scrap-label" text="0000" class="resource-metric-value"/>
                 </ui:VisualElement>
                 <ui:VisualElement name="cores-group" class="resource-group">
-                    <ui:Label text="IC:" class="resource-metric-label"/>
+                    <ui:Label text="IC:" class="resource-metric-label" style="color: rgb(0, 204, 204);"/>
                     <ui:Label name="ic-label" text="00" class="resource-metric-value"/>
                 </ui:VisualElement>
             </ui:VisualElement>

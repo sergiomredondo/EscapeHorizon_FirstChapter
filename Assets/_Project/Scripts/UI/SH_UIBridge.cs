@@ -570,7 +570,7 @@ namespace UI
         private void PollActionCooldowns()
         {
             if (_context?.StateMachine == null) return;
-
+            if (_context.Resources.CurrentEnergy < _lightAttackData.staminaCost) return;
             string stateName = _context.StateMachine.GetCurrentStateName();
 
             bool inLight = stateName == nameof(SH_ActionState)
