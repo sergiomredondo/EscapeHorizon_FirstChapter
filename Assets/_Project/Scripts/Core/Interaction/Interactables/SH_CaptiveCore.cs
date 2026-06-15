@@ -85,6 +85,10 @@ namespace Game.Interaction
          "Must match the layer used in SH_InteractionSettings.interactableLayer.")]
         [SerializeField] private string _interactableLayerName = "Interactable";
 
+        [Tooltip("Display name for the button action. Used in UI prompts. " +
+                 "If empty, the GameObject's name will be used.")]
+        [SerializeField] private string _displayName = "Núcleo de identidad (IC)";
+
         #endregion
 
         #region Runtime State
@@ -317,6 +321,10 @@ namespace Game.Interaction
 
         #region Focus Visual Feedback
 
+        public override string ToString()
+        {
+            return string.IsNullOrEmpty(_displayName) ? gameObject.name : _displayName;
+        }
         protected override void OnFocusEnterInternal()
         {
             if (_renderer == null) return;

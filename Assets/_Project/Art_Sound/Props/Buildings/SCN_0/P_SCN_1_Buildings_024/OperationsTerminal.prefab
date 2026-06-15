@@ -165,10 +165,10 @@ PrefabInstance:
       addedObject: {fileID: 3161031544032976841}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d7667ef2ec6cae7418621b930d86a1a3, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6220436378492587275}
+      addedObject: {fileID: 1520057443837205708}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d7667ef2ec6cae7418621b930d86a1a3, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1520057443837205708}
+      addedObject: {fileID: 6220436378492587275}
   m_SourcePrefab: {fileID: 100100000, guid: d7667ef2ec6cae7418621b930d86a1a3, type: 3}
 --- !u!1 &6886578722721398765 stripped
 GameObject:
@@ -198,23 +198,6 @@ CapsuleCollider:
   m_Height: 7.37
   m_Direction: 1
   m_Center: {x: 0, y: 3.63, z: 0}
---- !u!114 &6220436378492587275
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6886578722721398765}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 07d32876f2df54e4e86a66226e155662, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.World.SH_OperationsTerminal
-  persistentID: OperationsTerminal
-  interactionType: 0
-  _focusMaterial: {fileID: 2100000, guid: 5b6e98b9709d1cf409b32ba75ee3adaf, type: 2}
-  _terminalRenderer: {fileID: 0}
-  _focusColor: {r: 0, g: 1, b: 0.7, a: 1}
 --- !u!114 &1520057443837205708
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -239,3 +222,20 @@ MonoBehaviour:
   _dismissClip: {fileID: 0}
   _resetDelay: 0.01
   _detectionFrequency: 0.5
+--- !u!114 &6220436378492587275
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6886578722721398765}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07d32876f2df54e4e86a66226e155662, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.World.SH_OperationsTerminal
+  persistentID: OperationsTerminal
+  interactionType: 0
+  _focusMaterial: {fileID: 2100000, guid: 5b6e98b9709d1cf409b32ba75ee3adaf, type: 2}
+  _terminalRenderer: {fileID: 0}
+  _focusColor: {r: 0, g: 1, b: 0.7, a: 1}

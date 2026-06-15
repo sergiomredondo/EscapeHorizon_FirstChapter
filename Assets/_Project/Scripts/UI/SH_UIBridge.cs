@@ -57,6 +57,9 @@ namespace UI
         [Tooltip("Resolved from SH_MovementSettings.dashAction. " +
                  "Assign the same Dash.asset used in SH_MovementSettings.")]
         [SerializeField] private SH_ActionData _dashActionData;
+
+        [Tooltip("Narrative sequencer in the scene. Handles both text log and image sequence channels.")]
+        [SerializeField] private Game.World.SH_NarrativeSequencer _narrativeSequencer;
         #endregion
 
         // ─────────────────────────────────────────────────────────────────────
@@ -66,6 +69,7 @@ namespace UI
         private SH_PlayerContext _context;
         private bool _isInitialized;
         private bool _buildMenuOpen;
+        private bool _dataLogOpen;
 
         // ── Stored delegate references ─────────────────────────────────────
         private Action<float, float, float> _onDamageReceivedHandler;
@@ -143,6 +147,9 @@ namespace UI
             // Restore timescale in case the bridge is destroyed while menu is open.
             if (_buildMenuOpen)
                 Time.timeScale = 1f;
+
+            if (_dataLogOpen)
+                Time.timeScale = 1f;
         }
 
         #endregion
@@ -211,6 +218,13 @@ namespace UI
                 _hudController.OnBuildMenuClosePressed += CloseBuildMenu;
                 _hudController.OnPurgePressed += OnHUDPurgePressed;
             }
+
+            // ── Narrative sequencer events ────────────────────────────────────────
+            Game.World.SH_NarrativeSequencer.OnTextLogRequested += OnTextLogRequested;
+            Game.World.SH_NarrativeSequencer.OnTextLogCloseRequested += OnTextLogCloseRequested;
+
+            if (_hudController != null)
+                _hudController.OnDataLogClosePressed += OnTextLogCloseRequested;
         }
 
         private void Unsubscribe()
@@ -250,6 +264,12 @@ namespace UI
                 _hudController.OnBuildMenuClosePressed -= CloseBuildMenu;
                 _hudController.OnPurgePressed -= OnHUDPurgePressed;
             }
+
+            Game.World.SH_NarrativeSequencer.OnTextLogRequested -= OnTextLogRequested;
+            Game.World.SH_NarrativeSequencer.OnTextLogCloseRequested -= OnTextLogCloseRequested;
+
+            if (_hudController != null)
+                _hudController.OnDataLogClosePressed -= OnTextLogCloseRequested;
         }
 
         #endregion
@@ -310,6 +330,22 @@ namespace UI
         {
             _model.SetInteractionProgress(0f);
             _model.SetInteractionFocus(false, string.Empty);
+        }
+
+        private void OnTextLogRequested(string title, string source, string body)
+        {
+            if (_dataLogOpen) return;
+            _dataLogOpen = true;
+            Time.timeScale = 0f;
+            _model.SetDataLog(true, title, source, body);
+        }
+
+        private void OnTextLogCloseRequested()
+        {
+            if (!_dataLogOpen) return;
+            _dataLogOpen = false;
+            Time.timeScale = 1f;
+            _model.SetDataLog(false, string.Empty, string.Empty, string.Empty);
         }
 
         #endregion
@@ -557,6 +593,18 @@ namespace UI
         private void PollMenuInput()
         {
             if (_context?.Input == null) return;
+
+            // Close open data log before processing menu input.
+            if (_dataLogOpen)
+            {
+                if (_context?.Input != null && _context.Input.InteractPressed)
+                {
+                    _context.Input.ConsumeInteractPressed();
+                    OnTextLogCloseRequested();
+                    return;
+                }
+                return;
+            }
 
             if (!_context.Input.MenuPressed) return;
             _context.Input.ConsumeMenuPressed();

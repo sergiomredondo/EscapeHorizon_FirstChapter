@@ -35,6 +35,10 @@ namespace Game.Interaction
         [Tooltip("Type of the Animator parameter.")]
         [SerializeField] private AnimatorParameterType _parameterType;
 
+        [Tooltip("Display name for the button action. Used in UI prompts. " +
+                 "If empty, the GameObject's name will be used.")]
+        [SerializeField] private string _displayName = "Botón de acción";
+
         [Header("Values (used depending on type)")]
 
         [SerializeField] private bool _boolValue = true;
@@ -141,6 +145,11 @@ namespace Game.Interaction
         #endregion
 
         #region Editor Validation
+
+        public override string ToString()
+        {
+            return string.IsNullOrEmpty(_displayName) ? gameObject.name : _displayName;
+        }
 
         private void OnValidate()
         {

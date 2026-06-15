@@ -21,6 +21,10 @@ namespace Game.World
         [Tooltip("Color applied when the player is in range and the terminal is focused.")]
         [SerializeField] private Color _focusColor = new Color(0f, 1f, 0.7f, 1f);
 
+        [Tooltip("Display name for the terminal. Used in UI prompts. " +
+                 "If empty, the GameObject's name will be used.")]
+        [SerializeField] private string _displayName = "Faro";
+
         private Color _baseColor;
         private SH_UIBridge _bridge;
 
@@ -46,6 +50,12 @@ namespace Game.World
             }
         }
 
+        
+
+        public override string ToString()
+        {
+            return string.IsNullOrEmpty(_displayName) ? gameObject.name : _displayName;
+        }
         public override void Interact(Core.SH_PlayerContext context)
         {
             _bridge?.OpenBuildMenu(interactionEnabled: true);

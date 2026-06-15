@@ -443,6 +443,31 @@ namespace UI
         #endregion
 
         // ─────────────────────────────────────────────────────────────────────
+        #region Data Log
+
+        /// <summary>
+        /// Fired when the text log panel should open or update.
+        /// Parameters: (bool isOpen, string title, string source, string body).
+        /// </summary>
+        public event Action<bool, string, string, string> OnDataLogChanged;
+
+        public bool DataLogOpen { get; private set; }
+        public string DataLogTitle { get; private set; }
+        public string DataLogSource { get; private set; }
+        public string DataLogBody { get; private set; }
+
+        public void SetDataLog(bool isOpen, string title, string source, string body)
+        {
+            DataLogOpen = isOpen;
+            DataLogTitle = title ?? string.Empty;
+            DataLogSource = source ?? string.Empty;
+            DataLogBody = body ?? string.Empty;
+            OnDataLogChanged?.Invoke(DataLogOpen, DataLogTitle, DataLogSource, DataLogBody);
+        }
+
+        #endregion
+
+        // ─────────────────────────────────────────────────────────────────────
         #region Utilities
 
         /// <summary>

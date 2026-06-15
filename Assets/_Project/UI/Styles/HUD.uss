@@ -736,3 +736,64 @@
 .build-close-btn:hover {
     background-color: rgba(0, 255, 255, 0.15);
 }
+
+
+    /* ═══════════════════════════════════════════════════════════════════════════
+   DATA LOG OVERLAY — Channel A
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.datalog-overlay {
+    position: absolute;
+    left: 0; top: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.82);
+    align-items: center;
+    justify-content: center;
+}
+
+.datalog-panel {
+    background-color: var(--color-panel-bg);
+    border-color: var(--color-border);
+    border-width: var(--panel-border-width);
+    border-radius: var(--panel-border-radius);
+    padding: 20px;
+    min-width: 480px;
+    max-width: 620px;
+}
+
+.datalog-tag {
+    font-size: var(--font-size-small);
+    color: rgba(0, 255, 255, 0.45);
+    -unity-text-align: upper-left;
+    -unity-font-style: bold;
+    margin-bottom: 4px;
+    letter-spacing: 3px;
+}
+
+.datalog-title {
+    font-size: var(--font-size-large);
+    color: var(--color-white);
+    -unity-font-style: bold;
+    margin-bottom: 4px;
+    white-space: normal;
+}
+
+.datalog-source {
+    font-size: var(--font-size-small);
+    color: var(--color-cyan);
+    opacity: 0.7;
+    margin-bottom: 8px;
+}
+
+.datalog-body-scroll {
+    max-height: 280px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.datalog-body {
+    font-size: var(--font-size-small);
+    color: var(--color-white);
+    opacity: 0.85;
+    white-space: normal;
+    -unity-text-align: upper-left;
+}

@@ -131,5 +131,22 @@
                 <ui:Button name="build-close-btn" text="CLOSE  [ TAB ]" class="build-close-btn"/>
             </ui:VisualElement>
         </ui:VisualElement>
+
+        <ui:VisualElement name="datalog-overlay" class="datalog-overlay" style="display: none;">
+            <ui:VisualElement name="datalog-panel" class="datalog-panel">
+                <ui:Label name="datalog-tag" text="DATA LOG" class="datalog-tag"/>
+                <ui:Label name="datalog-title" text="" class="datalog-title"/>
+                <ui:Label name="datalog-source" text="" class="datalog-source"/>
+                <ui:VisualElement class="separator"/>
+                <ui:ScrollView name="datalog-body-scroll"
+                               class="datalog-body-scroll"
+                               vertical-scroller-visibility="Auto">
+                    <ui:Label name="datalog-body" text="" class="datalog-body"/>
+                </ui:ScrollView>
+                <ui:VisualElement class="separator"/>
+                <ui:Button name="datalog-close-btn" text="CLOSE  [ E ]"
+                           class="build-close-btn"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

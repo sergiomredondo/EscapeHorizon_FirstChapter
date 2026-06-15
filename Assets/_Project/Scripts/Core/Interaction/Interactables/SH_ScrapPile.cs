@@ -50,6 +50,10 @@ namespace Game.Interaction
         [Tooltip("Base color to restore when focus is lost.")]
         [SerializeField] private Color _baseColor = Color.white;
 
+        [Tooltip("Display name for the button action. Used in UI prompts. " +
+         "If empty, the GameObject's name will be used.")]
+        [SerializeField] private string _displayName = "Pila de chatarra (SC)";
+
         #endregion
 
         #region Events
@@ -125,6 +129,11 @@ namespace Game.Interaction
         #endregion
 
         #region Focus Visual Feedback
+
+        public override string ToString()
+        {
+            return string.IsNullOrEmpty(_displayName) ? gameObject.name : _displayName;
+        }
 
         protected override void OnFocusEnterInternal()
         {

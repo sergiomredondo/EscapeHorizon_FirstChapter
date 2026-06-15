@@ -62,6 +62,11 @@ namespace UI
         private const string ElementCooldownHeavy = "cooldown-arc-heavy";
         private const string ElementCooldownDash = "cooldown-arc-dash";
         private const string ElementAarcFill = "arc-fill";
+        private const string ElementDataLogOverlay = "datalog-overlay";
+        private const string ElementDataLogTitle = "datalog-title";
+        private const string ElementDataLogSource = "datalog-source";
+        private const string ElementDataLogBody = "datalog-body";
+        private const string ElementDataLogCloseBtn = "datalog-close-btn";
 
         #endregion
 
@@ -114,6 +119,11 @@ namespace UI
         /// </summary>
         public event Action OnPurgePressed;
 
+        /// <summary>
+        /// Fired when the player clicks the data log close button.
+        /// </summary>
+        public event Action OnDataLogClosePressed;
+
         #endregion
 
         // ─────────────────────────────────────────────────────────────────────
@@ -135,6 +145,10 @@ namespace UI
         private VisualElement _cooldownArcLight;
         private VisualElement _cooldownArcHeavy;
         private VisualElement _cooldownArcDash;
+        private VisualElement _dataLogOverlay;
+        private Label _dataLogTitle;
+        private Label _dataLogSource;
+        private Label _dataLogBody;
 
         #endregion
 
@@ -252,6 +266,7 @@ namespace UI
             _model.OnBuildMenuOpenChanged += OnBuildMenuOpenChanged;
             _model.OnBuildTreeRefreshed += OnBuildTreeRefreshed;
             _model.OnBuildNarrativeChanged += OnBuildNarrativeChanged;
+            _model.OnDataLogChanged += OnDataLogChanged;
             _model.OnPurgeDataChanged += OnPurgeDataChanged;
 
             PushCurrentModelState();
@@ -275,6 +290,7 @@ namespace UI
             _model.OnBuildMenuOpenChanged -= OnBuildMenuOpenChanged;
             _model.OnBuildTreeRefreshed -= OnBuildTreeRefreshed;
             _model.OnBuildNarrativeChanged -= OnBuildNarrativeChanged;
+            _model.OnDataLogChanged -= OnDataLogChanged;
 
             _isInitialized = false;
         }
@@ -432,6 +448,15 @@ namespace UI
             Button closeBtn = root.Q<Button>(ElementBuildCloseBtn);
             if (closeBtn != null)
                 closeBtn.RegisterCallback<ClickEvent>(_ => OnBuildMenuClosePressed?.Invoke());
+
+            _dataLogOverlay = root.Q<VisualElement>(ElementDataLogOverlay);
+            _dataLogTitle = root.Q<Label>(ElementDataLogTitle);
+            _dataLogSource = root.Q<Label>(ElementDataLogSource);
+            _dataLogBody = root.Q<Label>(ElementDataLogBody);
+
+            Button dataLogCloseBtn = root.Q<Button>(ElementDataLogCloseBtn);
+            if (dataLogCloseBtn != null)
+                dataLogCloseBtn.RegisterCallback<ClickEvent>(_ => OnDataLogClosePressed?.Invoke());
 
             return allFound;
         }
@@ -703,6 +728,19 @@ namespace UI
                 purgeBtn.SetEnabled(enabled && dpYield > 0);
         }
 
+        private void OnDataLogChanged(bool isOpen, string title, string source, string body)
+        {
+            if (_dataLogOverlay == null) return;
+
+            _dataLogOverlay.style.display = isOpen ? DisplayStyle.Flex : DisplayStyle.None;
+
+            if (!isOpen) return;
+
+            if (_dataLogTitle != null) _dataLogTitle.text = title;
+            if (_dataLogSource != null) _dataLogSource.text = source;
+            if (_dataLogBody != null) _dataLogBody.text = body;
+        }
+
         #endregion
 
         // ─────────────────────────────────────────────────────────────────────
@@ -720,6 +758,9 @@ namespace UI
             // Build menu starts closed — no tree refresh needed at init.
             if (_buildOverlay != null)
                 _buildOverlay.style.display = DisplayStyle.None;
+
+            if (_dataLogOverlay != null)
+                _dataLogOverlay.style.display = DisplayStyle.None;
         }
 
         #endregion
