@@ -22,7 +22,7 @@ MonoBehaviour:
   AttackEngageRange: 4
   MeleeAttackRange: 2
   PatrolSpeed: 2
-  PursuitSpeed: 4
+  PursuitSpeed: 5
   RotationSpeed: 120
   AttackCooldown: 2
   ComboLength: 2

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Economy.Data.SH_ResourceDropData
   scrapOnDestroy: 200
   scrapVariance: 20
-  identityCoresOnRescue: 1
-  scrapOnRescue: 50
+  identityCoresOnRescue: 2
+  scrapOnRescue: 200
   energyOnInteraction: 70
   energyVariance: 5

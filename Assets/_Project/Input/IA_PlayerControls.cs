@@ -165,6 +165,15 @@ namespace StarterAssets
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Pause"",
+                    ""type"": ""Button"",
+                    ""id"": ""19ab8573-d6b2-4042-a5b2-be7dabbd9ad5"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -172,6 +181,17 @@ namespace StarterAssets
                     ""name"": """",
                     ""id"": ""7c848139-0e14-4a55-a0fc-a4a521237fe8"",
                     ""path"": ""*/{Primary2DMotion}"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c58bf139-3cbd-4612-8d9d-cecef1b49043"",
+                    ""path"": ""<Gamepad>/dpad"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -358,7 +378,7 @@ namespace StarterAssets
                 {
                     ""name"": """",
                     ""id"": ""6e107d36-6562-47ca-8e88-6cddf92d5e92"",
-                    ""path"": ""<Gamepad>/start"",
+                    ""path"": ""<Gamepad>/select"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -374,6 +394,28 @@ namespace StarterAssets
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Look"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""9950cc5b-b27e-456e-967f-3a420236cb56"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Pause"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3c4b5568-ec77-44f2-be5f-5fe738b32a36"",
+                    ""path"": ""<Gamepad>/start"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Pause"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -392,6 +434,7 @@ namespace StarterAssets
             m_Player_Scan = m_Player.FindAction("Scan", throwIfNotFound: true);
             m_Player_Menu = m_Player.FindAction("Menu", throwIfNotFound: true);
             m_Player_Look = m_Player.FindAction("Look", throwIfNotFound: true);
+            m_Player_Pause = m_Player.FindAction("Pause", throwIfNotFound: true);
         }
 
         ~@IA_PlayerControls()
@@ -480,6 +523,7 @@ namespace StarterAssets
         private readonly InputAction m_Player_Scan;
         private readonly InputAction m_Player_Menu;
         private readonly InputAction m_Player_Look;
+        private readonly InputAction m_Player_Pause;
         /// <summary>
         /// Provides access to input actions defined in input action map "Player".
         /// </summary>
@@ -523,6 +567,10 @@ namespace StarterAssets
             /// Provides access to the underlying input action "Player/Look".
             /// </summary>
             public InputAction @Look => m_Wrapper.m_Player_Look;
+            /// <summary>
+            /// Provides access to the underlying input action "Player/Pause".
+            /// </summary>
+            public InputAction @Pause => m_Wrapper.m_Player_Pause;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -573,6 +621,9 @@ namespace StarterAssets
                 @Look.started += instance.OnLook;
                 @Look.performed += instance.OnLook;
                 @Look.canceled += instance.OnLook;
+                @Pause.started += instance.OnPause;
+                @Pause.performed += instance.OnPause;
+                @Pause.canceled += instance.OnPause;
             }
 
             /// <summary>
@@ -608,6 +659,9 @@ namespace StarterAssets
                 @Look.started -= instance.OnLook;
                 @Look.performed -= instance.OnLook;
                 @Look.canceled -= instance.OnLook;
+                @Pause.started -= instance.OnPause;
+                @Pause.performed -= instance.OnPause;
+                @Pause.canceled -= instance.OnPause;
             }
 
             /// <summary>
@@ -704,6 +758,13 @@ namespace StarterAssets
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnLook(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "Pause" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnPause(InputAction.CallbackContext context);
         }
     }
 }

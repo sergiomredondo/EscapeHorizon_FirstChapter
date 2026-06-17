@@ -1,0 +1,146 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEngine.UIElements.Experimental" editor-extension-mode="False">
+    <Style src="project://database/Assets/_Project/UI/Styles/PauseMenu.uss?fileID=7433441132597879392&amp;guid=db9f947ff756dba41bff100d0314a9bf&amp;type=3#PauseMenu"/>
+    <ui:VisualElement name="pause-overlay" class="pm-overlay" style="display: none;">
+        <ui:VisualElement name="pause-frame" class="pm-frame">
+            <ui:Label name="pause-title" text="PAUSA" class="pm-title"/>
+            <ui:VisualElement class="pm-divider"/>
+            <ui:VisualElement name="pause-buttons" class="pm-button-list">
+                <ui:Button name="btn-resume" text="CONTINUAR" class="pm-btn"/>
+                <ui:Button name="btn-retry" text="REINTENTAR" class="pm-btn"/>
+                <ui:Button name="btn-parameters" text="PARAMETROS" class="pm-btn"/>
+                <ui:Button name="btn-exit" text="SALIR A ESCRITORIO" class="pm-btn"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement name="parameters-overlay" class="pm-overlay" style="display: none;">
+        <ui:VisualElement name="parameters-frame" class="pm-params-frame" style="width: 100%; aspect-ratio: 1.777778;">
+            <ui:Label text="PARAMETROS" class="pm-title"/>
+            <ui:VisualElement name="tabs-row" class="pm-tabs-row">
+                <ui:Button name="tab-settings-btn" text="CONFIGURACIÓN" class="pm-tab pm-tab--active"/>
+                <ui:Button name="tab-controls-btn" text="CONTROLES" class="pm-tab"/>
+                <ui:Button name="tab-narrative-btn" text="NARRATIVA" class="pm-tab"/>
+            </ui:VisualElement>
+            <ui:VisualElement name="tab-content" class="pm-tab-content">
+                <ui:VisualElement name="panel-settings" class="pm-settings-panel">
+                    <ui:VisualElement class="pm-setting-row">
+                        <ui:Label text="VOLUMEN" class="pm-setting-label"/>
+                        <ui:Slider name="slider-volume" low-value="0" high-value="1" value="1" class="pm-slider"/>
+                        <ui:Label name="label-volume" text="100%" class="pm-setting-value"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="pm-setting-row">
+                        <ui:Label text="BRILLO" class="pm-setting-label"/>
+                        <ui:Slider name="slider-brightness" low-value="-2" high-value="2" value="0" class="pm-slider"/>
+                        <ui:Label name="label-brightness" text="0.0" class="pm-setting-value"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="pm-setting-row">
+                        <ui:Label text="CONTRASTE" class="pm-setting-label"/>
+                        <ui:Slider name="slider-contrast" low-value="-100" high-value="100" value="0" class="pm-slider"/>
+                        <ui:Label name="label-contrast" text="0" class="pm-setting-value"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="pm-setting-row">
+                        <ui:Label text="GAMA" class="pm-setting-label"/>
+                        <ui:Slider name="slider-gamma" low-value="0.5" high-value="2.2" value="1" class="pm-slider"/>
+                        <ui:Label name="label-gamma" text="1.0" class="pm-setting-value"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="pm-setting-row">
+                        <ui:Label text="RESOLUCIÓN" class="pm-setting-label"/>
+                        <ui:DropdownField name="dropdown-resolution" class="pm-dropdown"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="pm-setting-row">
+                        <ui:Label text="PANTALLA COMPLETA" class="pm-setting-label"/>
+                        <ui:Toggle name="toggle-fullscreen" class="pm-toggle"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement name="panel-controls" class="pm-controls-panel" style="display: none;">
+                    <ui:ScrollView vertical-scroller-visibility="Auto" class="pm-controls-scroll">
+                        <ui:Label text="TECLADO" class="pm-controls-section-title"/>
+                        <ui:VisualElement name="keyboard-frame" class="pm-keyboard-frame">
+                            <ui:Label text="ESC / Pausa" class="pm-key pm-key-esc">
+                                <ui:Image name="ESC" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=-49906897&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_5&quot;); width: 32px; height: 32px; top: -16px; left: -21px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; aspect-ratio: 1; right: 0; bottom: 0; position: absolute;"/>
+                            </ui:Label>
+                            <ui:Label text="TAB / Menú" class="pm-key pm-key-tab">
+                                <ui:Image name="TAB" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=-390022537&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_4&quot;); width: 32px; height: 32px; top: -12px; left: -25px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; aspect-ratio: 1; position: absolute;"/>
+                            </ui:Label>
+                            <ui:Label text="Q&#10;Sobrecarga" class="pm-key pm-key-q">
+                                <ui:Image name="Q" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=1720957186&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_12&quot;); width: 32px; height: 32px; top: -19px; left: -15px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; aspect-ratio: 1; position: absolute;"/>
+                            </ui:Label>
+                            <ui:Label text="W A S D&#10;Movimiento" class="pm-key pm-key-wasd">
+                                <ui:Image name="Up" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=1373173187&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_0&quot;); width: 32px; height: 32px; top: -60px; left: 10px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; background-size: 110% 110%; -unity-slice-top: 1; -unity-slice-left: 1; -unity-slice-right: 0; -unity-slice-bottom: 0; background-position-x: center; -unity-background-scale-mode: stretch-to-fill; -unity-slice-type: sliced; -unity-slice-scale: 3px; position: absolute; aspect-ratio: 1;"/>
+                                <ui:Image name="Down" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=-857969523&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_3&quot;); width: 32px; height: 32px; top: -30px; left: 18px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; background-size: 110% 110%; -unity-slice-top: 1; -unity-slice-left: -1; -unity-slice-right: 1; -unity-slice-bottom: 0; background-position-x: center; -unity-background-scale-mode: stretch-to-fill; -unity-slice-type: sliced; -unity-slice-scale: 3px; position: absolute; aspect-ratio: 1;"/>
+                                <ui:Image name="Left" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=-1318777522&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_2&quot;); width: 32px; height: 32px; top: -30px; left: -16px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; background-size: 110% 110%; -unity-slice-top: 1; -unity-slice-left: -1; -unity-slice-right: 1; -unity-slice-bottom: 0; background-position-x: center; -unity-background-scale-mode: stretch-to-fill; -unity-slice-type: sliced; -unity-slice-scale: 3px; aspect-ratio: 1; position: absolute;"/>
+                                <ui:Image name="Right" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=1414902754&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_1&quot;); width: 32px; height: 32px; top: -30px; left: 53px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; background-size: 110% 110%; -unity-slice-top: 1; -unity-slice-left: 1; -unity-slice-right: -1; -unity-slice-bottom: 0; background-position-x: center; -unity-background-scale-mode: stretch-to-fill; -unity-slice-type: sliced; -unity-slice-scale: 3px; aspect-ratio: 1; position: absolute;"/>
+                            </ui:Label>
+                            <ui:Label text="E&#10;Interactuar" class="pm-key pm-key-e">
+                                <ui:Image name="E" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=999994177&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_10&quot;); width: 32px; height: 32px; top: -17px; left: 51px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; aspect-ratio: 1; position: absolute;"/>
+                                <ui:Image name="link" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/LineLightAttack.png?fileID=-1940439373&amp;guid=7db5300306c4a874c896a486c68a66d2&amp;type=3#LineLightAttack_0&quot;); width: 26px; height: 34px; top: 6px; left: -24px; rotate: 90deg; position: absolute;"/>
+                            </ui:Label>
+                            <ui:Label text="F&#10;Escanear" class="pm-key pm-key-f">
+                                <ui:Image name="F" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=186730861&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_11&quot;); width: 32px; height: 32px; top: -18px; left: 37px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; position: absolute; aspect-ratio: 1; -unity-slice-left: 0; -unity-slice-right: 5; -unity-slice-top: 3; -unity-slice-bottom: 5; -unity-slice-scale: 0.7px;"/>
+                                <ui:Image name="link" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/LineLightAttack.png?fileID=-1940439373&amp;guid=7db5300306c4a874c896a486c68a66d2&amp;type=3#LineLightAttack_0&quot;); width: 24px; height: 35px; top: 2px; left: -24px; rotate: 90deg; position: absolute;"/>
+                            </ui:Label>
+                            <ui:Label text="SPACE&#10;Dash" class="pm-key pm-key-space">
+                                <ui:Image name="Space" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=-1104281009&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_13&quot;); width: 32px; height: 32px; top: -20px; left: 40px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; position: absolute;"/>
+                            </ui:Label>
+                            <ui:Label text="CLIC IZQ&#10;Ataque básico" class="pm-key pm-key-lmb">
+                                <ui:Image name="LightAttack" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=1142819520&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_15&quot;); width: 32px; height: 32px; top: 1px; left: -33px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; position: absolute;"/>
+                            </ui:Label>
+                            <ui:Label text="CLIC IZQ (SOSTENIDO)&#10;Ataque fuerte" class="pm-key pm-key-lmb-hold">
+                                <ui:Image name="HeavyAttack" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=-726756953&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_14&quot;); width: 32px; height: 32px; top: 3px; left: -35px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; position: absolute;"/>
+                            </ui:Label>
+                        </ui:VisualElement>
+                        <ui:Label text="GAMEPAD" class="pm-controls-section-title"/>
+                        <ui:VisualElement name="gamepad-frame" class="pm-gamepad-frame">
+                            <ui:Label text="START&#10; / Pausa" class="pm-pad pm-pad-start">
+                                <ui:Image name="ESC" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=-49906897&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_5&quot;); width: 32px; height: 32px; top: -16px; left: 40px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; aspect-ratio: 1; right: 0; bottom: 0; position: absolute;"/>
+                            </ui:Label>
+                            <ui:Label text="SELECT&#10; / Menú" name="Label" class="pm-pad pm-pad-start" style="top: 38%; left: 67%;">
+                                <ui:Image name="TAB" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=-390022537&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_4&quot;); width: 32px; height: 32px; top: -12px; left: -25px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; aspect-ratio: 1; position: absolute;"/>
+                            </ui:Label>
+                            <ui:Label text="L STICK / D PAD&#10;Movimiento" class="pm-pad pm-pad-lstick">
+                                <ui:Image name="Up" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=1373173187&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_0&quot;); width: 32px; height: 32px; top: -54px; left: 23px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; background-size: 110% 110%; -unity-slice-top: 1; -unity-slice-left: 1; -unity-slice-right: 0; -unity-slice-bottom: 0; background-position-x: center; -unity-background-scale-mode: stretch-to-fill; -unity-slice-type: sliced; -unity-slice-scale: 3px; position: absolute; aspect-ratio: 1;"/>
+                                <ui:Image name="Down" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=-857969523&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_3&quot;); width: 32px; height: 32px; top: -20px; left: 23px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; background-size: 110% 110%; -unity-slice-top: 1; -unity-slice-left: -1; -unity-slice-right: 1; -unity-slice-bottom: 0; background-position-x: center; -unity-background-scale-mode: stretch-to-fill; -unity-slice-type: sliced; -unity-slice-scale: 3px; position: absolute; aspect-ratio: 1;"/>
+                                <ui:Image name="Left" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=-1318777522&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_2&quot;); width: 32px; height: 32px; top: -37px; left: 2px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; background-size: 110% 110%; -unity-slice-top: 1; -unity-slice-left: -1; -unity-slice-right: 1; -unity-slice-bottom: 0; background-position-x: center; -unity-background-scale-mode: stretch-to-fill; -unity-slice-type: sliced; -unity-slice-scale: 3px; aspect-ratio: 1; position: absolute;"/>
+                                <ui:Image name="Right" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=1414902754&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_1&quot;); width: 32px; height: 32px; top: -37px; left: 44px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; background-size: 110% 110%; -unity-slice-top: 1; -unity-slice-left: 1; -unity-slice-right: -1; -unity-slice-bottom: 0; background-position-x: center; -unity-background-scale-mode: stretch-to-fill; -unity-slice-type: sliced; -unity-slice-scale: 3px; aspect-ratio: 1; position: absolute;"/>
+                                <ui:Image name="link" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/LineLightAttack.png?fileID=-1940439373&amp;guid=7db5300306c4a874c896a486c68a66d2&amp;type=3#LineLightAttack_0&quot;); width: 28px; height: 29px; top: -78px; left: 38px; rotate: 90deg; aspect-ratio: auto; position: absolute;"/>
+                                <ui:Image name="link" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/LineLightAttack.png?fileID=-1940439373&amp;guid=7db5300306c4a874c896a486c68a66d2&amp;type=3#LineLightAttack_0&quot;); width: 36px; height: 24px; top: -43px; left: 75px; rotate: 145deg; aspect-ratio: auto; position: absolute;"/>
+                            </ui:Label>
+                            <ui:Label text="LB&#10;Sobrecarga" class="pm-pad pm-pad-lb">
+                                <ui:Image name="Q" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=1720957186&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_12&quot;); width: 32px; height: 32px; top: -19px; left: -15px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; aspect-ratio: 1; position: absolute;"/>
+                                <ui:Image name="link" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/LineLightAttack.png?fileID=-1940439373&amp;guid=7db5300306c4a874c896a486c68a66d2&amp;type=3#LineLightAttack_0&quot;); width: 41px; height: 26px; top: 18px; left: 63px; rotate: 180deg; aspect-ratio: auto; position: absolute;"/>
+                            </ui:Label>
+                            <ui:Label text="A/X&#10;Dash" class="pm-pad pm-pad-rb" style="left: 746px; top: 370px;">
+                                <ui:Image name="Space" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=-1104281009&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_13&quot;); width: 32px; height: 32px; top: -20px; left: 40px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; position: absolute;"/>
+                                <ui:Image name="link" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/LineLightAttack.png?fileID=-1940439373&amp;guid=7db5300306c4a874c896a486c68a66d2&amp;type=3#LineLightAttack_0&quot;); width: 43px; height: 46px; top: -30px; left: -31px; rotate: 180deg; aspect-ratio: auto; position: absolute; scale: -1 -1;"/>
+                            </ui:Label>
+                            <ui:Label text="RT&#10;Ataque básico" class="pm-pad pm-pad-rt">
+                                <ui:Image name="LightAttack" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=1142819520&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_15&quot;); width: 32px; height: 32px; top: -13px; left: 51px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; position: absolute;"/>
+                                <ui:Image name="link" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/LineLightAttack.png?fileID=-1940439373&amp;guid=7db5300306c4a874c896a486c68a66d2&amp;type=3#LineLightAttack_0&quot;); width: 47px; height: 45px; top: 38px; left: -7px; rotate: 180deg; aspect-ratio: auto; position: absolute; scale: -1 1;"/>
+                            </ui:Label>
+                            <ui:Label text="RT HOLD (SOSTENIDO)&#10;Ataque fuerte" class="pm-pad pm-pad-rt-hold">
+                                <ui:Image name="HeavyAttack" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=-726756953&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_14&quot;); width: 32px; height: 32px; top: -17px; left: 57px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; position: absolute;"/>
+                                <ui:Image name="link" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/LineLightAttack.png?fileID=-1940439373&amp;guid=7db5300306c4a874c896a486c68a66d2&amp;type=3#LineLightAttack_0&quot;); width: 34px; height: 26px; top: 7px; left: -22px; rotate: 180deg; aspect-ratio: auto; position: absolute; scale: -1 1;"/>
+                            </ui:Label>
+                            <ui:Label text="Y / Δ&#10;Interactuar" class="pm-pad pm-pad-a">
+                                <ui:Image name="E" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=999994177&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_10&quot;); width: 32px; height: 32px; top: -17px; left: -20px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; aspect-ratio: 1; position: absolute;"/>
+                                <ui:Image name="link" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/LineLightAttack.png?fileID=-1940439373&amp;guid=7db5300306c4a874c896a486c68a66d2&amp;type=3#LineLightAttack_0&quot;); width: 50px; height: 46px; top: 13px; left: 61px; rotate: 180deg; aspect-ratio: auto; position: absolute; scale: 1 1;"/>
+                            </ui:Label>
+                            <ui:Label text="X / 🔳&#10;Escanear" class="pm-pad pm-pad-b">
+                                <ui:Image name="F" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=186730861&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_11&quot;); width: 32px; height: 32px; top: -18px; left: 37px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; position: absolute; aspect-ratio: 1; -unity-slice-left: 0; -unity-slice-right: 5; -unity-slice-top: 3; -unity-slice-bottom: 5; -unity-slice-scale: 0.7px;"/>
+                                <ui:Image name="link" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/LineLightAttack.png?fileID=-1940439373&amp;guid=7db5300306c4a874c896a486c68a66d2&amp;type=3#LineLightAttack_0&quot;); width: 81px; height: 33px; top: -53px; left: 0; rotate: 90deg; aspect-ratio: auto; position: absolute; scale: 1 1;"/>
+                            </ui:Label>
+                        </ui:VisualElement>
+                    </ui:ScrollView>
+                </ui:VisualElement>
+                <ui:VisualElement name="panel-narrative" class="pm-narrative-panel" style="display: none;">
+                    <ui:ScrollView vertical-scroller-visibility="Auto" class="pm-narrative-scroll">
+                        <ui:Label name="narrative-text" text="" class="pm-narrative-body"/>
+                    </ui:ScrollView>
+                    <ui:VisualElement class="pm-divider" style="margin-top: 12px; margin-bottom: 12px;"/>
+                    <ui:Label name="credits-text" text="" class="pm-credits-body"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="VisualElement" class="pm-divider"/>
+            <ui:Button name="parameters-close-btn" text="CERRAR  [ ESC ]" class="pm-back-btn"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

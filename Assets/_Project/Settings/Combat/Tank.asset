@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a78743f917a27b24b8dca052eff5210f, type: 3}
   m_Name: Tank
   m_EditorClassIdentifier: Assembly-CSharp::Game.Combat.Data.SH_CombatStats
-  Strength: 10
+  Strength: 15
   Defense: 20
   Agility: 4
   PostureMax: 100

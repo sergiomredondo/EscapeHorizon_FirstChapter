@@ -191,6 +191,10 @@
 .vitality-bar--hp .unity-progress-bar__progress {
     background-color: var(--color-hp-fill);
     border-radius: var(--bar-border-radius);
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-top-color: rgb(0, 8, 70);
+    border-bottom-color: rgb(0, 5, 48);
 }
 
 .vitality-metrics-panel {
@@ -737,14 +741,12 @@
     background-color: rgba(0, 255, 255, 0.15);
 }
 
-
-    /* ═══════════════════════════════════════════════════════════════════════════
-   DATA LOG OVERLAY — Channel A
-   ═══════════════════════════════════════════════════════════════════════════ */
-
 .datalog-overlay {
     position: absolute;
-    left: 0; top: 0; right: 0; bottom: 0;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
     background-color: rgba(0, 0, 0, 0.82);
     align-items: center;
     justify-content: center;
@@ -761,7 +763,6 @@
 }
 
 .datalog-tag {
-    font-size: var(--font-size-small);
     color: rgba(0, 255, 255, 0.45);
     -unity-text-align: upper-left;
     -unity-font-style: bold;
@@ -778,7 +779,6 @@
 }
 
 .datalog-source {
-    font-size: var(--font-size-small);
     color: var(--color-cyan);
     opacity: 0.7;
     margin-bottom: 8px;
@@ -791,9 +791,37 @@
 }
 
 .datalog-body {
-    font-size: var(--font-size-small);
     color: var(--color-white);
     opacity: 0.85;
     white-space: normal;
     -unity-text-align: upper-left;
+}
+
+.interaction-bar {
+    display: flex;
+    position: absolute;
+}
+
+.interaction-progress-bar {
+}
+
+.interaction-bar .unity-progress-bar__background {
+    border-width: var(--panel-border-width);
+    border-color: var(--color-border);
+    border-radius: var(--bar-border-radius);
+    border-top-width: 3px;
+    border-right-width: 3px;
+    border-bottom-width: 3px;
+    border-left-width: 3px;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.interaction-bar .unity-progress-bar__progress {
+    border-radius: var(--bar-border-radius);
+    border-top-width: 2px;
+    border-top-color: rgb(0, 114, 142);
+    border-bottom-color: rgb(0, 84, 105);
+    border-bottom-width: 2px;
+    -unity-slice-type: tiled;
+    background-color: rgb(64, 183, 238);
 }

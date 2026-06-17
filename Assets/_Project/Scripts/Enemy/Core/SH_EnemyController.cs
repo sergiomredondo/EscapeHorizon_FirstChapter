@@ -53,6 +53,9 @@ namespace Game.Enemy
         [SerializeField] private float _patrolNavMeshSampleRadius = 2f;
 
         [Header("Search Tuning")]
+        [Tooltip("Maximum distance at which the agent can react to the player's presence and transition from Patrol to Search.")]
+        [Min(0f)]
+        [SerializeField] private float _maxAlertDistance = 50f;
         [Tooltip("Maximum seconds the agent will search for the player before returning to patrol.")]
         [Min(1f)]
         [SerializeField] private float _searchTimeout = 8f;
@@ -352,8 +355,12 @@ namespace Game.Enemy
 
             if (s_sharedAlertActive && _state == EnemyState.Patrol)
             {
-                _lastKnownPlayerPosition = s_alertPlayerPosition;
-                TransitionTo(EnemyState.Attack);
+                float distanceToAlert = Vector3.Distance(transform.position, s_alertPlayerPosition);
+                if (distanceToAlert <= _maxAlertDistance)
+                {
+                    _lastKnownPlayerPosition = s_alertPlayerPosition;
+                    TransitionTo(EnemyState.Search);
+                }
             }
 
             if (_knockbackActive)
@@ -1192,6 +1199,9 @@ namespace Game.Enemy
             Gizmos.color = new Color(0.3f, 0.7f, 1f, 0.15f);
             Gizmos.DrawWireSphere(center, _patrolRadius);
 
+            // Dentro de OnDrawGizmosSelected()
+            Gizmos.color = new Color(0.5f, 0.0f, 1f, 0.25f);
+            Gizmos.DrawWireSphere(transform.position, _maxAlertDistance);
             // Tank hold-distance ring.
             if (_data.Archetype == EnemyArchetype.Tank)
             {

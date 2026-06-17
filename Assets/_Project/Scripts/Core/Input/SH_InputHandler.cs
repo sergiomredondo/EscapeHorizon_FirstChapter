@@ -111,6 +111,13 @@ namespace Core.Input
         /// </summary>
         public bool ScanPressed { get; private set; }
 
+        /// <summary>
+        /// True for the single frame the Pause button transitions to pressed. Reserved for future pause menu integration.
+        /// Currently not consumed by any system, but can be checked by a pause menu state to toggle the pause menu when implemented.
+        /// Note: The Pause button is not currently mapped in the IA_PlayerControls input actions, but this property 
+        /// is defined here for future use when a pause action is added to the input system.
+        /// </summary>
+        public bool PausePressed { get; private set; }
         #endregion
 
         #region Consume API
@@ -150,6 +157,14 @@ namespace Core.Input
         /// allows subsequent menu press events to be detected correctly.</remarks>
         public void ConsumeMenuPressed() => MenuPressed = false;
 
+        /// <summary>
+        /// Resets the pause pressed state to indicate that the pause button is no longer being pressed.
+        /// </summary>
+        /// <remarks>Call this method after handling a pause press event to clear the pressed state. This allows
+        /// subsequent pause press events to be detected correctly. Note that the pause action is not currently 
+        /// mapped in the IA_PlayerControls input actions, but this method is defined for future use when a pause 
+        /// action is added to the input system.</remarks>
+        public void ConsumePausePressed() => PausePressed = false;
         #endregion
 
         #region Unity Lifecycle
@@ -272,6 +287,13 @@ namespace Core.Input
         {
             if (context.phase == InputActionPhase.Started)
                 MenuPressed = true;
+        }
+
+        /// <summary> Pause action — reserved for pause menu. </summary>
+        public void OnPause(InputAction.CallbackContext context)
+        {
+            if (context.phase == InputActionPhase.Started)
+                PausePressed = true;
         }
 
         #endregion

@@ -1,0 +1,430 @@
+.pm-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    align-items: center;
+    justify-content: center;
+    padding-top: 50px;
+    padding-right: 50px;
+    padding-bottom: 50px;
+    padding-left: 50px;
+}
+
+.pm-frame {
+    width: 450px;
+    padding: 36px 44px;
+    background-color: rgba(6, 14, 18, 0.94);
+    border-width: 1px;
+    border-color: rgba(0, 255, 255, 0.3);
+    border-radius: 4px;
+    align-items: stretch;
+    flex-direction: column;
+}
+
+.pm-params-frame {
+    padding: 24px 28px;
+    background-color: rgba(6, 14, 18, 0.96);
+    border-width: 1px;
+    border-color: rgba(0, 255, 255, 0.3);
+    border-radius: 4px;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.pm-title {
+    font-size: 25px;
+    color: rgb(0, 255, 255);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    letter-spacing: 5px;
+    margin-bottom: 10px;
+}
+
+.pm-divider {
+    height: 3px;
+    background-color: rgba(0, 255, 255, 0.2);
+    margin-bottom: 20px;
+}
+
+.pm-button-list {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.pm-btn {
+    font-size: 25px;
+    height: 46px;
+    margin-bottom: 8px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.07);
+    border-radius: 2px;
+    background-color: rgba(255, 255, 255, 0.03);
+    color: rgba(190, 195, 205, 0.88);
+    -unity-text-align: middle-center;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+    transition: background-color 0.1s ease-out, border-color 0.1s ease-out, color 0.1s ease-out;
+}
+
+.pm-btn:hover {
+    background-color: rgba(0, 255, 255, 0.1);
+    border-color: rgba(0, 255, 255, 0.45);
+    color: rgb(0, 255, 255);
+}
+
+.pm-btn--selected {
+    background-color: rgba(0, 255, 255, 0.16);
+    border-color: rgba(0, 255, 255, 0.65);
+    color: rgb(0, 255, 255);
+}
+
+.pm-tabs-row {
+    flex-direction: row;
+    margin-bottom: 2px;
+}
+
+.pm-tab {
+    font-size: 22px;
+    height: 64px;
+    flex-grow: 1;
+    border-width: 0;
+    border-radius: 2px 2px 0 0;
+    border-bottom-width: 2px;
+    border-bottom-color: transparent;
+    background-color: rgba(255, 255, 255, 0.02);
+    color: rgba(140, 145, 155, 0.8);
+    -unity-text-align: middle-center;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+    margin-right: 3px;
+    transition: background-color 0.1s ease-out, color 0.1s ease-out;
+}
+
+.pm-tab:last-child {
+    margin-right: 0;
+}
+
+.pm-tab:hover {
+    background-color: rgba(0, 255, 255, 0.07);
+    color: rgba(200, 225, 240, 0.9);
+}
+
+.pm-tab--active {
+    background-color: rgba(0, 255, 255, 0.1);
+    color: rgb(0, 255, 255);
+    border-bottom-width: 2px;
+    border-bottom-color: rgb(0, 255, 255);
+}
+
+.pm-tab-content {
+    flex-grow: 1;
+    padding-top: 32px;
+    padding-bottom: 32px;
+    overflow: hidden;
+    padding-right: 32px;
+    padding-left: 32px;
+}
+
+.pm-settings-panel {
+    flex-direction: column;
+    display: flex;
+}
+
+.pm-setting-row {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 18px;
+    min-height: 30px;
+}
+
+.pm-setting-label {
+    width: 150px;
+    font-size: 22px;
+    color: rgba(175, 185, 195, 0.85);
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+}
+
+.pm-slider {
+    flex-grow: 1;
+    margin-right: 32px;
+    margin-left: 128px;
+}
+
+.pm-slider > .unity-base-slider__tracker {
+    background-color: rgba(0, 255, 255, 0.18);
+    height: 3px;
+}
+
+.pm-slider > .unity-base-slider__dragger {
+    background-color: rgb(0, 255, 255);
+    width: 14px;
+    height: 14px;
+    border-radius: 7px;
+    top: -5px;
+    border-width: 0;
+}
+
+.pm-setting-value {
+    width: 48px;
+    font-size: 22px;
+    color: rgba(140, 200, 220, 0.9);
+    -unity-text-align: middle-right;
+}
+
+.pm-dropdown {
+    flex-grow: 1;
+    height: 28px;
+    background-color: rgba(0, 255, 255, 0.07);
+    border-color: rgba(0, 255, 255, 0.28);
+    border-width: 1px;
+    border-radius: 2px;
+    color: rgba(175, 215, 235, 0.9);
+    font-size: 22px;
+    margin-right: 64px;
+    margin-left: 128px;
+}
+
+.pm-toggle {
+    flex-grow: 0;
+    margin-left: 128px;
+}
+
+.pm-controls-panel {
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.pm-controls-scroll {
+    flex-grow: 1;
+}
+
+.pm-controls-section-title {
+    font-size: 22px;
+    color: rgb(0, 255, 255);
+    -unity-font-style: bold;
+    letter-spacing: 3px;
+    margin-top: 14px;
+    margin-bottom: 10px;
+}
+
+.pm-keyboard-frame {
+    background-color: rgba(15, 25, 32, 0.65);
+    border-color: rgba(0, 255, 255, 0.12);
+    border-width: 1px;
+    border-radius: 4px;
+    position: relative;
+    margin-bottom: 24px;
+    background-image: url("project://database/Assets/_Project/Art_Sound/UI/Frames/Keyboard+Mouse.png?fileID=2800000&guid=7389101cbd06fdb48818e62d42905203&type=3#Keyboard+Mouse");
+    rotate: 0;
+    aspect-ratio: 3;
+}
+
+.pm-gamepad-frame {
+    background-color: rgba(15, 25, 32, 0.65);
+    border-color: rgba(0, 255, 255, 0.12);
+    border-width: 1px;
+    border-radius: 4px;
+    position: relative;
+    margin-bottom: 16px;
+    aspect-ratio: 3;
+    background-image: url("project://database/Assets/_Project/Art_Sound/UI/Frames/Gamepad.png?fileID=2800000&guid=f3314d949dd97164d9f990a2fd82c83c&type=3#Gamepad");
+    -unity-background-scale-mode: scale-to-fit;
+    background-position-y: top -120px;
+    background-size: 100% 160%;
+    border-top-width: 3px;
+    border-right-width: 3px;
+    border-bottom-width: 3px;
+    border-left-width: 3px;
+    background-position-x: left 0;
+}
+
+.pm-key,
+.pm-pad {
+    position: absolute;
+    font-size: 8px;
+    color: rgb(219, 255, 255);
+    background-color: rgba(0, 29, 29, 0.73);
+    border-color: rgba(0, 255, 255, 0.38);
+    border-width: 1px;
+    border-radius: 2px;
+    padding: 2px 5px;
+    -unity-text-align: middle-center;
+    white-space: normal;
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+    border-bottom-right-radius: 7px;
+    border-bottom-left-radius: 7px;
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    -unity-font-style: bold;
+    scale: 2 2;
+}
+
+.pm-key-esc {
+    left: 8.5%;
+    top: 16.5%;
+    width: 72px;
+    height: 20px;
+}
+
+.pm-key-tab {
+    left: 8.3%;
+    top: 37.5%;
+    width: 57px;
+    height: 29px;
+}
+
+.pm-key-q {
+    left: 19.4%;
+    top: 15%;
+    width: 65px;
+    height: 27px;
+}
+
+.pm-key-e {
+    left: 29.4%;
+    top: 25%;
+    height: 27px;
+    width: 71px;
+}
+
+.pm-key-f {
+    left: 34.5%;
+    top: 39%;
+    height: 27px;
+    width: 64px;
+}
+
+.pm-key-wasd {
+    left: 18.5%;
+    top: 60%;
+    height: 36px;
+    width: 69px;
+}
+
+.pm-key-space {
+    left: 33%;
+    top: 72%;
+    width: 52px;
+    height: 27px;
+}
+
+.pm-key-lmb {
+    left: 85%;
+    top: 19%;
+    width: 56px;
+    height: 40px;
+}
+
+.pm-key-lmb-hold {
+    left: 86%;
+    top: 47%;
+    height: 53px;
+    width: 73px;
+}
+
+.pm-pad-start {
+    left: 75%;
+    top: 38%;
+    width: 56px;
+    height: 30px;
+}
+
+.pm-pad-lstick {
+    left: 160px;
+    top: 407px;
+    width: 88px;
+    height: 45px;
+}
+
+.pm-pad-lb {
+    left: 75px;
+    top: 60px;
+    width: 71px;
+    height: 31px;
+}
+
+.pm-pad-rb {
+    left: 746px;
+    top: 328px;
+    width: 62px;
+    height: 33px;
+}
+
+.pm-pad-rt {
+    left: 752px;
+    top: 61px;
+    width: 72px;
+    height: 47px;
+}
+
+.pm-pad-rt-hold {
+    left: 802px;
+    top: 168px;
+    width: 82px;
+    height: 50px;
+}
+
+.pm-pad-a {
+    left: 467px;
+    top: 74px;
+    width: 73px;
+    height: 42px;
+}
+
+.pm-pad-b {
+    left: 504px;
+    top: 423px;
+    width: 62px;
+    height: 39px;
+}
+
+.pm-narrative-panel {
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.pm-narrative-scroll {
+    flex-grow: 1;
+    max-height: 320px;
+}
+
+.pm-narrative-body {
+    font-size: 22px;
+    color: rgba(200, 208, 218, 0.88);
+    white-space: normal;
+    -unity-text-align: upper-left;
+    padding: 6px;
+    line-height: 160%;
+}
+
+.pm-credits-body {
+    font-size: 22px;
+    color: rgba(140, 150, 165, 0.7);
+    white-space: normal;
+    -unity-text-align: middle-center;
+    padding: 6px;
+}
+
+.pm-back-btn {
+    font-size: 24px;
+    height: 32px;
+    margin-top: 8px;
+    border-width: 1px;
+    border-color: rgba(0, 255, 255, 0.28);
+    border-radius: 2px;
+    background-color: rgba(0, 255, 255, 0.05);
+    color: rgba(0, 255, 255, 0.78);
+    -unity-text-align: middle-center;
+    transition: background-color 0.1s ease-out;
+}
+
+.pm-back-btn:hover {
+    background-color: rgba(0, 255, 255, 0.13);
+}

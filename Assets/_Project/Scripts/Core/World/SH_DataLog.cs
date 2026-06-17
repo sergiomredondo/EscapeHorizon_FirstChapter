@@ -24,6 +24,11 @@ namespace Game.World
         #region Inspector
 
         [Header("Data Log — Mode")]
+
+        [Tooltip("Display name for the button action. Used in UI prompts. " +
+         "If empty, the GameObject's name will be used.")]
+        [SerializeField] private string _displayName = "Panel de datos";
+
         [Tooltip("Interactable: player presses E to activate.\n" +
                  "AutoTrigger: activates when player enters the collider.")]
         [SerializeField] private DataLogMode _mode = DataLogMode.Interactable;
@@ -113,6 +118,10 @@ namespace Game.World
                 MarkConsumed();
         }
 
+        public override string ToString()
+        {
+            return string.IsNullOrEmpty(_displayName) ? gameObject.name : _displayName;
+        }
         #endregion
     }
 }

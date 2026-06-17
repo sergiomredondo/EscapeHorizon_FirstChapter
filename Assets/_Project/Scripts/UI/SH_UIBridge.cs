@@ -594,25 +594,35 @@ namespace UI
         {
             if (_context?.Input == null) return;
 
-            // Close open data log before processing menu input.
+            bool escapePressed = _context.Input.PausePressed;
+
             if (_dataLogOpen)
             {
-                if (_context?.Input != null && _context.Input.InteractPressed)
-                {
-                    _context.Input.ConsumeInteractPressed();
-                    OnTextLogCloseRequested();
-                    return;
-                }
+                bool closeLog = escapePressed || _context.Input.InteractPressed;
+                if (_context.Input.InteractPressed) _context.Input.ConsumeInteractPressed();
+                if (escapePressed) _context.Input.ConsumePausePressed();
+                if (closeLog) OnTextLogCloseRequested();
+                return;
+            }
+
+            if (_buildMenuOpen)
+            {
+                if (_context.Input.MenuPressed) _context.Input.ConsumeMenuPressed();
+                if (escapePressed) _context.Input.ConsumePausePressed();
+                if (escapePressed || _context.Input.MenuPressed) CloseBuildMenu();
+                return;
+            }
+
+            if (escapePressed)
+            {
+                _context.Input.ConsumePausePressed();
+                UI.SH_PauseMenuController.Instance?.TogglePause();
                 return;
             }
 
             if (!_context.Input.MenuPressed) return;
             _context.Input.ConsumeMenuPressed();
-
-            if (_buildMenuOpen)
-                CloseBuildMenu();
-            else
-                OpenBuildMenu();
+            OpenBuildMenu();
         }
 
         private void PollActionCooldowns()

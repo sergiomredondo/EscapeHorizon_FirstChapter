@@ -1,9 +1,10 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEngine.UIElements.Experimental" editor-extension-mode="False">
     <Style src="project://database/Assets/_Project/UI/Styles/HUD.uss?fileID=7433441132597879392&amp;guid=46c5f35131f48844c985b28afd300693&amp;type=3#HUD"/>
     <ui:VisualElement name="hud-root" class="hud-root">
-        <ui:VisualElement name="interaction-container" class="interaction-container" style="display: none; position: absolute;">
-            <ui:Label name="interaction-label" text="Interactuar" class="interaction-label" style="font-size: 20px; -unity-font-definition: url(&quot;project://database/Assets/_Project/UI/Fonts/Tektur-VariableFont_wdth,wght.ttf?fileID=12800000&amp;guid=4f1027b2edfe59f4ebdd0bc0d3defbdb&amp;type=3#Tektur-VariableFont_wdth,wght&quot;); -unity-font-style: bold; color: rgb(229, 229, 229);"/>
-            <ui:ProgressBar name="interaction-progress" low-value="0" high-value="100" class="interaction-progress"/>
+        <ui:VisualElement name="interaction-container" class="interaction-bar">
+            <ui:Label name="interaction-label" text="Interactuar" class="interaction-label" style="font-size: 20px; -unity-font-definition: url(&quot;project://database/Assets/_Project/UI/Fonts/Tektur-VariableFont_wdth,wght.ttf?fileID=12800000&amp;guid=4f1027b2edfe59f4ebdd0bc0d3defbdb&amp;type=3#Tektur-VariableFont_wdth,wght&quot;); -unity-font-style: bold; color: rgb(229, 229, 229); top: -70px;"/>
+            <ui:ProgressBar name="interaction-progress" low-value="0" high-value="100" class="interaction-progress-bar" style="top: -70px; width: 275px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0;"/>
+            <ui:Image name="Icon" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=999994177&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_10&quot;); width: 64px; height: 64px; top: -140px; left: -70px;"/>
         </ui:VisualElement>
         <ui:VisualElement name="mission-panel" class="corner-panel corner-panel--top-left">
             <ui:Label name="mission-label" text="" class="mission-label"/>
@@ -131,21 +132,17 @@
                 <ui:Button name="build-close-btn" text="CLOSE  [ TAB ]" class="build-close-btn"/>
             </ui:VisualElement>
         </ui:VisualElement>
-
         <ui:VisualElement name="datalog-overlay" class="datalog-overlay" style="display: none;">
             <ui:VisualElement name="datalog-panel" class="datalog-panel">
                 <ui:Label name="datalog-tag" text="DATA LOG" class="datalog-tag"/>
                 <ui:Label name="datalog-title" text="" class="datalog-title"/>
                 <ui:Label name="datalog-source" text="" class="datalog-source"/>
                 <ui:VisualElement class="separator"/>
-                <ui:ScrollView name="datalog-body-scroll"
-                               class="datalog-body-scroll"
-                               vertical-scroller-visibility="Auto">
+                <ui:ScrollView name="datalog-body-scroll" vertical-scroller-visibility="Auto" class="datalog-body-scroll">
                     <ui:Label name="datalog-body" text="" class="datalog-body"/>
                 </ui:ScrollView>
                 <ui:VisualElement class="separator"/>
-                <ui:Button name="datalog-close-btn" text="CLOSE  [ E ]"
-                           class="build-close-btn"/>
+                <ui:Button name="datalog-close-btn" text="CLOSE  [ E ]" class="build-close-btn"/>
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
