@@ -25,7 +25,7 @@ MonoBehaviour:
   surgeDamageMultiplier: 1.5
   surgeDefenseMultiplier: 1.3
   surgePostureMultiplier: 1.8
-  surgeCooldownDuration: 3
+  surgeCooldownDuration: 2
   surgeCooldownPenalty: 0.85
   enemyHpScalingPerZone: 0.1
   difficultyNormalAttackMult: 1

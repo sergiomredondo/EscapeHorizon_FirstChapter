@@ -97,8 +97,10 @@ namespace Game.World
         {
             if (SH_NarrativeSequencer.Instance == null)
             {
+#if UNITY_EDITOR
                 Debug.LogWarning($"[SH_DataLog] '{gameObject.name}': " +
                                  $"SH_NarrativeSequencer not found in scene.");
+#endif
                 return;
             }
 

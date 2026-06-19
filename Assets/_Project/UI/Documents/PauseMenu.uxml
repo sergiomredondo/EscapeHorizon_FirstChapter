@@ -13,7 +13,7 @@
         </ui:VisualElement>
     </ui:VisualElement>
     <ui:VisualElement name="parameters-overlay" class="pm-overlay" style="display: none;">
-        <ui:VisualElement name="parameters-frame" class="pm-params-frame" style="width: 100%; aspect-ratio: 1.777778;">
+        <ui:VisualElement name="parameters-frame" class="pm-params-frame">
             <ui:Label text="PARAMETROS" class="pm-title"/>
             <ui:VisualElement name="tabs-row" class="pm-tabs-row">
                 <ui:Button name="tab-settings-btn" text="CONFIGURACIÓN" class="pm-tab pm-tab--active"/>
@@ -21,7 +21,7 @@
                 <ui:Button name="tab-narrative-btn" text="NARRATIVA" class="pm-tab"/>
             </ui:VisualElement>
             <ui:VisualElement name="tab-content" class="pm-tab-content">
-                <ui:VisualElement name="panel-settings" class="pm-settings-panel">
+                <ui:VisualElement name="panel-settings" class="pm-settings-panel" style="display: flex;">
                     <ui:VisualElement class="pm-setting-row">
                         <ui:Label text="VOLUMEN" class="pm-setting-label"/>
                         <ui:Slider name="slider-volume" low-value="0" high-value="1" value="1" class="pm-slider"/>
@@ -52,7 +52,7 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:VisualElement name="panel-controls" class="pm-controls-panel" style="display: none;">
-                    <ui:ScrollView vertical-scroller-visibility="Auto" class="pm-controls-scroll">
+                    <ui:ScrollView vertical-scroller-visibility="Hidden" class="pm-controls-scroll">
                         <ui:Label text="TECLADO" class="pm-controls-section-title"/>
                         <ui:VisualElement name="keyboard-frame" class="pm-keyboard-frame">
                             <ui:Label text="ESC / Pausa" class="pm-key pm-key-esc">
@@ -63,12 +63,13 @@
                             </ui:Label>
                             <ui:Label text="Q&#10;Sobrecarga" class="pm-key pm-key-q">
                                 <ui:Image name="Q" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=1720957186&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_12&quot;); width: 32px; height: 32px; top: -19px; left: -15px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; aspect-ratio: 1; position: absolute;"/>
+                                <ui:Image name="link" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/LineLightAttack.png?fileID=-1940439373&amp;guid=7db5300306c4a874c896a486c68a66d2&amp;type=3#LineLightAttack_0&quot;); width: 56px; height: 22px; top: 25px; left: -33px; rotate: 90deg; position: absolute;"/>
                             </ui:Label>
                             <ui:Label text="W A S D&#10;Movimiento" class="pm-key pm-key-wasd">
                                 <ui:Image name="Up" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=1373173187&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_0&quot;); width: 32px; height: 32px; top: -60px; left: 10px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; background-size: 110% 110%; -unity-slice-top: 1; -unity-slice-left: 1; -unity-slice-right: 0; -unity-slice-bottom: 0; background-position-x: center; -unity-background-scale-mode: stretch-to-fill; -unity-slice-type: sliced; -unity-slice-scale: 3px; position: absolute; aspect-ratio: 1;"/>
                                 <ui:Image name="Down" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=-857969523&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_3&quot;); width: 32px; height: 32px; top: -30px; left: 18px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; background-size: 110% 110%; -unity-slice-top: 1; -unity-slice-left: -1; -unity-slice-right: 1; -unity-slice-bottom: 0; background-position-x: center; -unity-background-scale-mode: stretch-to-fill; -unity-slice-type: sliced; -unity-slice-scale: 3px; position: absolute; aspect-ratio: 1;"/>
-                                <ui:Image name="Left" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=-1318777522&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_2&quot;); width: 32px; height: 32px; top: -30px; left: -16px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; background-size: 110% 110%; -unity-slice-top: 1; -unity-slice-left: -1; -unity-slice-right: 1; -unity-slice-bottom: 0; background-position-x: center; -unity-background-scale-mode: stretch-to-fill; -unity-slice-type: sliced; -unity-slice-scale: 3px; aspect-ratio: 1; position: absolute;"/>
-                                <ui:Image name="Right" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=1414902754&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_1&quot;); width: 32px; height: 32px; top: -30px; left: 53px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; background-size: 110% 110%; -unity-slice-top: 1; -unity-slice-left: 1; -unity-slice-right: -1; -unity-slice-bottom: 0; background-position-x: center; -unity-background-scale-mode: stretch-to-fill; -unity-slice-type: sliced; -unity-slice-scale: 3px; aspect-ratio: 1; position: absolute;"/>
+                                <ui:Image name="Left" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=-1318777522&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_2&quot;); width: 32px; height: 32px; top: -30px; left: -12px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; background-size: 110% 110%; -unity-slice-top: 1; -unity-slice-left: -1; -unity-slice-right: 1; -unity-slice-bottom: 0; background-position-x: center; -unity-background-scale-mode: stretch-to-fill; -unity-slice-type: sliced; -unity-slice-scale: 3px; aspect-ratio: 1; position: absolute;"/>
+                                <ui:Image name="Right" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=1414902754&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_1&quot;); width: 32px; height: 32px; top: -30px; left: 51px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; background-size: 110% 110%; -unity-slice-top: 1; -unity-slice-left: 1; -unity-slice-right: -1; -unity-slice-bottom: 0; background-position-x: center; -unity-background-scale-mode: stretch-to-fill; -unity-slice-type: sliced; -unity-slice-scale: 3px; aspect-ratio: 1; position: absolute;"/>
                             </ui:Label>
                             <ui:Label text="E&#10;Interactuar" class="pm-key pm-key-e">
                                 <ui:Image name="E" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=999994177&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_10&quot;); width: 32px; height: 32px; top: -17px; left: 51px; background-color: rgba(0, 0, 0, 0.5); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; aspect-ratio: 1; position: absolute;"/>
@@ -132,15 +133,17 @@
                     </ui:ScrollView>
                 </ui:VisualElement>
                 <ui:VisualElement name="panel-narrative" class="pm-narrative-panel" style="display: none;">
-                    <ui:ScrollView vertical-scroller-visibility="Auto" class="pm-narrative-scroll">
+                    <ui:ScrollView vertical-scroller-visibility="Hidden" class="pm-narrative-scroll">
                         <ui:Label name="narrative-text" text="" class="pm-narrative-body"/>
                     </ui:ScrollView>
                     <ui:VisualElement class="pm-divider" style="margin-top: 12px; margin-bottom: 12px;"/>
-                    <ui:Label name="credits-text" text="" class="pm-credits-body"/>
+                    <ui:ScrollView vertical-scroller-visibility="Hidden" class="pm-narrative-scroll" style="max-height: 30%; min-height: 30%;">
+                        <ui:Label name="credits-text" text="" class="pm-credits-body"/>
+                    </ui:ScrollView>
                 </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement name="VisualElement" class="pm-divider"/>
-            <ui:Button name="parameters-close-btn" text="CERRAR  [ ESC ]" class="pm-back-btn"/>
+            <ui:VisualElement name="VisualElement" class="pm-divider" style="top: 10px;"/>
+            <ui:Button name="parameters-close-btn" text="CERRAR  [ ESC / Start]" class="pm-back-btn"/>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

@@ -1016,6 +1016,8 @@ namespace Game.Enemy
         {
             if (_state == newState) return;
 
+            string previousStateName = _state.ToString();
+
             switch (_state)
             {
                 case EnemyState.Search: 
@@ -1026,6 +1028,10 @@ namespace Game.Enemy
             }
             
             _state = newState;
+
+            // Notify ambient manager — no hard dependency (null-safe call)
+            Audio.SH_AmbientAudioManager.Instance?
+                .NotifyEnemyStateChanged(previousStateName, newState.ToString());
 
             switch (_state)
             {
@@ -1176,6 +1182,8 @@ namespace Game.Enemy
 
             TransitionTo(EnemyState.Patrol);
             gameObject.SetActive(true);
+
+            Audio.SH_AmbientAudioManager.Instance?.ResetEnemyCounters();
         }
 
         #endregion

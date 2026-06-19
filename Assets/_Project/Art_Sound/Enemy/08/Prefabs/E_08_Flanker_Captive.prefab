@@ -138,6 +138,10 @@ MonoBehaviour:
   _patrolWaitTimeMax: 4
   _patrolStuckTimeout: 6
   _patrolNavMeshSampleRadius: 2
+  _maxAlertDistance: 50
+  _searchTimeout: 8
+  _maxSearchPoints: 4
+  _searchPointDuration: 1.5
 --- !u!136 &1782835791644814023
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -299,7 +303,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0121ecf704fddbb42a3e33f51b11c666, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.SH_CaptiveCore
-  persistentID: Assailant_01
+  persistentID: CaptiveCore
   interactionType: 1
   _focusMaterial: {fileID: 2100000, guid: 5b6e98b9709d1cf409b32ba75ee3adaf, type: 2}
   _dropData: {fileID: 11400000, guid: 9f8e76df64f75e1449b23f7f9e90b932, type: 2}
@@ -308,9 +312,10 @@ MonoBehaviour:
   _baseColor: {r: 1, g: 1, b: 1, a: 1}
   _revealFlashPrefab: {fileID: 0}
   _captivePulsePrefab: {fileID: 6296344258283898458, guid: 47c547e91bdd5c44a83bdaa823f041ac, type: 3}
-  _revealSoundClip: {fileID: 0}
+  _revealSoundClip: {fileID: 8300000, guid: 468da1873af5c3e48b9b63828092959a, type: 3}
   _revealFlashAutoDestroy: 1
   _interactableLayerName: Interactable
+  _displayName: "N\xFAcleo de identidad (NI)"
 --- !u!135 &1740327269093440270
 SphereCollider:
   m_ObjectHideFlags: 0

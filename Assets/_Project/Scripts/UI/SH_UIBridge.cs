@@ -1,5 +1,6 @@
 using Actions.Data;
 using Core;
+using Core.Input;
 using Core.StateMachine;
 using Core.StateMachine.States;
 using Game.Combat.Core;
@@ -11,6 +12,7 @@ using Game.Progression.Data;
 using Game.World;
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace UI
 {
@@ -113,6 +115,7 @@ namespace UI
             }
 
             _hudController.InjectModel(_model);
+
         }
 
         private void Start()
@@ -337,6 +340,7 @@ namespace UI
             if (_dataLogOpen) return;
             _dataLogOpen = true;
             Time.timeScale = 0f;
+            if (_context.Input != null)
             _model.SetDataLog(true, title, source, body);
         }
 
@@ -345,6 +349,7 @@ namespace UI
             if (!_dataLogOpen) return;
             _dataLogOpen = false;
             Time.timeScale = 1f;
+            if (_context.Input != null)
             _model.SetDataLog(false, string.Empty, string.Empty, string.Empty);
         }
 
@@ -414,8 +419,8 @@ namespace UI
             PushPurgeData();
 
             _model.SetBuildNarrative(true,
-                "Core purified. Development potential unlocked.\n" +
-                "Return to the Analysis Tree to apply improvements.");
+                "Núcleo purificado. Potencial de desarrollo desbloqueado.\n" +
+                "Regresa al Árbol de Análisis para aplicar mejoras.");
         }
 
         #endregion
@@ -429,7 +434,6 @@ namespace UI
             _buildMenuOpen = true;
 
             Time.timeScale = 0f;
-
             _model.SetBuildMenuInteractionEnabled(interactionEnabled);
             _model.SetBuildNarrative(false, string.Empty);
             PushBuildTreeState();
@@ -453,7 +457,7 @@ namespace UI
             _buildMenuOpen = false;
 
             Time.timeScale = 1f;
-
+            if (_context.Input != null)
             _model.SetBuildNarrative(false, string.Empty);
             _model.SetBuildMenuOpen(false);
         }
@@ -501,11 +505,11 @@ namespace UI
 
                     string costLabel = string.Empty;
                     if (node != null && state == SH_UIStateModel.BuildNodeDisplayState.Next)
-                        costLabel = $"{node.pdCost} PD  /  {node.scrapCost:F0} SC";
+                        costLabel = $"{node.pdCost} PD  +  {node.scrapCost:F0} CH";
 
                     nodeData[b, n] = new SH_UIStateModel.BuildNodeDisplayData
                     {
-                        NodeName = node != null ? node.nodeName : $"Node {n + 1}",
+                        NodeName = node != null ? node.nodeName : $"Nodo {n + 1}",
                         CostLabel = costLabel,
                         State = state
                     };
@@ -546,6 +550,10 @@ namespace UI
         // ─────────────────────────────────────────────────────────────────────
         #region Per-Frame Polling
 
+        /// <summary>
+        /// Polls Surge state each frame and updates the UI model if there are any changes.
+        /// Also updates interaction focus and progress based on the currently focused target.
+        /// </summary>
         private void PollSurgeState()
         {
             UpdateFocusUIOnStateChange();
@@ -590,6 +598,10 @@ namespace UI
             }
         }
 
+        /// <summary>
+        /// Polls menu-related input each frame and opens/closes the build menu or
+        /// data log accordingly. Also handles the Escape key for closing menus or toggling pause.
+        /// </summary>
         private void PollMenuInput()
         {
             if (_context?.Input == null) return;

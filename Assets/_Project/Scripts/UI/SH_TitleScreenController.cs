@@ -1,6 +1,7 @@
+using UI;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 namespace Game.UI
 {
@@ -20,6 +21,10 @@ namespace Game.UI
         [Min(0.1f)]
         [SerializeField] private float _fadeDuration = 0.6f;
 
+        [Header("Gamepad Navigation")]
+        [Tooltip("First button to be selected when the title screen opens.")]
+        [SerializeField] private UnityEngine.UI.Button _firstSelectedButton;
+
         private void Awake()
         {
             if (_fadeOverlay != null)
@@ -27,6 +32,14 @@ namespace Game.UI
 
             // Ensure normal timescale in case we returned from gameplay.
             Time.timeScale = 1f;
+        }
+
+        private void Start()
+        {
+            if (_firstSelectedButton != null && EventSystem.current != null)
+            {
+                EventSystem.current.SetSelectedGameObject(_firstSelectedButton.gameObject);
+            }
         }
 
         // ── Button Handlers ──────────────────────────────────────────────
@@ -56,6 +69,16 @@ namespace Game.UI
 #if UNITY_EDITOR
             Debug.Log("[SH_TitleScreenController] Parameters: not yet implemented.");
 #endif
+            if ( SH_PauseMenuController.Instance != null)
+            {
+                SH_PauseMenuController.Instance.OpenStandalone();
+            }
+            else
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning("[SH_TitleScreenController] SH_PauseMenuController instance not found in the scene.");
+#endif
+            }
         }
 
         /// <summary> Disconnection button — exits the application. </summary>

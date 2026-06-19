@@ -13,15 +13,15 @@ MonoBehaviour:
   m_Name: EconomySettings
   m_EditorClassIdentifier: Assembly-CSharp::Game.Economy.Data.SH_EconomySettings
   maxEnergy: 100
-  energyRegenPerSecond: 0.05
+  energyRegenPerSecond: 0.08
   energyDefeatFloor: 0.1
-  icBaseCost: 10
+  icBaseCost: 5
   icScalingCoefficient: 0.15
-  retreatHealthThreshold: 0.15
+  retreatHealthThreshold: 0.1
   energyFloorFraction: 0.1
   scrapDefeatRetentionRate: 0.5
   energyDefeatRetentionRate: 0.5
-  icDefeatRetentionRate: 0.5
+  icDefeatRetentionRate: 0.7
   scBaseReconfigCost: 50
   scReconfigCostMultiplier: 20
   maxDurability: 100

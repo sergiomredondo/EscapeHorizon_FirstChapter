@@ -1,5 +1,8 @@
+using Core.Input;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -56,6 +59,12 @@ namespace UI
 
         private UIDocument _document;
         private VisualElement _root;
+
+        private List<VisualElement> _activeTabElements = new List<VisualElement>();
+        private int _selectedElementIndex = -1;
+        private ScrollView _settingsScrollView;
+        private const float ScrollSpeed = 450f;
+        private bool _scrollFocused;
 
         // Overlays
         private VisualElement _pauseOverlay;
@@ -175,6 +184,10 @@ namespace UI
         {
             _standaloneMode = true;
             Show(_pauseOverlay, false);
+            if (UnityEngine.EventSystems.EventSystem.current != null)
+            {
+                UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
+            }
             OpenParameters();
         }
 
@@ -233,6 +246,13 @@ namespace UI
             if (_standaloneMode)
             {
                 _standaloneMode = false;
+                var titleController = GameObject.Find("MainCanvas");
+                if (titleController != null && UnityEngine.EventSystems.EventSystem.current != null)
+                {
+                    var btn = titleController.GetComponentInChildren<UnityEngine.UI.Button>();
+                    if (btn != null) UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(btn.gameObject);
+                }
+
                 return;
             }
 
@@ -248,6 +268,22 @@ namespace UI
                 _tabButtons[i]?.EnableInClassList("pm-tab--active", i == _activeTab);
                 Show(_tabPanels[i], i == _activeTab);
             }
+
+            _activeTabElements.Clear();
+            _selectedElementIndex = -1;
+
+            if (_activeTab == 0)
+            {
+                if (_settingsScrollView != null) _activeTabElements.Add(_settingsScrollView);
+                if (_sliderVolume != null) _activeTabElements.Add(_sliderVolume);
+                if (_sliderBrightness != null) _activeTabElements.Add(_sliderBrightness);
+                if (_sliderContrast != null) _activeTabElements.Add(_sliderContrast);
+                if (_sliderGamma != null) _activeTabElements.Add(_sliderGamma);
+                if (_dropdownResolution != null) _activeTabElements.Add(_dropdownResolution);
+                if (_toggleFullscreen != null) _activeTabElements.Add(_toggleFullscreen);
+            }
+
+            UpdateElementVisuals();
         }
 
         // ── Navigation ─────────────────────────────────────────────────────
@@ -266,10 +302,66 @@ namespace UI
 
         private void PollTabNavigation()
         {
+            ProcessRightStickScroll();
+
+            float v = VerticalAxis();
             int h = HorizontalAxisInt();
-            if (h == 0) return;
-            SwitchTab(_activeTab + h);
-            _navCooldown = NavInterval;
+
+            if (!Mathf.Approximately(v, 0f))
+            {
+                int dir = v > 0f ? -1 : 1;
+                int nextIndex = _selectedElementIndex + dir;
+                if (nextIndex >= -1 && nextIndex < _activeTabElements.Count)
+                {
+                    _selectedElementIndex = nextIndex;
+                    UpdateElementVisuals();
+                    EnsureSelectedElementIsVisible();
+                    _navCooldown = NavInterval;
+                }
+                return;
+            }
+
+            if (h != 0)
+            {
+                if (_selectedElementIndex == -1)
+                {
+                    SwitchTab(_activeTab + h);
+                    _navCooldown = NavInterval;
+                }
+                else
+                {
+                    ModifySelectedElementValue(h);
+                    _navCooldown = NavInterval;
+                }
+                return;
+            }
+
+            if (ConfirmPressed() && _selectedElementIndex >= 0)
+            {
+                ExecuteElementAction();
+                _navCooldown = NavInterval;
+            }
+        }
+
+        private void ProcessRightStickScroll()
+        {
+            if (_tabPanels == null || _activeTab < 0 || _activeTab >= _tabPanels.Length) return;
+
+            var scroll = _tabPanels[_activeTab] as ScrollView ?? _tabPanels[_activeTab]?.Q<ScrollView>();
+            if (scroll == null) return;
+
+            float rightStickY = 0f;
+            if (Gamepad.current != null)
+            {
+                rightStickY = Gamepad.current.rightStick.y.ReadValue();
+            }
+
+            if (Mathf.Abs(rightStickY) > 0.15f)
+            {
+                Vector2 offset = scroll.scrollOffset;
+                offset.y -= rightStickY * ScrollSpeed * Time.unscaledDeltaTime;
+                scroll.scrollOffset = offset;
+            }
         }
 
         private void RefreshPauseSelection()
@@ -287,6 +379,63 @@ namespace UI
                 case 2: OpenParameters(); break;
                 case 3: ExitGame(); break;
             }
+        }
+
+        private void ModifySelectedElementValue(int direction)
+        {
+            if (_selectedElementIndex < 0 || _selectedElementIndex >= _activeTabElements.Count) return;
+
+            VisualElement currentElement = _activeTabElements[_selectedElementIndex];
+
+            if (currentElement is ScrollView) return;
+
+            if (currentElement is Slider slider)
+            {
+                float step = (slider.highValue - slider.lowValue) * 0.05f;
+                slider.value = Mathf.Clamp(slider.value + (direction * step), slider.lowValue, slider.highValue);
+            }
+            else if (currentElement is DropdownField dropdown)
+            {
+                int nextIdx = Mathf.Clamp(dropdown.index + direction, 0, dropdown.choices.Count - 1);
+                if (dropdown.index != nextIdx)
+                {
+                    dropdown.index = nextIdx;
+                    dropdown.value = dropdown.choices[nextIdx];
+
+                    using (var changeEvent = ChangeEvent<string>.GetPooled(dropdown.choices[dropdown.index], dropdown.choices[nextIdx]))
+                    {
+                        changeEvent.target = dropdown;
+                        dropdown.SendEvent(changeEvent);
+                    }
+                }
+            }
+        }
+
+        private void ExecuteElementAction()
+        {
+            if (_selectedElementIndex < 0 || _selectedElementIndex >= _activeTabElements.Count) return;
+
+            VisualElement currentElement = _activeTabElements[_selectedElementIndex];
+
+            if (currentElement is Toggle toggle)
+            {
+                bool newValue = !toggle.value;
+                toggle.value = newValue;
+
+                using (var changeEvent = ChangeEvent<bool>.GetPooled(!newValue, newValue))
+                {
+                    changeEvent.target = toggle;
+                    toggle.SendEvent(changeEvent);
+                }
+            }
+        }
+
+        private void EnsureSelectedElementIsVisible()
+        {
+            if (_settingsScrollView == null || _selectedElementIndex <= 0) return;
+
+            VisualElement target = _activeTabElements[_selectedElementIndex];
+            _settingsScrollView.ScrollTo(target);
         }
 
         private void HandleEscape()
@@ -358,6 +507,7 @@ namespace UI
         {
             _pauseOverlay = _root.Q<VisualElement>("pause-overlay");
             _parametersOverlay = _root.Q<VisualElement>("parameters-overlay");
+            _settingsScrollView = _root.Q<ScrollView>("panel-settings");
 
             var btnResume = _root.Q<Button>("btn-resume");
             var btnRetry = _root.Q<Button>("btn-retry");
@@ -548,6 +698,19 @@ namespace UI
         }
 
         // ── Utility ────────────────────────────────────────────────────────
+
+        private void UpdateElementVisuals()
+        {
+            for (int i = 0; i < _tabButtons.Length; i++)
+            {
+                _tabButtons[i]?.EnableInClassList("pm-tab--selected", _selectedElementIndex == -1 && i == _activeTab);
+            }
+
+            for (int i = 0; i < _activeTabElements.Count; i++)
+            {
+                _activeTabElements[i]?.EnableInClassList("pm-element--selected", i == _selectedElementIndex);
+            }
+        }
 
         private static void Show(VisualElement el, bool visible)
         {

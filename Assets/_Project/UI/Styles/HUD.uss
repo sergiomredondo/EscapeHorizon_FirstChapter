@@ -473,7 +473,7 @@
 }
 
 .build-readonly-notice {
-    font-size: var(--font-size-small);
+    font-size: var(--font-size-large);
     color: var(--color-orange);
     -unity-text-align: middle-center;
     opacity: 0.8;
@@ -482,7 +482,7 @@
 
 .build-readonly-notice,
 .build-purge-notice {
-    font-size: var(--font-size-small);
+    font-size: var(--font-size-large);
     color: var(--color-orange);
     -unity-text-align: middle-center;
     opacity: 0.8;
@@ -522,11 +522,11 @@
 }
 
 .build-resource-chip--energy {
-    color: var(--color-cyan);
+    color: var(--color-yellow);
 }
 
 .build-resource-chip--scrap {
-    color: var(--color-yellow);
+    color: var(--color-orange);
 }
 
 .build-resource-chip--ic {
@@ -717,7 +717,7 @@
 }
 
 .build-purge-notice {
-    font-size: var(--font-size-small);
+    font-size: var(--font-size-large);
     color: var(--color-orange);
     -unity-text-align: middle-center;
     opacity: 0.8;

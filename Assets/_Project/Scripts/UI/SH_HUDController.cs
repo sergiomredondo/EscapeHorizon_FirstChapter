@@ -634,15 +634,15 @@ namespace UI
 
             // ── Resource chips ─────────────────────────────────────────────
             if (_buildLabelHP != null)
-                _buildLabelHP.text = $"HP: {Mathf.FloorToInt(_model.CurrentHP)} / {Mathf.FloorToInt(_model.MaxHP)}";
+                _buildLabelHP.text = $"Integridad: {Mathf.FloorToInt(_model.CurrentHP)} / {Mathf.FloorToInt(_model.MaxHP)}";
             if (_buildLabelEnergy != null)
-                _buildLabelEnergy.text = $"EN: {Mathf.FloorToInt(_model.CurrentEnergy)}";
+                _buildLabelEnergy.text = $"Energía: {Mathf.FloorToInt(_model.CurrentEnergy)}";
             if (_buildLabelScrap != null)
-                _buildLabelScrap.text = $"SC: {Mathf.FloorToInt(_model.CurrentScrap)}";
+                _buildLabelScrap.text = $"Chatarra: {Mathf.FloorToInt(_model.CurrentScrap)}";
             if (_buildLabelIC != null)
-                _buildLabelIC.text = $"IC: {_model.CurrentIdentityCores}";
+                _buildLabelIC.text = $"Núcleo \r\nIdentidad: {_model.CurrentIdentityCores}";
             if (_buildLabelPD != null)
-                _buildLabelPD.text = $"PD: {_model.BuildAvailablePD}";
+                _buildLabelPD.text = $"Punto de \r\nDesarrollo: {_model.BuildAvailablePD}";
             bool interactionEnabled = _model.BuildMenuInteractionEnabled;
 
             // Node buttons.
@@ -679,9 +679,9 @@ namespace UI
             float reaCost = _model.BuildReanalysisCost;
             if (_buildReanalysisCostLabel != null)
                 _buildReanalysisCostLabel.text = _model.BuildHasActiveBuild && interactionEnabled
-                    ? $"Reanalysis cost: {Mathf.FloorToInt(reaCost)} SC"
+                    ? $"Costo de reanálisis: {Mathf.FloorToInt(reaCost)} CH"
                     : _model.BuildHasActiveBuild
-                        ? "Return to base to reanalyze"
+                        ? "Regresa al faro para reanálisis"
                         : string.Empty;
 
             for (int b = 0; b < 3; b++)
@@ -718,8 +718,8 @@ namespace UI
             if (_buildPurgeYield != null)
             {
                 _buildPurgeYield.text = dpYield > 0
-                    ? $"{icAvailable} IC  →  +{dpYield} PD"
-                    : $"{icAvailable} IC  →  no PD gain";
+                    ? $"{icAvailable} Núcleos de Identidad  →  +{dpYield} PD"
+                    : $"{icAvailable} Núcleos de Identidad  →  no se obtendrán Puntos de Desarrollo";
             }
 
             // Find and update the purge button's enabled state.

@@ -273,14 +273,18 @@ namespace Core.StateMachine
                 enemy.SetPlayerContext(_context);
 
             if (enemies.Length > 0)
+            { 
 #if UNITY_EDITOR
                 Debug.Log($"[SH_PlayerStateMachine] Player context injected into {enemies.Length} enemy/enemies.");
 #endif
+            }
             else
+            {
 #if UNITY_EDITOR
                 Debug.LogWarning("[SH_PlayerStateMachine] No SH_EnemyController found in scene. " +
                                  "Place at least one enemy before pressing Play.");
 #endif
+            }
         }
 
         private void HandlePlayerDefeated()

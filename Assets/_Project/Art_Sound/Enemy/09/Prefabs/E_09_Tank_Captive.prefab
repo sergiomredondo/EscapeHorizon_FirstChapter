@@ -138,6 +138,7 @@ MonoBehaviour:
   _patrolWaitTimeMax: 4
   _patrolStuckTimeout: 6
   _patrolNavMeshSampleRadius: 2
+  _maxAlertDistance: 50
   _searchTimeout: 15
   _maxSearchPoints: 4
   _searchPointDuration: 1.5
@@ -646,11 +647,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6178183261216542223, guid: 8b26a86ca05fc5649ba4dbac88389780, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 0.0038
       objectReference: {fileID: 0}
     - target: {fileID: 6178183261216542223, guid: 8b26a86ca05fc5649ba4dbac88389780, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.0025
+      value: 0.0014
       objectReference: {fileID: 0}
     - target: {fileID: 6178183261216542223, guid: 8b26a86ca05fc5649ba4dbac88389780, type: 3}
       propertyPath: m_LocalPosition.z
@@ -677,11 +678,24 @@ PrefabInstance:
       value: 174.319
       objectReference: {fileID: 0}
     - target: {fileID: 6301750743748432960, guid: 8b26a86ca05fc5649ba4dbac88389780, type: 3}
-      propertyPath: persistentID
-      value: Tank_01
+      propertyPath: _dropData
+      value: 
+      objectReference: {fileID: 11400000, guid: 9f1bba374c749684e9804c456019e1f7, type: 2}
+    - target: {fileID: 6301750743748432960, guid: 8b26a86ca05fc5649ba4dbac88389780, type: 3}
+      propertyPath: _displayName
+      value: "N\xFAcleo de identidad (NI)"
       objectReference: {fileID: 0}
+    - target: {fileID: 6301750743748432960, guid: 8b26a86ca05fc5649ba4dbac88389780, type: 3}
+      propertyPath: persistentID
+      value: CaptiveCore
+      objectReference: {fileID: 0}
+    - target: {fileID: 6301750743748432960, guid: 8b26a86ca05fc5649ba4dbac88389780, type: 3}
+      propertyPath: _revealSoundClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 468da1873af5c3e48b9b63828092959a, type: 3}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 8999506721595045565, guid: 8b26a86ca05fc5649ba4dbac88389780, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8b26a86ca05fc5649ba4dbac88389780, type: 3}

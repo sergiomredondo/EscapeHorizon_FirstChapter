@@ -60,11 +60,15 @@ namespace Core.Camera
             else if (_cameraTransform == null)
             {
                 if (UnityEngine.Camera.main != null)
+                {
                     _cameraTransform = UnityEngine.Camera.main.transform;
+                }
                 else
+                {
 #if UNITY_EDITOR
                     Debug.LogWarning("[SH_PerspectiveController] No Camera found. Perspective logic will use local forward.");
 #endif
+                }
             }
         }
 

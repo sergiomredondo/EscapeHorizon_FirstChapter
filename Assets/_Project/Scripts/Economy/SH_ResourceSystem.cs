@@ -582,10 +582,10 @@ namespace Game.Economy
         /// Forces addition of resources directly from the Unity Inspector context menu.
         /// For debugging and playtesting only. Not available in release builds.
         /// </summary>
-        [ContextMenu("Debug — Add 50 Identity Cores")]
+        [ContextMenu("Debug — Add 5 Identity Cores")]
         private void Debug_AddIdentityCores()
         {
-            AddResource(ResourceType.IdentityCore, 50f);
+            AddResource(ResourceType.IdentityCore, 5f);
         }
 
         [ContextMenu("Debug — Add 200 Scrap")]

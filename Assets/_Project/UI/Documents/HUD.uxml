@@ -6,10 +6,10 @@
             <ui:ProgressBar name="interaction-progress" low-value="0" high-value="100" class="interaction-progress-bar" style="top: -70px; width: 275px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0;"/>
             <ui:Image name="Icon" style="background-image: url(&quot;project://database/Assets/_Project/Art_Sound/UI/Icons/Icons.png?fileID=999994177&amp;guid=5771eae6fba68db4db49a107e5503016&amp;type=3#Icons_10&quot;); width: 64px; height: 64px; top: -140px; left: -70px;"/>
         </ui:VisualElement>
-        <ui:VisualElement name="mission-panel" class="corner-panel corner-panel--top-left">
-            <ui:Label name="mission-label" text="" class="mission-label"/>
+        <ui:VisualElement name="mission-panel" class="corner-panel corner-panel--top-left" style="width: 600px; height: 107px; background-color: rgba(0, 0, 0, 0.4); border-top-width: 3px; border-right-width: 3px; border-bottom-width: 3px; border-left-width: 3px; border-top-left-radius: 16px; border-top-right-radius: 16px; border-bottom-right-radius: 16px; border-bottom-left-radius: 16px; border-left-color: rgba(0, 255, 255, 0.5); border-right-color: rgba(0, 255, 255, 0.5); border-top-color: rgba(0, 255, 255, 0.5); border-bottom-color: rgba(0, 255, 255, 0.5);">
+            <ui:Label name="mission-label" text="Luisa: El dispositivo de comunicación de alcance estelar fue hurtado, Bear ayúdame a encontrarlo, mi celda de energía cinética te ayudará a moverte, pero debes cuidar que no se descargue o tendremos que esperar mucho para recargar." class="mission-label" style="white-space: normal; margin-top: 8px; margin-right: 8px; margin-bottom: 8px; margin-left: 8px; -unity-font-style: normal;"/>
         </ui:VisualElement>
-        <ui:VisualElement name="minimap-panel" class="corner-panel corner-panel--top-right">
+        <ui:VisualElement name="minimap-panel" class="corner-panel corner-panel--top-right" style="display: none;">
             <ui:Label name="minimap-placeholder-label" text="MAP" class="placeholder-label"/>
         </ui:VisualElement>
         <ui:VisualElement name="center-anchor" class="center-anchor">
@@ -29,11 +29,11 @@
         <ui:VisualElement name="resources-panel" class="resources-panel">
             <ui:VisualElement name="resource-metrics" class="resource-metrics-panel">
                 <ui:VisualElement name="scrap-group" class="resource-group">
-                    <ui:Label text="SC:" class="resource-metric-label" style="color: rgb(0, 204, 204);"/>
+                    <ui:Label text="CH:" class="resource-metric-label" style="color: rgb(0, 204, 204);"/>
                     <ui:Label name="scrap-label" text="0000" class="resource-metric-value"/>
                 </ui:VisualElement>
                 <ui:VisualElement name="cores-group" class="resource-group">
-                    <ui:Label text="IC:" class="resource-metric-label" style="color: rgb(0, 204, 204);"/>
+                    <ui:Label text="NI:" class="resource-metric-label" style="color: rgb(0, 204, 204);"/>
                     <ui:Label name="ic-label" text="00" class="resource-metric-value"/>
                 </ui:VisualElement>
             </ui:VisualElement>
@@ -73,54 +73,54 @@
                 </ui:Image>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:Label name="build-readonly-notice" text="[ Return to base to modify build ]" class="build-readonly-notice" style="display: none;"/>
-        <ui:Label name="build-purge-notice" text="[ Insufficient Identity Cores for purification ]" class="build-purge-notice" style="display: none;"/>
+        <ui:Label name="build-readonly-notice" text="[ Regresa al Faro para modificar el Árbol de Mejoras ]" class="build-readonly-notice" style="display: none;"/>
+        <ui:Label name="build-purge-notice" text="[ Núcleos de Identidad insuficientes para obtener Puntos de Desarrollo ]" class="build-purge-notice" style="display: none;"/>
         <ui:VisualElement name="build-menu-overlay" class="build-menu-overlay" style="display: none;">
             <ui:VisualElement name="build-menu-panel" class="build-menu-panel">
-                <ui:Label name="build-menu-title" text="ANALYSIS TREE" class="build-menu-title"/>
+                <ui:Label name="build-menu-title" text="ARBOL DE MEJORAS" class="build-menu-title"/>
                 <ui:VisualElement class="separator"/>
                 <ui:VisualElement name="build-resources-row" class="build-resources-row">
-                    <ui:Label name="build-label-hp" text="HP: —" class="build-resource-chip build-resource-chip--hp"/>
-                    <ui:Label name="build-label-energy" text="EN: —" class="build-resource-chip build-resource-chip--energy"/>
-                    <ui:Label name="build-label-scrap" text="SC: 0" class="build-resource-chip build-resource-chip--scrap"/>
-                    <ui:Label name="build-label-ic" text="IC: 0" class="build-resource-chip build-resource-chip--ic"/>
-                    <ui:Label name="build-label-pd" text="PD: 0" class="build-resource-chip build-resource-chip--pd"/>
+                    <ui:Label name="build-label-hp" text="Integridad: —" class="build-resource-chip build-resource-chip--hp"/>
+                    <ui:Label name="build-label-energy" text="Energía: —" class="build-resource-chip build-resource-chip--energy"/>
+                    <ui:Label name="build-label-scrap" text="Chatarra: 0" class="build-resource-chip build-resource-chip--scrap"/>
+                    <ui:Label name="build-label-ic" text="Núcleo &#10;Identidad: 0" class="build-resource-chip build-resource-chip--ic"/>
+                    <ui:Label name="build-label-pd" text="Punto de &#10;Desarrollo: 0" class="build-resource-chip build-resource-chip--pd"/>
                 </ui:VisualElement>
                 <ui:VisualElement name="build-purge-section" class="build-purge-section" style="display: none;">
                     <ui:VisualElement class="build-purge-header-row">
-                        <ui:Label name="build-purge-title" text="PURIFY CORES" class="build-purge-title"/>
+                        <ui:Label name="build-purge-title" text="Purificación de Núcleos" class="build-purge-title"/>
                         <ui:Label name="build-purge-yield" text="" class="build-purge-yield"/>
                     </ui:VisualElement>
-                    <ui:Button name="build-purge-btn" text="PURGE" class="build-purge-btn"/>
+                    <ui:Button name="build-purge-btn" text="PURGA" class="build-purge-btn"/>
                 </ui:VisualElement>
                 <ui:VisualElement class="separator"/>
                 <ui:VisualElement name="build-tree-columns" class="build-tree-columns">
                     <ui:VisualElement name="branch-attack" class="build-branch-column">
-                        <ui:Label text="ATTACK" class="build-branch-header build-branch-header--attack"/>
+                        <ui:Label text="Mejora en &#10;Ataque" class="build-branch-header build-branch-header--attack"/>
                         <ui:Button name="node-attack-0" text="—" class="build-node-btn"/>
                         <ui:Button name="node-attack-1" text="—" class="build-node-btn"/>
                         <ui:Button name="node-attack-2" text="—" class="build-node-btn"/>
                         <ui:Button name="node-attack-3" text="—" class="build-node-btn"/>
                         <ui:Button name="node-attack-4" text="—" class="build-node-btn"/>
-                        <ui:Button name="reanalysis-attack" text="SWITCH" class="build-reanalysis-btn"/>
+                        <ui:Button name="reanalysis-attack" text="Elimina &#10;Mejoras" class="build-reanalysis-btn"/>
                     </ui:VisualElement>
                     <ui:VisualElement name="branch-defense" class="build-branch-column">
-                        <ui:Label text="DEFENSE" class="build-branch-header build-branch-header--defense"/>
+                        <ui:Label text="Mejora en &#10;Defensa" class="build-branch-header build-branch-header--defense"/>
                         <ui:Button name="node-defense-0" text="—" class="build-node-btn"/>
                         <ui:Button name="node-defense-1" text="—" class="build-node-btn"/>
                         <ui:Button name="node-defense-2" text="—" class="build-node-btn"/>
                         <ui:Button name="node-defense-3" text="—" class="build-node-btn"/>
                         <ui:Button name="node-defense-4" text="—" class="build-node-btn"/>
-                        <ui:Button name="reanalysis-defense" text="SWITCH" class="build-reanalysis-btn"/>
+                        <ui:Button name="reanalysis-defense" text="Elimina &#10;Mejoras" class="build-reanalysis-btn"/>
                     </ui:VisualElement>
                     <ui:VisualElement name="branch-agility" class="build-branch-column">
-                        <ui:Label text="AGILITY" class="build-branch-header build-branch-header--agility"/>
+                        <ui:Label text="Mejora en &#10;Agilidad" class="build-branch-header build-branch-header--agility"/>
                         <ui:Button name="node-agility-0" text="—" class="build-node-btn"/>
                         <ui:Button name="node-agility-1" text="—" class="build-node-btn"/>
                         <ui:Button name="node-agility-2" text="—" class="build-node-btn"/>
                         <ui:Button name="node-agility-3" text="—" class="build-node-btn"/>
                         <ui:Button name="node-agility-4" text="—" class="build-node-btn"/>
-                        <ui:Button name="reanalysis-agility" text="SWITCH" class="build-reanalysis-btn"/>
+                        <ui:Button name="reanalysis-agility" text="Elimina &#10;Mejoras" class="build-reanalysis-btn"/>
                     </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:VisualElement class="separator"/>
@@ -129,20 +129,20 @@
                     <ui:Label name="build-narrative-text" text="" class="build-narrative-text"/>
                 </ui:VisualElement>
                 <ui:VisualElement class="separator"/>
-                <ui:Button name="build-close-btn" text="CLOSE  [ TAB ]" class="build-close-btn"/>
+                <ui:Button name="build-close-btn" text="Cerrar  [ ESC / Start ]" class="build-close-btn"/>
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="datalog-overlay" class="datalog-overlay" style="display: none;">
             <ui:VisualElement name="datalog-panel" class="datalog-panel">
-                <ui:Label name="datalog-tag" text="DATA LOG" class="datalog-tag"/>
+                <ui:Label name="datalog-tag" text="Registro de Datos" class="datalog-tag"/>
                 <ui:Label name="datalog-title" text="" class="datalog-title"/>
                 <ui:Label name="datalog-source" text="" class="datalog-source"/>
                 <ui:VisualElement class="separator"/>
-                <ui:ScrollView name="datalog-body-scroll" vertical-scroller-visibility="Auto" class="datalog-body-scroll">
+                <ui:ScrollView name="datalog-body-scroll" vertical-scroller-visibility="Hidden" class="datalog-body-scroll">
                     <ui:Label name="datalog-body" text="" class="datalog-body"/>
                 </ui:ScrollView>
                 <ui:VisualElement class="separator"/>
-                <ui:Button name="datalog-close-btn" text="CLOSE  [ E ]" class="build-close-btn"/>
+                <ui:Button name="datalog-close-btn" text="Cerrar [ E / (Start) ]" class="build-close-btn"/>
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>

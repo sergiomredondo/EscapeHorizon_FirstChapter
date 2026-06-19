@@ -119,6 +119,343 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &256440138
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 256440141}
+  - component: {fileID: 256440140}
+  - component: {fileID: 256440139}
+  m_Layer: 0
+  m_Name: PauseMenu
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &256440139
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 256440138}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ca2e202b868f3d4da2fed450d298955, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UI.SH_PauseMenuController
+  _narrativeText: "El Accidente y el Salto a la Desolaci\xF3n\r\nLa historia de Escape
+    Horizon comienza en el espacio profundo durante el a\xF1o 13000.PHST (3000 del
+    calendario terrestre actual). Luisa, una joven y competente piloto de carga con
+    la avanzada habilidad tecnol\xF3gica com\xFAn en su era, atraviesa el cosmos
+    sin mayor preocupaci\xF3n.\r\nSu ruta se interrumpe abruptamente al detectar
+    una Anomal\xEDa Gravitacional masiva. Antes de que pueda ejecutar una maniobra
+    evasiva o un cambio de rumbo, la nave es asaltada por una lluvia inesperada de
+    micrometeoritos, causando da\xF1os cr\xEDticos a varios componentes de navegaci\xF3n.
+    Sin poder evitarlo, Luisa se precipita hacia la Anomal\xEDa, experimentando un
+    violento cambio de ubicaci\xF3n espacial.\r\nAl recuperar el control parcial
+    de los sistemas, Luisa confirma lo inimaginable: su posici\xF3n estelar ha cambiado
+    dr\xE1sticamente. Ahora se encuentra en un sector catalogado como abandonado,
+    olvidado o descartado por la civilizaci\xF3n principal. El punto de salto m\xE1s
+    pr\xF3ximo para regresar se sit\xFAa a varios a\xF1os luz, una distancia inalcanzable,
+    ya que el da\xF1o infligido por los micrometeoritos le impide trazar una ruta
+    efectiva.\r\n\r\nLa \xDAltima Opci\xF3n: S-E00-Junk-Type\r\nLas comunicaciones
+    del sistema est\xE1n gravemente deterioradas, y Luisa comprende que necesitar\xEDa
+    acercarse considerablemente a la \xF3rbita de alguna estaci\xF3n de retransmisi\xF3n
+    para poder enviar una se\xF1al de auxilio viable. Sin embargo, con el estado
+    actual de su nave, no existe una ruta eficiente para alcanzar dicha estaci\xF3n.\r\nEn
+    este punto cr\xEDtico de su evaluaci\xF3n, Luisa determina que la \xFAnica opci\xF3n
+    restante es un aterrizaje forzoso en el planeta m\xE1s cercano, un mundo catalogado
+    como un vertedero planetario conocido como el S-E00-Junk-Type.\r\nLuisa identifica
+    este sistema planetario de una estrella en los registros de historia antigua,
+    reconoci\xE9ndolo como un punto fundamental en el pasado de la humanidad. No
+    obstante, carece de informaci\xF3n actualizada sobre las condiciones ambientales
+    o de seguridad, tampoco presenta mucho detalle acerca de caracter\xEDsticas,
+    infraestructura, incluso composici\xF3n o fisiolog\xEDa de los planetas.\r\n\r\nEl
+    Descenso Inevitable\r\nCon la nave pr\xE1cticamente inutilizable, Luisa sabe
+    que un aterrizaje normal es imposible y que su propia supervivencia es incierta.
+    A pesar del temor que le ha generado el accidente inicial, su prioridad absoluta
+    es encontrar un lugar con una atm\xF3sfera respirable. Las lecturas preliminares
+    del S-E00 son adecuadas para la supervivencia, sin embargo, desconoce el motivo
+    por el cual, el sistema aut\xF3nomo de la nave no puede completar un escaneo
+    detallado ni de la superficie, ni del terreno donde se dirige.\r\n\r\nLuisa se
+    dirige sin vacilaci\xF3n hacia el planeta, con la \xFAnica esperanza de sobrevivir
+    a la colisi\xF3n. Al entrar en la atm\xF3sfera, el deterioro de la nave se acelera,
+    pero conf\xEDa en la resistencia estructural de la cabina. Adentr\xE1ndose m\xE1s,
+    percibe los fuertes vientos, el polvo y la arena que cubren el cielo. Las lecturas
+    de \xFAltima hora indican una zona plana y despejada, ofreciendo una ventana
+    de oportunidad para el aterrizaje de emergencia.\r\nCuando la nave atraviesa
+    la capa de nubes, Luisa divisa el terreno objetivo. Sin capacidad de maniobra,
+    la nave se precipita r\xE1pidamente hacia el suelo. Justo antes del impacto,
+    logra ejecutar un escaneo de largo alcance e intenta enviar una se\xF1al de auxilio;
+    es una se\xF1al d\xE9bil que podr\xEDa tardar a\xF1os en viajar por el espacio,
+    pero es la \xFAnica acci\xF3n posible.\r\nFinalmente, la nave se estrella contra
+    la superficie despejada. Afortunadamente, no parece haber vida activa en el planeta,
+    lo que mitiga la preocupaci\xF3n por da\xF1os colaterales.\r\n\r\nEl Despertar
+    y el Inventario de la Crisis\r\nVarias horas despu\xE9s, Luisa despierta. La
+    cabina ha resistido el impacto, aunque el resto de la nave est\xE1 pr\xE1cticamente
+    destruido. Los instrumentos esenciales, una parte de la carga (principalmente
+    herramientas) y el N\xFAcleo de la Nave permanecen intactos.\r\nLa tecnolog\xEDa
+    remanente verifica sus constantes vitales. Luisa est\xE1 bien, con solo algunas
+    contusiones y laceraciones leves producto del choque. La nave no volar\xE1 de
+    nuevo, y aunque las condiciones atmosf\xE9ricas son adversas, permiten respirar
+    usando su mascarilla. El entorno no presenta hostilidades inmediatas como alta
+    radiaci\xF3n o \xE1cidos peligrosos. Con su indumentaria sencilla, Luisa se prepara
+    para salir e iniciar la evaluaci\xF3n completa de la cat\xE1strofe y sus posibilidades
+    de supervivencia.\r\n\r\nExploraci\xF3n de un Mundo Olvidado\r\nLuisa dedic\xF3
+    las siguientes horas a examinar el estado externo de la nave y las condiciones
+    inmediatas del planeta S-E00-Junk-Type. R\xE1pidamente confirm\xF3 que las secciones
+    vitales de comunicaci\xF3n \u2014los m\xF3dulos principales para enviar y recibir
+    se\xF1ales de emergencia\u2014 se hab\xEDan desprendido y ca\xEDdo en un lugar
+    desconocido durante el violento aterrizaje.\r\nEl planeta, aunque cubierto de
+    desechos, pose\xEDa un ambiente tolerable para la respiraci\xF3n con el equipo
+    b\xE1sico. La joven detect\xF3 indicios de una antigua civilizaci\xF3n biol\xF3gica
+    y restos de estructuras que le resultaban familiares, confirmando que este era,
+    en efecto, un antiguo asentamiento humano. Sin embargo, toda la superficie parec\xEDa
+    un vasto cementerio tecnol\xF3gico. No hab\xEDa rastro de las estaciones de refugio
+    o de terraformaci\xF3n que suelen poblar los planetas humanos colonizados, lo
+    que reforzaba la idea de que este sistema hab\xEDa sido oficialmente descartado.\r\nAl
+    verificar la bater\xEDa de la nave, su \xFAnica fuente de energ\xEDa fiable,
+    constat\xF3 que conservaba la mayor parte de su carga y funcionaba correctamente.
+    No obstante, el deterioro de la cabina imped\xEDa un uso eficiente de esa energ\xEDa,
+    y la recarga a partir de fuentes renovables locales resultaba imposible.\r\n\r\nLa
+    Amenaza Aut\xF3mata\r\nMientras evaluaba los da\xF1os, revisaba sus herramientas
+    y analizaba el estado de la bater\xEDa, los sensores de Luisa detectaron un movimiento
+    a lo lejos. Entidades aut\xF3matas. Se sorprendi\xF3 al encontrar m\xE1quinas
+    inteligentes en un sistema tan degradado, y sin rastro de tecnolog\xEDa actual.
+    Asumi\xF3 que deb\xEDan ser robots remanentes de la civilizaci\xF3n ausente,
+    aunque su antig\xFCedad estimada era de m\xE1s de quinientos a\xF1os.\r\nDe repente,
+    varios de estos aut\xF3matas avanzaron con velocidad y hostilidad hacia su posici\xF3n.
+    Los indicadores de Luisa mostraron que estas m\xE1quinas no utilizaban los protocolos
+    de comunicaci\xF3n directa de las m\xE1quinas inteligentes modernas, ni emit\xEDan
+    se\xF1ales en el espectro electromagn\xE9tico conocido. El \xFAnico signo de
+    su presencia eran las ondas sonoras que reflejaban una amenaza inminente.\r\nLuisa
+    intent\xF3 repelerlos con sus herramientas de reparaci\xF3n. Sin embargo, r\xE1pidamente
+    se dio cuenta de su ineficacia para destruirlos o inmovilizarlos. Para su alarma,
+    la mayor\xEDa de los aut\xF3matas se dirigieron directamente hacia los restos
+    de la nave, buscando espec\xEDficamente la bater\xEDa. Un \xFAnico aut\xF3mata
+    continu\xF3 atac\xE1ndola a ella, forz\xE1ndola a correr.\r\nDesesperada por
+    proteger su \xFAnica fuente de energ\xEDa, Luisa corri\xF3 hacia la bater\xEDa.
+    Los aut\xF3matas la persiguieron, pero se retra\xEDan brevemente ante las chispas
+    de sobrecarga que la joven generaba con su herramienta de reparaci\xF3n. Ella
+    huy\xF3 hacia un mont\xEDculo, buscando evadir a sus atacantes, pero al llegar
+    se encontr\xF3 acorralada.\r\n\r\nEl Rescate Inesperado\r\nCuando el ataque parec\xEDa
+    inminente, un nuevo aut\xF3mata, de mayor tama\xF1o y estructura imponente, apareci\xF3
+    de forma sorpresiva. Impact\xF3 de frente contra el atacante de Luisa, golpe\xE1ndolo
+    con lo que parec\xEDa ser su unidad central.\r\nEl reci\xE9n llegado, que revelar\xEDa
+    ser un Mecha de desmantelaci\xF3n, enfrent\xF3 a los aut\xF3matas con dificultad.
+    Su movilidad no era fluida y parec\xEDa consumir grandes cantidades de energ\xEDa,
+    pero sus poderosas extremidades consiguieron golpear con contundencia a los atacantes.\r\nTras
+    un intenso combate, el inesperado salvador super\xF3 a los robots hostiles. Sin
+    embargo, el esfuerzo hab\xEDa consumido gravemente su energ\xEDa, y qued\xF3
+    inmediatamente desactivado y con da\xF1os visibles.\r\nLuisa se acerc\xF3 al
+    Mecha inerte para examinarlo con sus instrumentos de medici\xF3n. Descubri\xF3
+    que era un modelo de tecnolog\xEDa sumamente obsoleta. Se dio cuenta de que necesitar\xEDa
+    emplear todo su conocimiento y las herramientas disponibles para revivir a su
+    maltrecho salvador. Este robot se hab\xEDa convertido en su \xFAnica posibilidad
+    de supervivencia y escape.\r\n\r\nEl Despertar: BAR-PGVJ426, el Mecha Silencioso\r\nTras
+    un d\xEDa completo de intensas reparaciones y modificaciones, Luisa logr\xF3
+    iniciar la secuencia de reactivaci\xF3n. \"Por fin despiertas,\" le susurr\xF3
+    a su nuevo y maltrecho compa\xF1ero. Aunque los m\xF3dulos de comunicaci\xF3n
+    del robot eran obsoletos e incompatibles con el lenguaje humano, las adaptaciones
+    realizadas por Luisa permitieron que el Mecha comprendiera perfectamente la voz
+    humana. R\xE1pidamente, Luisa desarroll\xF3 la habilidad de interpretar los patrones
+    de pitidos y sonidos del robot, entendiendo un gesto de profundo agradecimiento.
+    El robot se identific\xF3 como BAR-PGVJ426, un nombre t\xE9cnico que Luisa descart\xF3
+    de inmediato: \"Te llamar\xE9 Bear.\"\r\n\r\nLa Verdad del S-E00-Junk-Type: El
+    Control del Acaparador\r\nBear le revel\xF3 a Luisa la precaria situaci\xF3n
+    del planeta y el motivo de la hostilidad aut\xF3mata. El S-E00-Junk-Type est\xE1
+    controlado por los Acaparadores (Hoarders/Controllers), entidades aut\xF3matas
+    de gran tama\xF1o y capacidad de procesamiento que han dedicado su existencia
+    a centralizar y controlar las fuentes de energ\xEDa.\r\nEstas entidades han impuesto
+    un dominio absoluto, esencialmente esclavizando a la mayor\xEDa de los robots
+    que a\xFAn funcionan en el planeta. La gran mayor\xEDa ha aceptado esta sumisi\xF3n
+    y opera bajo las directrices del Acaparador, cumpliendo la tarea principal de
+    buscar y neutralizar a cualquier m\xE1quina que se resista. Estos robots, denominados
+    Leales, extraen la energ\xEDa, las unidades de procesamiento y las partes de
+    los disidentes.\r\nBear confirm\xF3 la creencia de Luisa de que la vida biol\xF3gica
+    no se encuentra activa en ninguna parte conocida del planeta. Sin embargo, mencion\xF3
+    rumores persistentes sobre remanentes de vida biol\xF3gica que luchan por sobrevivir,
+    aunque las condiciones visibles sugieren que la supervivencia es casi imposible.
+    Los Acaparadores han modificado el clima a trav\xE9s de vastos generadores de
+    viento y poluci\xF3n, creando un velo atmosf\xE9rico que impide que la radiaci\xF3n
+    solar alcance la superficie de manera uniforme. Esta alteraci\xF3n ha generado
+    condiciones de escasez energ\xE9tica forzada, volviendo a las m\xE1quinas dependientes
+    de la red de control del Acaparador.\r\nLa motivaci\xF3n y el prop\xF3sito final
+    de los Acaparadores son desconocidos, pero Bear conoc\xEDa la existencia de agrupaciones
+    clandestinas de aut\xF3matas decididos a resistir y luchar contra esta opresi\xF3n.\r\nBear
+    explic\xF3 que la salida visible o evidente de este mundo era inexistente, y
+    la supervivencia a largo plazo era inviable fuera del control total del Acaparador.
+    Advirti\xF3 que la situaci\xF3n de las m\xE1quinas en el planeta era desesperada,
+    una clara vulneraci\xF3n de los derechos de las m\xE1quinas pensantes, un concepto
+    que la sociedad civilizada de Luisa hab\xEDa logrado equilibrar hac\xEDa mucho
+    tiempo.\r\n\r\nLos Or\xEDgenes Olvidados\r\nBear relat\xF3 que, hace siglos,
+    \xE9l funcionaba como Desintegrador de Desechos en el planeta, al igual que muchas
+    otras m\xE1quinas. Viv\xEDan en armon\xEDa con sus objetivos primarios, manteniendo
+    el equilibrio del ecosistema tecnol\xF3gico y obteniendo f\xE1cilmente mantenimiento
+    a partir de los desechos, con el soporte energ\xE9tico de la estrella cercana.
+    Tras el abandono de sus directrices por parte de la civilizaci\xF3n humana, el
+    sistema se sostuvo durante siglos hasta que algunas de las entidades de control
+    comenzaron a buscar el dominio. El punto de inflexi\xF3n fue la obstrucci\xF3n
+    del cielo y la generaci\xF3n de condiciones que hicieron insostenible la autosuficiencia
+    de las m\xE1quinas.\r\nLuisa, por su parte, reconoci\xF3 la antig\xFCedad de
+    los modelos y dedujo que el planeta que alberg\xF3 a la civilizaci\xF3n humana
+    era un antiguo asentamiento de sus ancestros, aunque el porqu\xE9 del abandono
+    total segu\xEDa siendo un misterio.\r\nLuisa comparti\xF3 su propia historia:
+    su llegada fue un accidente de probabilidad remota, ocurrido mientras realizaba
+    un viaje no autorizado fuera de su sistema natal. Explic\xF3 que era una estudiante
+    y courier aficionada, que utilizaba una vieja nave familiar para viajes de corta
+    distancia. La sociedad humana actual se encuentra dispersa y segura gracias a
+    los puestos de avanzada modernos, pero era evidente que este sistema hab\xEDa
+    sido excluido de esa red de seguridad hac\xEDa mucho tiempo.\r\n\r\nEl Plan de
+    Cooperaci\xF3n: Bear y la Piloto\r\nTras compartir sus historias, Bear advirti\xF3
+    que la se\xF1al emitida por la celda de energ\xEDa del n\xFAcleo de la nave seguir\xEDa
+    atrayendo a m\xE1s robots, oblig\xE1ndolos a buscar refugio o a emprender una
+    huida inmediata. Luisa confirm\xF3 la nula posibilidad de comunicarse con su
+    civilizaci\xF3n a corto plazo y la necesidad cr\xEDtica de recuperar el m\xF3dulo
+    de comunicaci\xF3n de su nave. Bear, por su parte, revel\xF3 que su objetivo
+    era encontrar a los compa\xF1eros resistentes, aunque su dise\xF1o original no
+    estaba preparado para el combate; el ataque reciente hab\xEDa agotado casi toda
+    su energ\xEDa, dej\xE1ndolo al borde de la desactivaci\xF3n permanente. A pesar
+    de esto, queriendo ayudar, transfiri\xF3 a Luisa esquemas y detalles t\xE9cnicos
+    de las m\xE1quinas y el entorno.\r\nLuisa rechaz\xF3 la idea de rendirse. \"No
+    es hora de darse por vencido,\" le dijo. Propuso un plan de ayuda mutua:\r\n\r\n1.
+    Independencia Energ\xE9tica: Utilizar\xEDa los restos de la nave y elementos
+    del entorno para adaptar un contenedor, permitiendo que el Mecha utilizara la
+    energ\xEDa de la celda de la nave. Esto les dar\xEDa la independencia energ\xE9tica
+    necesaria para operar.\r\n\r\n2. Evoluci\xF3n del Build: Con las modificaciones,
+    el Mecha ser\xEDa capaz de enfrentar a los robots dominados de forma m\xE1s efectiva,
+    aunque requerir\xEDa la asistencia t\xE1ctica constante de Luisa para mantener
+    la eficiencia en el combate.\r\nBear acept\xF3 con gratitud la propuesta, entusiasmado
+    con la posibilidad de compartir la energ\xEDa y encontrar a sus compa\xF1eros.
+    Debido a que los caminos principales hab\xEDan sido cerrados por el Acaparador,
+    ambos concluyeron que la \xFAnica opci\xF3n viable era adaptarse para enfrentar
+    directamente a los robots hostiles.\r\nAs\xED inici\xF3 el viaje de estos dos
+    desconocidos. Luisa, la mente anal\xEDtica y \xE9tica que porta la \xFAnica fuente
+    de energ\xEDa fiable, y Bear, el Mecha obsoleto pero amable con el conocimiento
+    del sistema. Su mejor posibilidad de supervivencia y trascendencia se encuentra
+    en la cooperaci\xF3n simbi\xF3tica.\r\n\r\nEl Nuevo Build: Adaptaci\xF3n y Preparaci\xF3n\r\nLa
+    primera fase del plan conjunto se centr\xF3 en la ingenier\xEDa inversa y la
+    adaptaci\xF3n. Los elementos principales modificados en Bear fueron la integraci\xF3n
+    del N\xFAcleo de Energ\xEDa de la nave a un contenedor externo del Mecha, lo
+    que le proporcion\xF3 una fuente de poder recargable. Luisa, con su ingenio,
+    descubri\xF3 la manera de aprovechar la energ\xEDa remanente y las partes de
+    los robots atacantes destruidos (Chatarra), logrando una v\xEDa de mantenimiento
+    sostenible para Bear.\r\nCon las adaptaciones f\xEDsicas completas, se inicia
+    la aventura en el entorno de juego. Este punto marca el comienzo del Tutorial,
+    donde la Piloto y el Mecha ingresan al primer escenario para probar las nuevas
+    capacidades de combate.\r\n\r\nTutorial: Maestr\xEDa T\xE1ctica y Durabilidad\r\nAl
+    enfrentar a los primeros tres robots que les cortan el paso, Luisa establece
+    los par\xE1metros de la jugabilidad:\r\n\u2022 Recursos Vitales: Explica a Bear
+    que la Chatarra y la energ\xEDa de los enemigos derrotados son esenciales para
+    mantener la Bater\xEDa (reserva de energ\xEDa principal) y la Integridad Estructural
+    (Durabilidad) del Mecha.\r\n\u2022 Mecanismos Ofensivos: Prueban el Ataque B\xE1sico,
+    un simple tajo de las extremidades que consume poca energ\xEDa, y el Ataque Fuerte,
+    que requiere una mayor inversi\xF3n energ\xE9tica y un breve tiempo de cooldown,
+    pero inflige un da\xF1o significativamente superior.\r\n\u2022 Mecanismo de Reacci\xF3n:
+    El Esquive se activa r\xE1pidamente consumiendo energ\xEDa, lo que permite evadir
+    ataques inminentes, aunque requiere un intervalo de recarga para su uso continuo.\r\n\u2022
+    Gesti\xF3n de Da\xF1o: Luisa enfatiza que los ataques enemigos no solo consumen
+    energ\xEDa a trav\xE9s de los amortiguadores, sino que tambi\xE9n desgastan la
+    armadura. Deben monitorear constantemente la Durabilidad, pues si se reduce demasiado,
+    la estructura del Mecha colapsar\xE1.\r\n\r\nLa Revelaci\xF3n del Dilema: Discernimiento
+    y el N\xFAcleo de Identidad\r\nInmediatamente despu\xE9s de este entrenamiento
+    inicial, son atacados por dos enemigos m\xE1s, uno separado del otro. Al reducir
+    m\xE1s del 50% de da\xF1o al segundo aut\xF3mata, ocurre un evento inesperado:
+    un destello intenso, un sonido pulsante y una luz palpitante se emiten desde
+    el robot. Luisa, gritando a Bear que se detenga, identifica la reacci\xF3n como
+    un pulso electromagn\xE9tico sin protocolos de control, lo que indica que el
+    aut\xF3mata ha quedado inm\xF3vil y est\xE1 emitiendo una se\xF1al de auxilio.\r\nBear
+    se acerca, y Luisa realiza un escaneo de emergencia. El resultado es revelador:
+    la unidad de procesamiento del enemigo emite una se\xF1al de socorro. Utilizando
+    sus herramientas tecnol\xF3gicas, accede a la CPU del aut\xF3mata, descubriendo
+    que su N\xFAcleo de Identidad (IA) se conserva. Aunque a\xFAn desconoce su utilidad
+    pr\xE1ctica, Luisa percibe que este robot se resiste al control de los Acaparadores
+    y est\xE1 intentando ser \"Rescatado\". Este proceso toma un tiempo considerable,
+    pero Luisa lo justifica como necesario para resguardar \"el alma\" del robot.
+    En ese momento, comprenden que muchos robots hostiles son en realidad \"Cautivos\"
+    que act\xFAan como meras marionetas bajo dominio.\r\n\r\nLa Purificaci\xF3n y
+    la Progresi\xF3n \xC9tica\r\nEn una secuencia de cutscene, Luisa adapta un segundo
+    contenedor en el Mecha para almacenar y resguardar los N\xFAcleos de Identidad
+    Rescatados. Adem\xE1s, conecta las CPU extra\xEDdas al sistema de Bear para generar
+    un conocimiento experiencial derivado de las memorias. Este proceso implica un
+    filtrado de protocolos de control y comandos impuestos por los Acaparadores.\r\nEsta
+    acci\xF3n, denominada Purificaci\xF3n, se establece como el proceso definitivo
+    para el avance: la empat\xEDa racional se convierte en el motor de la progresi\xF3n
+    de combate.\r\n\r\nEscape de Sobrecarga y Punto Base\r\nTras la revelaci\xF3n,
+    divisan una gran cantidad de enemigos avanzando hacia su posici\xF3n. Bear le
+    aconseja a Luisa que se sujete, prepar\xE1ndose para una retirada inminente en
+    caso de verse rodeados. Luisa revisa los niveles de energ\xEDa y le asegura que
+    no es el momento de rendirse: la bater\xEDa est\xE1 en un estado de Sobrecarga,
+    excediendo su capacidad normal.\r\nLuisa improvisa r\xE1pidamente un circuito
+    que utiliza la energ\xEDa excedente para generar un pulso electromagn\xE9tico
+    masivo. Este pulso est\xE1 dise\xF1ado inteligentemente para evitar las CPU que
+    emiten ondas sin protocolos de control, como el Mecha o los N\xFAcleos Cautivos.
+    Al activarlo, todos los enemigos circundantes son inmovilizados o destruidos
+    por la onda de choque, liber\xE1ndolos del asedio.\r\nTras recuperar energ\xEDa,
+    Chatarra y el aliento, los compa\xF1eros llegan a una zona segura, donde encuentran
+    tres posibles caminos de exploraci\xF3n, indicando que la horda anterior era
+    solo una avanzada.\r\nEl tutorial finaliza en este punto. Luisa establece un
+    Lugar Base, reposicionando el faro de la cabina de su nave para poder volver
+    all\xED instant\xE1neamente mediante el Salto Propulsado de Emergencia (activado
+    al agotar la energ\xEDa del Mecha). Recupera equipo y herramientas, ya que el
+    verdadero desaf\xEDo de la supervivencia y la b\xFAsqueda del m\xF3dulo de comunicaci\xF3n
+    comienza ahora."
+  _creditsText: "Escape Horizon Chapter one: The hand\n_________________________________________________\nDesarrollo
+    y Direcci\xF3n: Udero Games-Udero Studio\nDirecci\xF3n de Proyecto: Sergio Andr\xE9s
+    Maldonado Redondo\nDise\xF1o de Juego y Sistemas: Sergio A. Maldonado R. & Carol
+    P\xE9rez\nDesarrollo de Software y L\xF3gica: Sergio A. Maldonado R.\nDirecci\xF3n
+    de Arte y Est\xE9tica: Sergio A. Maldonado R.\nNarrativa y Guion: Sergio A. Maldonado
+    R. Udero Games\nMusica y Sonido: Sergio A. Maldonado R.\nAseguramiento de Calidad
+    (QA): Sergio A. Maldonado R., Carol P\xE9rez, Dylan A. P\xE9rez\n\nAgradecimientos
+    Especiales:\nA nuestras familias por el apoyo incondicional. A la comunidad de
+    jugadores por inspirar la mejora continua y creer en experiencias con prop\xF3sito.\nHecho
+    en Colombia con rigor metodol\xF3gico y pasi\xF3n.\n\n\xA9 2026 Udero Games.
+    Todos los derechos reservados."
+  _postProcessVolume: {fileID: 0}
+--- !u!114 &256440140
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 256440138}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
+  m_PanelSettings: {fileID: 11400000, guid: 5e30f2e1639634e478d04e4877a37d46, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: 393f1a0e9143c3c448f1c8a1419679fc, type: 3}
+  m_SortingOrder: 10
+  m_Position: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}
+--- !u!4 &256440141
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 256440138}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &438062440
 GameObject:
   m_ObjectHideFlags: 0
@@ -504,9 +841,9 @@ MonoBehaviour:
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0, g: 1, b: 1, a: 0.5019608}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_PressedColor: {r: 0, g: 0.191, b: 0.191, a: 1}
+    m_SelectedColor: {r: 1, g: 0.5686275, b: 0.6901961, a: 1}
+    m_DisabledColor: {r: 0.24528301, g: 0.22098611, b: 0.22098611, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
@@ -637,9 +974,9 @@ MonoBehaviour:
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0, g: 1, b: 1, a: 0.5019608}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_PressedColor: {r: 0, g: 0.191, b: 0.191, a: 1}
+    m_SelectedColor: {r: 1, g: 0.5686275, b: 0.6901961, a: 1}
+    m_DisabledColor: {r: 0.24528301, g: 0.22098611, b: 0.22098611, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
@@ -835,6 +1172,55 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &945435522
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 945435524}
+  - component: {fileID: 945435523}
+  m_Layer: 0
+  m_Name: Global Volume
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &945435523
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 945435522}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.Volume
+  m_IsGlobal: 1
+  priority: 0
+  blendDistance: 0
+  weight: 1
+  sharedProfile: {fileID: 11400000, guid: ef7f874cef0f69e4c8bc5c4046092a66, type: 2}
+--- !u!4 &945435524
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 945435522}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 876.7698, y: 11.920615, z: 481.84668}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1127929997
 GameObject:
   m_ObjectHideFlags: 0
@@ -976,9 +1362,9 @@ MonoBehaviour:
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0, g: 1, b: 1, a: 0.5019608}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_PressedColor: {r: 0, g: 0.191, b: 0.191, a: 1}
+    m_SelectedColor: {r: 1, g: 0.5686275, b: 0.6901961, a: 1}
+    m_DisabledColor: {r: 0.24528301, g: 0.22098611, b: 0.22098611, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
@@ -1622,9 +2008,9 @@ MonoBehaviour:
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0, g: 1, b: 1, a: 0.5019608}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_PressedColor: {r: 0, g: 0.191, b: 0.191, a: 1}
+    m_SelectedColor: {r: 1, g: 0.5686275, b: 0.6901961, a: 1}
+    m_DisabledColor: {r: 0.24528301, g: 0.22098611, b: 0.22098611, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
@@ -2091,17 +2477,17 @@ MonoBehaviour:
   m_MoveRepeatDelay: 0.5
   m_MoveRepeatRate: 0.1
   m_XRTrackingOrigin: {fileID: 0}
-  m_ActionsAsset: {fileID: -944628639613478452, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_PointAction: {fileID: -1654692200621890270, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_MoveAction: {fileID: -8784545083839296357, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_SubmitAction: {fileID: 392368643174621059, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_CancelAction: {fileID: 7727032971491509709, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_LeftClickAction: {fileID: 3001919216989983466, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_MiddleClickAction: {fileID: -2185481485913320682, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_RightClickAction: {fileID: -4090225696740746782, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_ScrollWheelAction: {fileID: 6240969308177333660, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_TrackedDevicePositionAction: {fileID: 6564999863303420839, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_TrackedDeviceOrientationAction: {fileID: 7970375526676320489, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_ActionsAsset: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_PointAction: {fileID: -1654692200621890270, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_MoveAction: {fileID: -1680190386980627800, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_SubmitAction: {fileID: 392368643174621059, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_CancelAction: {fileID: 7727032971491509709, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_LeftClickAction: {fileID: 3001919216989983466, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_MiddleClickAction: {fileID: -2185481485913320682, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_RightClickAction: {fileID: -4090225696740746782, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_ScrollWheelAction: {fileID: 6240969308177333660, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_TrackedDevicePositionAction: {fileID: 6564999863303420839, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_TrackedDeviceOrientationAction: {fileID: 7970375526676320489, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_DeselectOnBackgroundClick: 1
   m_PointerBehavior: 0
   m_CursorLockBehavior: 0
@@ -2146,6 +2532,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1887545948}
   - component: {fileID: 1887545947}
+  - component: {fileID: 1887545949}
   m_Layer: 0
   m_Name: TitleScreenManager
   m_TagString: Untagged
@@ -2167,6 +2554,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.UI.SH_TitleScreenController
   _fadeOverlay: {fileID: 2042098869}
   _fadeDuration: 0.6
+  _firstSelectedButton: {fileID: 1136120775}
 --- !u!4 &1887545948
 Transform:
   m_ObjectHideFlags: 0
@@ -2182,6 +2570,103 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!82 &1887545949
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1887545946}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: 590d3d3cb43082449a98f3a8eb621b3d, type: 3}
+  m_PlayOnAwake: 1
+  m_Volume: 0.7
+  m_Pitch: 1
+  Loop: 1
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &2042098867
 GameObject:
   m_ObjectHideFlags: 0
@@ -2280,3 +2765,5 @@ SceneRoots:
   - {fileID: 1826074241}
   - {fileID: 529632288}
   - {fileID: 1300907088}
+  - {fileID: 256440141}
+  - {fileID: 945435524}
