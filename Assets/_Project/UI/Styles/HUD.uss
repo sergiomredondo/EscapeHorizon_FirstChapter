@@ -83,6 +83,13 @@
     -unity-font-definition: var(--regular-font);
     font-size: var(--font-size-normal);
     opacity: var(--ninety);
+    transition-property: opacity;
+    transition-duration: 3s;
+    transition-timing-function: ease-in-out-circ;
+}
+
+.hud-root--faded {
+    opacity: 0;
 }
 
 .center-anchor {

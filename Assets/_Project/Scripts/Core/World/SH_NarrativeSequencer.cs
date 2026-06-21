@@ -1,5 +1,7 @@
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 
 namespace Game.World
 {
@@ -63,6 +65,8 @@ namespace Game.World
         // Channel A — consumed by SH_UIBridge to drive the UI Toolkit text panel.
         public static event Action<string, string, string> OnTextLogRequested;
         public static event Action OnTextLogCloseRequested;
+        public static event Action OnNarrativeSequenceWillStart;
+        public static event Action OnNarrativeSequenceEnded;
 
         #endregion
 
@@ -95,7 +99,7 @@ namespace Game.World
             bool animStillPlaying = _imageSequenceAnimator != null
                 && _imageSequenceAnimator.GetBool(_animPlayingHash);
 
-            bool playerSkipped = Input.GetKeyDown(_skipKey);
+            bool playerSkipped = Keyboard.current.escapeKey.wasPressedThisFrame;
 
             if (!animStillPlaying || playerSkipped)
                 CloseImageSequence();
@@ -123,6 +127,15 @@ namespace Game.World
             if (!_initialized || _imageSequenceAnimator == null) return;
             if (_imageSequencePlaying) return;
 
+            OnNarrativeSequenceWillStart?.Invoke();
+            StartCoroutine(ExecuteSequenceAfterFade(stateName));
+
+        }
+
+        private System.Collections.IEnumerator ExecuteSequenceAfterFade(string stateName)
+        {
+            yield return new WaitForSecondsRealtime(3f);
+            
             _imageSequencePlaying = true;
             Time.timeScale = 0f;
 
@@ -159,6 +172,8 @@ namespace Game.World
 
             if (_imageSequenceCanvas != null)
                 _imageSequenceCanvas.SetActive(false);
+
+            OnNarrativeSequenceEnded?.Invoke();
         }
 
         #endregion

@@ -36,6 +36,7 @@ namespace UI
         private const string CssNodeUnavailable = "build-node-btn--unavailable";
         private const string CssFocusActive = "focus-active";
         private const string CssFocusFaded = "focus-faded";
+        private const string CssHudFaded = "hud-root--faded";
 
         #endregion
 
@@ -130,6 +131,7 @@ namespace UI
         #region Runtime References — HUD
 
         private UIDocument _document;
+        private VisualElement _root;
         private ProgressBar _hpBar;
         private ProgressBar _energyBar;
         private ProgressBar _surgeBar;
@@ -210,11 +212,16 @@ namespace UI
         {
             if (_model != null)
                 Subscribe();
+            Game.World.SH_NarrativeSequencer.OnNarrativeSequenceWillStart += HandleNarrativeFadeOut;
+            Game.World.SH_NarrativeSequencer.OnNarrativeSequenceEnded += HandleNarrativeFadeIn;
         }
 
         private void OnDisable()
         {
             Unsubscribe();
+
+            Game.World.SH_NarrativeSequencer.OnNarrativeSequenceWillStart -= HandleNarrativeFadeOut;
+            Game.World.SH_NarrativeSequencer.OnNarrativeSequenceEnded -= HandleNarrativeFadeIn;
         }
 
         #endregion
@@ -311,6 +318,8 @@ namespace UI
             }
 
             VisualElement root = _document.rootVisualElement;
+            
+            _root = root.Q<VisualElement>("hud-root");
 
             // ── HUD elements ──────────────────────────────────────────────────
             _hpBar = root.Q<ProgressBar>(ElementHPBar);
@@ -811,6 +820,21 @@ namespace UI
             _noticeFadeCoroutine = null;
         }
 
+        private void HandleNarrativeFadeOut()
+        {
+            if (_root != null)
+            {
+                _root.AddToClassList(CssHudFaded);
+            }
+        }
+
+        private void HandleNarrativeFadeIn()
+        {
+            if (_root != null)
+            {
+                _root.RemoveFromClassList(CssHudFaded);
+            }
+        }
         #endregion
     }
 }
