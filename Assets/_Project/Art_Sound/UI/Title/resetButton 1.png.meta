@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: ce23761746eda7644b94d9dd83820711
+guid: 1e4944b8985daf84b83f68c682ea79a3
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -123,13 +123,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Background 1_0
+      name: resetButton 1_0
       rect:
         serializedVersion: 2
-        x: 299
-        y: 214
-        width: 1920
-        height: 1080
+        x: 878
+        y: 31
+        width: 27
+        height: 30
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -138,8 +138,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 01081c3805716d947980579adc0f1a1e
-      internalID: -347357082
+      spriteID: 134d000c1bf34c74cba62ef06add96f1
+      internalID: 156404294
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: resetButton 1_1
+      rect:
+        serializedVersion: 2
+        x: 886
+        y: 40
+        width: 335
+        height: 58
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 766b61b0f37132c48afaa2069862df47
+      internalID: 2045640421
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: resetButton 1_2
+      rect:
+        serializedVersion: 2
+        x: 1223
+        y: 61
+        width: 11
+        height: 17
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a97f3d79aaa2b3d49b38b4b8bbb516a8
+      internalID: -1361995754
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: resetButton 1_3
+      rect:
+        serializedVersion: 2
+        x: 877
+        y: 31
+        width: 357
+        height: 67
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 82d049cab1b372c4080a79df45e72955
+      internalID: 932194911
       vertices: []
       indices: 
       edges: []
@@ -148,7 +214,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: a5a13f1ad0e76bc4cbe92c7cb4fda3ad
+    spriteID: 235b573ba86704543b480d0ff49882a7
     internalID: 0
     vertices: []
     indices: 
@@ -160,7 +226,10 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Background 1_0: -347357082
+      resetButton 1_0: 156404294
+      resetButton 1_1: 2045640421
+      resetButton 1_2: -1361995754
+      resetButton 1_3: 932194911
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

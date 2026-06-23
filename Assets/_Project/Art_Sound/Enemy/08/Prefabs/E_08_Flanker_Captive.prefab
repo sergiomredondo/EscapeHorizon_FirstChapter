@@ -359,7 +359,7 @@ MonoBehaviour:
     m_Bits: 8
   _interactablePersistence: 10
   _detectedClip: {fileID: 8300000, guid: 24d6e43cc8d04ea40bf77dac30faf4ea, type: 3}
-  _dismissClip: {fileID: 8300000, guid: 8ae860c6c1e74b34e9b0670a0234bdaf, type: 3}
+  _dismissClip: {fileID: 0}
   _resetDelay: 0.01
   _detectionFrequency: 0.5
 --- !u!1 &7529405844988371379

@@ -56640,7 +56640,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6229241148803583016, guid: c3264b609be4e284a8002e4d9d03f3b1, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.19
+      value: 1.9
       objectReference: {fileID: 0}
     - target: {fileID: 6229241148803583016, guid: c3264b609be4e284a8002e4d9d03f3b1, type: 3}
       propertyPath: m_LocalPosition.z
@@ -71458,7 +71458,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 634982387504378249, guid: 8ae42d9c6f593394b8c29b428ca099a1, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.53
+      value: -0.49
       objectReference: {fileID: 0}
     - target: {fileID: 634982387504378249, guid: 8ae42d9c6f593394b8c29b428ca099a1, type: 3}
       propertyPath: m_LocalPosition.z
@@ -83810,6 +83810,7 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: fd91ac406a3dd134797b9a48bebc8397, type: 3}
     - {fileID: 8300000, guid: 491530bf226ed35439ebcc14b6059ea8, type: 3}
+    - {fileID: 8300000, guid: 9fa2227c69c9fc9498b37045cc742693, type: 3}
     volume: 0.35
     loop: 1
     pitchVariation: 0
@@ -83820,7 +83821,7 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 587bd1599bbc37b4dae0a04826439ab5, type: 3}
     - {fileID: 8300000, guid: 626ee35ca4aa00848a7ab68de8f06f48, type: 3}
     volume: 0.65
-    loop: 1
+    loop: 0
     pitchVariation: 0
   _combatLayer:
     layerName: Combat
@@ -83845,13 +83846,12 @@ MonoBehaviour:
   _combatToExplorationFadeDuration: 3
   _combatLingerDuration: 2
   _searchLingerDuration: 3
-  _levelStartStinger: {fileID: 8300000, guid: 18658dcd6b15c9c4fb2ff51ee6288ec8, type: 3}
+  _levelStartStinger: {fileID: 8300000, guid: 43ef43ec3091f0b4e827b4d0f9659941, type: 3}
   _levelStartStingerVolume: 0.9
   _stingerToAmbientDelay: 0
   _combatEntryStingers:
-  - {fileID: 8300000, guid: 9f9ec736ec0154c9b8b210d69cfc496e, type: 3}
-  _combatExitStingers:
-  - {fileID: 8300000, guid: ff46dcb72a4c1f946a4e17369ab93488, type: 3}
+  - {fileID: 8300000, guid: 76392fd26b4b16742af44322d914756b, type: 3}
+  _combatExitStingers: []
   _stingerVolume: 0.75
   _debugLog: 0
 --- !u!1001 &2022334971
@@ -90995,11 +90995,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2919933158002722599, guid: b2da91cef90721243a47ee185c07c473, type: 3}
       propertyPath: showSurgePanel
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2919933158002722599, guid: b2da91cef90721243a47ee185c07c473, type: 3}
       propertyPath: showEconomyPanel
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2919933158002722599, guid: b2da91cef90721243a47ee185c07c473, type: 3}
       propertyPath: showPhysicsPanel
@@ -91007,15 +91007,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2919933158002722599, guid: b2da91cef90721243a47ee185c07c473, type: 3}
       propertyPath: showAnimationPanel
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2919933158002722599, guid: b2da91cef90721243a47ee185c07c473, type: 3}
       propertyPath: showPerceptionPanel
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2919933158002722599, guid: b2da91cef90721243a47ee185c07c473, type: 3}
       propertyPath: showInteractionPanel
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2963382393928341274, guid: b2da91cef90721243a47ee185c07c473, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

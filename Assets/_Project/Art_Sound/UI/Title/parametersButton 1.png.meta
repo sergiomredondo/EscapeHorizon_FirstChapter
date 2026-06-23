@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: ce23761746eda7644b94d9dd83820711
+guid: 455be8ca08a06fe43aeeb55effe8a812
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -123,13 +123,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Background 1_0
+      name: parametersButton 1_0
       rect:
         serializedVersion: 2
-        x: 299
-        y: 214
-        width: 1920
-        height: 1080
+        x: 477
+        y: 30
+        width: 28
+        height: 31
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -138,8 +138,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 01081c3805716d947980579adc0f1a1e
-      internalID: -347357082
+      spriteID: 93f0914af75294249a9ad8213d6ef59b
+      internalID: 1917626092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: parametersButton 1_1
+      rect:
+        serializedVersion: 2
+        x: 486
+        y: 39
+        width: 249
+        height: 61
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c1871d7bf3bf0804a9b30366c947a9c8
+      internalID: -308135851
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: parametersButton 1_2
+      rect:
+        serializedVersion: 2
+        x: 737
+        y: 61
+        width: 11
+        height: 18
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f37838e80efe28949aad52c054b389c1
+      internalID: -1550480189
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: parametersButton 1_3
+      rect:
+        serializedVersion: 2
+        x: 477
+        y: 30
+        width: 271
+        height: 70
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bf1077e5b27a69f4dbe44a80afb4ce55
+      internalID: 2142662431
       vertices: []
       indices: 
       edges: []
@@ -148,7 +214,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: a5a13f1ad0e76bc4cbe92c7cb4fda3ad
+    spriteID: 473f39461f359c442b9468207733d5dd
     internalID: 0
     vertices: []
     indices: 
@@ -160,7 +226,10 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Background 1_0: -347357082
+      parametersButton 1_0: 1917626092
+      parametersButton 1_1: -308135851
+      parametersButton 1_2: -1550480189
+      parametersButton 1_3: 2142662431
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

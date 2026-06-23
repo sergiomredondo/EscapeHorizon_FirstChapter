@@ -14,7 +14,7 @@
     </ui:VisualElement>
     <ui:VisualElement name="parameters-overlay" class="pm-overlay" style="display: none;">
         <ui:VisualElement name="parameters-frame" class="pm-params-frame">
-            <ui:Label text="PARAMETROS" class="pm-title"/>
+            <ui:Label text="PARÁMETROS" class="pm-title"/>
             <ui:VisualElement name="tabs-row" class="pm-tabs-row">
                 <ui:Button name="tab-settings-btn" text="CONFIGURACIÓN" class="pm-tab pm-tab--active"/>
                 <ui:Button name="tab-controls-btn" text="CONTROLES" class="pm-tab"/>

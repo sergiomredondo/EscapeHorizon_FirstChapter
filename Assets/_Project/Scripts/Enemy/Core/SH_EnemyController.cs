@@ -112,7 +112,8 @@ namespace Game.Enemy
             Attack,
             Evade,
             Retreat,
-            Vulnerable
+            Vulnerable,
+            Dead
         }
 
         private enum SearchPhase
@@ -506,7 +507,7 @@ namespace Game.Enemy
             if (_playerContext != null)
             {
                 float dist = Vector3.Distance(transform.position, _playerContext.Transform.position);
-                
+
                 if (dist <= _data.DetectionRange)
                 {
                     _lastKnownPlayerPosition = _playerContext.Transform.position;
@@ -649,7 +650,7 @@ namespace Game.Enemy
         private void TickAttack()
         {
             if (_playerContext == null) return;
-            
+
             if (_agent != null) _agent.isStopped = false;
 
             float dist = Vector3.Distance(transform.position, _playerContext.Transform.position);
@@ -944,6 +945,8 @@ namespace Game.Enemy
             _isDead = true;
             if (_agent != null) _agent.isStopped = true;
 
+            TransitionTo(EnemyState.Dead);
+
             if (_animator != null)
             {
                 _animator.speed = 1f;
@@ -1020,13 +1023,13 @@ namespace Game.Enemy
 
             switch (_state)
             {
-                case EnemyState.Search: 
+                case EnemyState.Search:
                     _searchTimer = 0f;
                     _searchPhase = SearchPhase.MoveToLastKnown;
                     break;
                 case EnemyState.Evade: _evadeTimer = 0f; break;
             }
-            
+
             _state = newState;
 
             // Notify ambient manager — no hard dependency (null-safe call)
@@ -1055,6 +1058,10 @@ namespace Game.Enemy
                     break;
                 case EnemyState.Vulnerable:
                     if (_agent != null) _agent.isStopped = true;
+                    break;
+                case EnemyState.Dead:
+                    if (_agent != null) _agent.isStopped = true;
+                    ResetSharedAlert();
                     break;
             }
         }

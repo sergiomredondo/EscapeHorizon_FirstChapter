@@ -629,6 +629,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 3605703601733896885, guid: 8b26a86ca05fc5649ba4dbac88389780, type: 3}
+      propertyPath: _dismissClip
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 5164503035002547586, guid: 8b26a86ca05fc5649ba4dbac88389780, type: 3}
       propertyPath: m_Layer
       value: 3

@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: ce23761746eda7644b94d9dd83820711
+guid: 0b0e8d2d9f2841f42bdfe77259c1c9d0
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -123,13 +123,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Background 1_0
+      name: disconnectionButton 1_0
       rect:
         serializedVersion: 2
-        x: 299
-        y: 214
-        width: 1920
-        height: 1080
+        x: 586
+        y: 18
+        width: 29
+        height: 33
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -138,8 +138,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 01081c3805716d947980579adc0f1a1e
-      internalID: -347357082
+      spriteID: 506f1c46e56caa54fbe59ca3e9912269
+      internalID: -755338590
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: disconnectionButton 1_1
+      rect:
+        serializedVersion: 2
+        x: 596
+        y: 28
+        width: 292
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 15269e8b6dd30224ea78903f653c242c
+      internalID: -525985093
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: disconnectionButton 1_2
+      rect:
+        serializedVersion: 2
+        x: 891
+        y: 51
+        width: 11
+        height: 18
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 97bd19ca43a40724d99a0d12f4140019
+      internalID: 1105553679
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: disconnectionButton 1_3
+      rect:
+        serializedVersion: 2
+        x: 585
+        y: 17
+        width: 318
+        height: 75
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c0c0b12a412f52f4ebf2a8f6d12a367c
+      internalID: -195002301
       vertices: []
       indices: 
       edges: []
@@ -148,7 +214,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: a5a13f1ad0e76bc4cbe92c7cb4fda3ad
+    spriteID: 8deb68a048489dc4baf4fb56e2248345
     internalID: 0
     vertices: []
     indices: 
@@ -160,7 +226,10 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Background 1_0: -347357082
+      disconnectionButton 1_0: -755338590
+      disconnectionButton 1_1: -525985093
+      disconnectionButton 1_2: 1105553679
+      disconnectionButton 1_3: -195002301
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
